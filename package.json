@@ -1,0 +1,30 @@
+{
+  "name": "mu-widget",
+  "version": "1.0.10",
+  "description": "Simple javascript widget creation",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "demos": "npx parcel watch -d ./demo/dist/ --no-hmr --public-url . demo/index.html",
+    "build-demos": "npx parcel build --no-content-hash -d ./demo/dist/ --public-url . demo/index.html",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/murdej/MuWidget2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/murdej/MuWidget2/issues"
+  },
+  "homepage": "https://github.com/murdej/MuWidget2#readme",
+  "devDependencies": {
+    "sass": "^1.47.0",
+    "typescript": "^4.5.4"
+  }
+}

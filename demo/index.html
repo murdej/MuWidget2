@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>MuWidget examples</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="styles/enlighterjs.min.css" />
+	<link rel="stylesheet" href="styles/main.scss" />
+</head>
+
+<body>
+	<h1>MuWidget examples</h1>
+
+	<h2>Simple examples</h2>
+	<div mu-widget="Example">
+		<div mu-widget="CharCounter" mu-template="widget" mu-params='{"maxLength": 30}' class="charcounter">
+			<input type="text" mu-id="input" class="charcounter__input" /><span mu-id="info"
+				class="charcounter__count"></span>
+		</div>
+	</div>
+
+	<h2>Calculator</h2>
+	<div mu-widget="Example">
+		<div mu-widget="Calculator" mu-template="widget" class="calculator">
+			<div class="calculator__display">
+				<input type="text" mu-id="input" />
+				<div mu-id="result"></div>
+			</div>
+			<div class="calculator__buttons">
+				<span mu-click='pressButton'>1</span>
+				<span mu-click='pressButton'>2</span>
+				<span mu-click='pressButton'>3</span>
+				<span mu-click='pressButton'>+</span>
+				<span mu-click='pressButton'>4</span>
+				<span mu-click='pressButton'>5</span>
+				<span mu-click='pressButton'>6</span>
+				<span mu-click='pressButton'>-</span>
+				<span mu-click='pressButton'>7</span>
+				<span mu-click='pressButton'>8</span>
+				<span mu-click='pressButton'>9</span>
+				<span mu-click='pressButton: "*"'>×</span>
+				<span mu-click='pressButton'>0</span>
+				<span mu-click='pressButton: "/"'>&divide;</span>
+				<span mu-click='evaluate'>=</span>
+			</div>
+		</div>
+	</div>
+
+	<h2>TODO list</h2>
+	<div mu-widget="Example">
+		<div mu-widget="ToDoList" mu-template="widget" class="todolist">
+			<div class="todolist__header" mu-id="itemForm" mu-widget="ToDoListForm">
+				<h3 mu-id="formTitle"></h3>
+				<div class="todolist__form">
+					<input type="color" value="#ffffff" mu-bind="color" />
+					<input type="text" mu-bind="title" />
+					<span mu-id="bSave" class="btn">Save</span>
+					<span mu-id="bCancel" class="btn">Cancel</span>
+				</div>
+				<div mu-id="errorLabel"></div>
+			</div>
+			<ul mu-id="itemList" mu-bind="itemList:@foreach" class="todolist__list">
+				<li mu-template="item" mu-widget="ToDoListItem"
+					mu-bind='color::.color; color:style.backgroundColor; isComplete|tern("todolist__item todolist__item--isComplete", "todolist__item"):className'>
+					<div>
+						<input type="checkbox" mu-bind="isComplete" mu-id="isComplete" />
+						<span mu-id="bEdit" class="btn">Edit</span>
+						<span mu-id="bDelete" class="btn">Delete</span>
+						<span mu-id="title" mu-bind="title" class="todolist__list__title"></span>
+					</div>
+				</li>
+			</ul>
+			<span class="btn" mu-id="bNew">Add new item</span>
+			<span class="btn" mu-id="bDeleteComplete">Delete complete items</span>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/enlighterjs@3.4.0/dist/enlighterjs.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.2/math.js"
+		integrity="sha512-U9fwz8ekKht5NdL1x4+Yh3DoXeSrsZ0M7ALcijykvrVKD+101nax1MVdc0wNSVh4GOwZGY7yQpz+rAnnoX7O3Q=="
+		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="scripts/index.js"></script>
+</body>
+
+</html>

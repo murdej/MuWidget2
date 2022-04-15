@@ -1,0 +1,145 @@
+$font-base: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+body {
+	font-family: $font-base;
+}
+h1,h2,h3,h4,h5,h6 {
+	font-family: Georgia, 'Times New Roman', Times, serif;
+}
+.example {
+	.src-ts, .src-html, .widget {
+		padding: 1ex;
+		border: 3px solid #eee;
+		box-shadow: 0 0 30px #bbb;
+		margin: 15px;
+		/* &::before {
+			display: block;
+			position: relative;
+			top: -1.5em;
+			margin-bottom: -1em;
+			font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+			width: auto;
+		} */
+		legend {
+			background: #777;
+			color: white;
+			font-weight: bold;
+			font-family: $font-base;
+		}
+	}
+	.src-ts, .src-html {
+		font-family: 'Courier New', Courier, monospace;
+	}
+	/* .src-ts {
+		&::before {
+			content: 'Typescript source';
+		}
+	}
+	.src-html {
+		&::before {
+			content: 'HTML source';
+		}
+	}
+	.widget {
+		&::before {
+			content: 'Example widget';
+		}
+	} */
+}
+// Examples
+.calculator__buttons {
+	width: 25ex;
+	height: 24ex;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 1ex;
+	span {
+		width: 5ex;
+		text-align: center;
+		vertical-align: middle;
+		border-radius: 50%;
+		box-shadow: 5px 5px 20px #777;
+		padding: 1.5ex 0;
+		cursor: pointer;
+		&:hover {
+			background-color: lime;
+		}
+	}
+}
+.calculator__display {
+	padding: 1ex;
+	border-radius: 1ex;
+	box-shadow: 5px 5px 20px #777;
+	background-color: #eee;
+	color: #333;
+	font-weight: bold;
+	font-family: 'Courier New', Courier, monospace;
+	border: none;
+	margin: 1ex 0;
+	width: 35ex;
+	box-sizing: border-box;
+	input {
+		font-weight: bold;
+		border: none;
+		background: none;
+		font-family: 'Courier New', Courier, monospace;
+		width: 100%;
+	}
+}
+.charcounter { 
+	display: flex;
+	&__input {
+		border-radius: 8px 0 0 8px;
+		border: 1px solid silver;
+		flex-grow: 1;
+	}
+	&__count {
+		border-radius: 0 8px 8px 0;
+		display: inline-block;
+		padding: 0.5ex 2ex;
+		border: 1px solid silver;
+		display: inline-block;
+	}
+}
+
+.btn {
+	background-color: #8b8;
+	color: white;
+	font-weight: bold;
+	display: inline-block;
+	padding: 0.5ex 2ex;
+	border-radius: 1ex;
+	user-select: none;
+	cursor: pointer;
+	box-shadow: 5px 5px 20px #777;
+}
+.todolist {
+	&__form {
+		gap: 0 4px;
+		display: flex;
+		input[type="text"] {
+			flex-grow: 1;
+		}
+	}
+	&__list {
+		padding: 0;
+		margin: 0;	
+	}
+	&__item, &__header {
+		list-style: none;
+		padding: 1ex;
+		margin: 1ex;
+		border-radius: 1ex;
+		box-shadow: 5px 5px 20px #777;
+	}
+	&__item {
+		&--isComplete {
+			.todolist__list__title {
+				text-decoration: line-through;
+			}
+		}
+	}
+	&__header {
+		
+	}
+}
