@@ -5,7 +5,7 @@
 A simple (java/type)script framework for creating web UIs from simple widgets to the complete applications.
 
  - Minimal overhead
- - Clasic object oriented přístup - this funguje tak jak ho znáte z jiných OOP languages
+ - Traditional object-oriented approach - this works as you know it from other OOP languages
 	- forget the `self = this`
  - Simple html element accesing
    - forget the `document.getElementById("foo").parentElement.parentElement` ...
