@@ -57,7 +57,13 @@ window.onload = function()
 }
 
 ``` -->
+# Very simple example
 
+<p class="codepen" data-height="524.5454406738281" data-default-tab="js,result" data-slug-hash="jOYQdxe" data-editable="true" data-user="murdej" style="height: 524.5454406738281px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/murdej/pen/jOYQdxe">
+  MuWidget example 1</a> by Murděj Ukrutný (<a href="https://codepen.io/murdej">@murdej</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
 
 # HTML element parameters
 
@@ -119,10 +125,12 @@ MuWidget options
 
 # Initialize widgets
 
-To initialize widgets, just call the static `startup` method. You can
+To initialize all widgets, just call the static `startup` method. You can pass an element parameter and widgets are initialized only in the passed element.
 
 ```javascrip
 MuWidget.startup();
+// or initialize only any element
+MuWidget.startup(document.getElemenetById("foo"));
 ```
 
 # Access elements and child widgets
@@ -131,20 +139,25 @@ HTML elements with the `mu-id` attribute are available in the` this.ui` collecti
 
 All child widgets, whether or not they have the `mu-id` attribute, are available in the` this.muSubWidgets` list.
 
-# Indexing html elements
+<!-- # Indexing html elements
 
-**new version**
+-->
 
 # Widget initialize
 
 1. Create instalnce of service class
-<!-- 1. Call service class method `muInit` if exists. -->
 2. Setting parameters from `mu-params` attribute.
 3. Call service class method `beforeIndex` if exists.
 4. Index content and initialize nested component
 5. Call service class method `afterIndex` if exists.
-6. Index child elements
 7. Call all calbacks in `muOnAferIndex`
+
+<p class="codepen" data-height="415.4545593261719" data-default-tab="html,result" data-slug-hash="OJzaYQO" data-editable="true" data-user="murdej" style="height: 415.4545593261719px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/murdej/pen/OJzaYQO">
+  MuWidget lifecycle</a> by Murděj Ukrutný (<a href="https://codepen.io/murdej">@murdej</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
 
 # Service methods
 
@@ -207,7 +220,11 @@ Get binded data from current container. See [bidirectional data binding](#bidire
 
 ## `container`
 
+Link to main HTML element of widget.
+
 ## `muSubWidgets`
+
+Array of nested widgets.
 
 ## `muNamedWidget`
 
@@ -276,3 +293,6 @@ Attribute format is `mu-[event name]`. In this case, it is possible to pass argu
 It is also possible to define and use events for service class. The use is similar to `HTMLElement`.
 
 # Bidirectional data binding
+
+
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
