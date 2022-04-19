@@ -29,9 +29,9 @@ export class MuWidget {
 		templateName : string, 
 		container : string|AnyElement, 
 		params : Record<string, any>|((widget : MuWidget)=>Record<string, any>)|null = null, 
-		addMethod : string = "appendChild") : MuWidget 
+		place : "first"|"before"|"after"|"last" = "last",
+		ref : AnyElement|null = null) : MuWidget 
 	{ 
-		if (!addMethod) addMethod = 'appendChild';
 		let finalContainer : AnyElement;
 		if (typeof container == 'string')
 		{
@@ -52,7 +52,30 @@ export class MuWidget {
 		element = element.firstElementChild as AnyElement;
 		// if (params) element.setAttribute('mu-params', JSON.stringify(params));
 		
-		if (finalContainer) (finalContainer as any)[addMethod](element);
+		if (finalContainer) (finalContainer as any)[place](element);
+		switch(place) {
+			case 'first':
+				if (finalContainer.firstElementChild) {
+					finalContainer.insertBefore(element, finalContainer.firstElementChild);
+				} else {
+					finalContainer.appendChild(element);
+				}
+				break;
+			case 'before':
+				finalContainer.insertBefore(element, ref);
+				break;
+			case 'after':
+				if (ref.nextElementSibling) {
+					finalContainer.insertBefore(element, ref.nextElementSibling);
+				} else {
+					finalContainer.appendChild(element);
+				}
+				break;
+			case 'last':
+				finalContainer.appendChild(element);
+				break;
+		}
+
 
 		var widget = this.muActivateWidget(element, null, params || {});
 		var opts = this.muGetElementOpts(element);

@@ -1,0 +1,221 @@
+<!--
+# The simple examples
+
+```html
+...
+<div mu-widget="ClickCounter" mu-params='{"maxClickCount": 10}'>
+    <button mu-id="btn">Click me</button>
+    Clicked <span mu-id="clickCount"></span> times.
+</div>
+...
+```
+
+`mu-widget="ClickCounter"` define service class.  
+`mu-params='{"maxClickCount": 10}'` define initial property for service class.
+`mu-id="btn"` and `mu-id="clickCount"` define element id
+
+```javascript
+// class constructor
+ClickCounter = function() 
+{ 
+    // init some properties
+    this.clickCount = 0;
+    this.maxClickCount = null;
+};
+// define methods
+ClickCounter.prototype = {
+    // this method is automaticaly binded for event click on element with id btn
+    btn_click: function(sender)
+    {
+        // this refers to a service class instance
+        // the element that triggered the event is passed as the first parameter of the method
+        this.clickCount++;
+        this.updateView();
+        if (this.maxClickCount && this.clickCount >= this.maxClickCount)
+        {
+            // elements with mu-id atribute is accesible via property this.ui.(id)
+            this.ui.btn.disabled = true;
+        }
+    },
+    updateView: function()
+    {
+        this.ui.clickCount.innerText = this.clickCount;
+    },
+    // this method is called after indexing html and bindign events
+    afterIndex: function()
+    {
+        this.updateView();
+    }
+}
+window.onload = function()
+{
+    // index passed and nested html elements and init Widgets
+    new MuWidget(document.getElementsByTagName('body')[0]);
+}
+
+``` -->
+<h1 id="very-simple-example">Very simple example</h1>
+<p class="codepen" data-height="524.5454406738281" data-default-tab="js,result" data-slug-hash="jOYQdxe" data-editable="true" data-user="murdej" style="height: 524.5454406738281px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+<span>See the Pen <a href="https://codepen.io/murdej/pen/jOYQdxe"> MuWidget example 1</a> by Murděj Ukrutný (<a href="https://codepen.io/murdej"><span class="citation" data-cites="murdej">@murdej</span></a>) on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<h1 id="html-element-parameters">HTML element parameters</h1>
+<h2 id="mu-id"><code>mu-id</code></h2>
+<p>Unique identifier in current widget scope.</p>
+<p>After indexing, the html element will be available in the collection <code>this.ui</code> under its <code>mu-id</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">&lt;span</span><span class="ot"> mu-id=</span><span class="st">&quot;label&quot;</span><span class="kw">&gt;&lt;/label&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">this</span>.<span class="va">ui</span>.<span class="va">label</span>.<span class="at">innerText</span> <span class="op">=</span> <span class="st">&quot;Hello world&quot;</span><span class="op">;</span></a></code></pre></div>
+<h2 id="mu-widget"><code>mu-widget</code></h2>
+<p>Widget service class. An instance of the class will be created during indexing.</p>
+<!--
+1. The specified class will be extended to the prototype MuWidget
+2. Creates an instance of the specified class
+3. The property is set
+4. The `afterIndex` method is called
+-->
+<h2 id="mu-noindex"><code>mu-noindex</code></h2>
+<p>Do not index this and nested elements.</p>
+<h2 id="mu-nocontent"><code>mu-nocontent</code></h2>
+<p>Do not index nested elements.</p>
+<h2 id="mu-params"><code>mu-params</code></h2>
+<p>Parameters passed to the service class in <code>JSON</code> format.</p>
+<h2 id="mu-template"><code>mu-template</code></h2>
+<p>During indexing, this block will be stored in the template collection and removed from the DOM.</p>
+<h2 id="mu-usetemplate"><code>mu-usetemplate</code></h2>
+<p>Place element from template collection.</p>
+<!-- MuWidget constructor parameters
+==
+|             |                                |
+| ----------- | ------------------------------ |
+| `container` | HTMLElement containing Widgets |
+| `opts`      | Options                        |
+
+MuWidget options
+--
+
+| Field                     | What is it for                              | Default value                                                                                                                                                                     |
+| ------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `attributePrefix`         | Prefix for HTML element parameters          | `'mu-'`                                                                                                                                                                           |
+| `bindEvents`              | List of events to bind                      | `['click', 'dblclick', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'blur', 'change', 'focus', 'select', 'submit', 'keyup', 'keydown', 'scroll']` |
+| `autoMethodNameSeparator` | id / event separator for autobinded methods | `'_'`                                                                                                                                                                             |
+
+-->
+<h1 id="initialize-widgets">Initialize widgets</h1>
+<p>To initialize all widgets, just call the static <code>startup</code> method. You can pass an element parameter and widgets are initialized only in the passed element.</p>
+<pre class="javascrip"><code>MuWidget.startup();
+// or initialize only any element
+MuWidget.startup(document.getElemenetById(&quot;foo&quot;));</code></pre>
+<h1 id="access-elements-and-child-widgets">Access elements and child widgets</h1>
+<p>HTML elements with the <code>mu-id</code> attribute are available in the<code>this.ui</code> collection. If the element is also a widget, this widget is available in the <code>this.muNamedWidget</code> collection.</p>
+<p>All child widgets, whether or not they have the <code>mu-id</code> attribute, are available in the<code>this.muSubWidgets</code> list.</p>
+<!-- # Indexing html elements
+
+-->
+<h1 id="widget-initialize">Widget initialize</h1>
+<ol type="1">
+<li>Create instalnce of service class</li>
+<li>Setting parameters from <code>mu-params</code> attribute.</li>
+<li>Call service class method <code>beforeIndex</code> if exists.</li>
+<li>Index content and initialize nested component</li>
+<li>Call service class method <code>afterIndex</code> if exists.</li>
+<li>Call all calbacks in <code>muOnAferIndex</code></li>
+</ol>
+<p class="codepen" data-height="415.4545593261719" data-default-tab="html,result" data-slug-hash="OJzaYQO" data-editable="true" data-user="murdej" style="height: 415.4545593261719px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+<span>See the Pen <a href="https://codepen.io/murdej/pen/OJzaYQO"> MuWidget lifecycle</a> by Murděj Ukrutný (<a href="https://codepen.io/murdej"><span class="citation" data-cites="murdej">@murdej</span></a>) on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+<h1 id="service-methods">Service methods</h1>
+<h2 id="muvisiblestate-boolean-control-stringstring"><code>muVisible(state : boolean, control : string|string[])</code></h2>
+<p>Hide or show element(s). Use CSS property <code>display</code>. The <code>state</code> argument determines the visibility of the element. The <code>control</code> argument contains <code>mu-id</code> of element(s).</p>
+<h2 id="muwidgetfromtemplate"><code>muWidgetFromTemplate</code></h2>
+<p>Create HTML element from stored template, initialize widget and placed in the specified container.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>Type (default value)</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>templateName</code></td>
+<td><code>string</code></td>
+<td>Template name</td>
+</tr>
+<tr class="even">
+<td><code>container</code></td>
+<td><code>string\|AnyElement</code></td>
+<td>Container or contained <code>mu-id</code></td>
+</tr>
+<tr class="odd">
+<td><code>params</code></td>
+<td><code>Record&lt;string, any&gt;</code> (<code>{}</code>)</td>
+<td>Inital paramters for widget</td>
+</tr>
+<tr class="even">
+<td><code>position</code></td>
+<td><code>"first"\|"last"</code> (<code>"last"</code>)</td>
+<td>Position of new element</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example">Example</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode typescript"><code class="sourceCode typescript"></code></pre></div>
+<h2 id="mugetchildwidgets"><code>muGetChildWidgets</code></h2>
+<h2 id="mubindlist"><code>muBindList</code></h2>
+<h2 id="mubinddata"><code>muBindData</code></h2>
+<p>Put binded data into current container. See <a href="#bidirectional-data-binding">bidirectional data binding</a></p>
+<h2 id="mufetchdata"><code>muFetchData</code></h2>
+<p>Get binded data from current container. See <a href="#bidirectional-data-binding">bidirectional data binding</a></p>
+<h1 id="widget-events">Widget events</h1>
+<h2 id="mudispatchevent"><code>muDispatchEvent</code></h2>
+<h2 id="muregisterevent"><code>muRegisterEvent</code></h2>
+<h2 id="addeventlistener"><code>addEventListener</code></h2>
+<h1 id="overidable-methods">Overidable methods</h1>
+<h2 id="beforeinit"><code>beforeInit</code></h2>
+<h2 id="beforeindex"><code>beforeIndex</code></h2>
+<h2 id="muafterbinddata"><code>muAfterBindData</code></h2>
+<h1 id="properties">Properties</h1>
+<h2 id="ui"><code>ui</code></h2>
+<h2 id="container"><code>container</code></h2>
+<p>Link to main HTML element of widget.</p>
+<h2 id="musubwidgets"><code>muSubWidgets</code></h2>
+<p>Array of nested widgets.</p>
+<h2 id="munamedwidget"><code>muNamedWidget</code></h2>
+<h2 id="muparent"><code>muParent</code></h2>
+<p>Link to parent widget.</p>
+<h2 id="mutemplates"><code>muTemplates</code></h2>
+<p>Collection of stored templates (HTML elemets with <code>mu-template</code> attribute).</p>
+<h2 id="muonafterindex"><code>muOnAfterIndex</code></h2>
+<h1 id="static-properties">Static properties</h1>
+<h2 id="widgetclasses"><code>widgetClasses</code></h2>
+<h1 id="static-methods">Static methods</h1>
+<h2 id="registerall"><code>registerAll</code></h2>
+<h2 id="registeras"><code>registerAs</code></h2>
+<h2 id="startup"><code>startup</code></h2>
+<h1 id="event-procesing">Event procesing</h1>
+<h2 id="event-handler-mapping">Event handler mapping</h2>
+<p>The event handler fires in the context of a service class instance. (<code>this</code> refers to an instance of the service class)</p>
+<p>There are several ways to map event handlers.</p>
+<h3 id="according-to-naming-convention">According to naming convention</h3>
+<p>If there is a method in the format <code>[mu-id of element]_[event name]</code> it is mapped to the given event on the given element. Example:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">&lt;div</span><span class="ot"> mu-widget=</span><span class="st">&quot;ClickCounter&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb6-2" title="2">    <span class="kw">&lt;button</span><span class="ot"> mu-id=</span><span class="st">&quot;bCounter&quot;</span><span class="kw">&gt;</span>Click<span class="kw">&lt;/button&gt;</span>    </a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="kw">&lt;/div&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">class</span> ClickCounter <span class="op">{</span></a>
+<a class="sourceLine" id="cb7-2" title="2">    <span class="kw">public</span> clickCount <span class="op">:</span> <span class="dt">number</span> <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></a>
+<a class="sourceLine" id="cb7-3" title="3">    <span class="kw">public</span> <span class="fu">bCounter_click</span>(ev<span class="op">,</span> cc<span class="op">:</span> <span class="dt">number</span> <span class="op">=</span> <span class="dv">1</span>) <span class="op">{</span></a>
+<a class="sourceLine" id="cb7-4" title="4">        <span class="va">this</span><span class="op">.</span><span class="at">clickCount</span> <span class="op">+=</span> cc<span class="op">;</span></a>
+<a class="sourceLine" id="cb7-5" title="5">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb7-6" title="6"><span class="op">}</span></a></code></pre></div>
+<h3 id="by-html-attribute">By HTML attribute</h3>
+<p>Attribute format is <code>mu-[event name]</code>. In this case, it is possible to pass arguments, written after ‘:’ after the method name. For example <code>doSometing: "foo" , 2</code></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">&lt;div</span><span class="ot"> mu-widget=</span><span class="st">&quot;ClickCounter&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb8-2" title="2">    <span class="kw">&lt;button</span><span class="ot"> mu-click=</span><span class="st">&quot;bCounter_click&quot;</span><span class="kw">&gt;</span>Click<span class="kw">&lt;/button&gt;</span>    </a>
+<a class="sourceLine" id="cb8-3" title="3">    <span class="kw">&lt;button</span><span class="ot"> mu-click=</span><span class="st">&quot;bCounter_click: 3&quot;</span><span class="ot"> mu-scroll=</span><span class="st">&quot;otherMethod&quot;</span><span class="kw">&gt;</span>3 × Click<span class="kw">&lt;/button&gt;</span>    </a>
+<a class="sourceLine" id="cb8-4" title="4"><span class="kw">&lt;/div&gt;</span></a></code></pre></div>
+<h2 id="widgets-events">Widgets events</h2>
+<p>It is also possible to define and use events for service class. The use is similar to <code>HTMLElement</code>.</p>
+<h1 id="bidirectional-data-binding">Bidirectional data binding</h1>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
