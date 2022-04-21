@@ -250,7 +250,7 @@ var MuBinder = /** @class */ (function () {
                     /* resData[k] = mbo.element[mbo.target];
                     let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
                     ; */
-                    resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.bindFilters, widget);
+                    resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget);
                 }
             }
         }
@@ -674,11 +674,10 @@ var MuWidget = /** @class */ (function () {
         this.muBindOpts = {};
         this.container = container;
     }
-    MuWidget.prototype.muWidgetFromTemplate = function (templateName, container, params, addMethod) {
+    MuWidget.prototype.muWidgetFromTemplate = function (templateName, container, params, position, ref) {
         if (params === void 0) { params = null; }
-        if (addMethod === void 0) { addMethod = "appendChild"; }
-        if (!addMethod)
-            addMethod = 'appendChild';
+        if (position === void 0) { position = "last"; }
+        if (ref === void 0) { ref = null; }
         var finalContainer;
         if (typeof container == 'string') {
             var containerName = container;
@@ -703,8 +702,30 @@ var MuWidget = /** @class */ (function () {
         element.innerHTML = this.muTemplates[templateName];
         element = element.firstElementChild;
         // if (params) element.setAttribute('mu-params', JSON.stringify(params));
-        if (finalContainer)
-            finalContainer[addMethod](element);
+        switch (position) {
+            case 'first':
+                if (finalContainer.firstElementChild) {
+                    finalContainer.insertBefore(element, finalContainer.firstElementChild);
+                }
+                else {
+                    finalContainer.appendChild(element);
+                }
+                break;
+            case 'before':
+                finalContainer.insertBefore(element, ref);
+                break;
+            case 'after':
+                if (ref.nextElementSibling) {
+                    finalContainer.insertBefore(element, ref.nextElementSibling);
+                }
+                else {
+                    finalContainer.appendChild(element);
+                }
+                break;
+            case 'last':
+                finalContainer.appendChild(element);
+                break;
+        }
         var widget = this.muActivateWidget(element, null, params || {});
         var opts = this.muGetElementOpts(element);
         if (!opts.id)

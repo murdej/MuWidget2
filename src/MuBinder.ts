@@ -225,7 +225,7 @@ export class MuBinder {
 					let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
 					; */
 
-					resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.bindFilters, widget);
+					resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget);
 				}
 			}
 		}

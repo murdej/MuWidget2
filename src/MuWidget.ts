@@ -29,7 +29,7 @@ export class MuWidget {
 		templateName : string, 
 		container : string|AnyElement, 
 		params : Record<string, any>|((widget : MuWidget)=>Record<string, any>)|null = null, 
-		place : "first"|"before"|"after"|"last" = "last",
+		position : "first"|"before"|"after"|"last" = "last",
 		ref : AnyElement|null = null) : MuWidget 
 	{ 
 		let finalContainer : AnyElement;
@@ -52,8 +52,7 @@ export class MuWidget {
 		element = element.firstElementChild as AnyElement;
 		// if (params) element.setAttribute('mu-params', JSON.stringify(params));
 		
-		if (finalContainer) (finalContainer as any)[place](element);
-		switch(place) {
+		switch(position) {
 			case 'first':
 				if (finalContainer.firstElementChild) {
 					finalContainer.insertBefore(element, finalContainer.firstElementChild);

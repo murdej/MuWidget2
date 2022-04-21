@@ -174,15 +174,10 @@ Create HTML element from stored template, initialize widget and placed in the sp
 | `templateName` | `string`                     | Template name                  |
 | `container`    | `string\|AnyElement`         | Container or contained `mu-id` |
 | `params`       | `Record<string, any>` (`{}`) | Inital paramters for widget    |
-| `position`     | `"first"\|"last"` (`"last"`) | Position of new element        |
+| `position`     | `"first"\|"last"\|"before"\|"after"` (`"last"`) | Position of new element        |
+| `ref` | `AnyElement` | Reference element for `before` and `after`
 
 ### Example
-
-```html
-```
-
-```typescript
-```
 
 
 
