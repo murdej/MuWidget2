@@ -1,62 +1,4 @@
 
-
-
-<!--
-# The simple examples
-
-```html
-...
-<div mu-widget="ClickCounter" mu-params='{"maxClickCount": 10}'>
-	<button mu-id="btn">Click me</button>
-	Clicked <span mu-id="clickCount"></span> times.
-</div>
-...
-```
-
-`mu-widget="ClickCounter"` define service class.  
-`mu-params='{"maxClickCount": 10}'` define initial property for service class.
-`mu-id="btn"` and `mu-id="clickCount"` define element id
-
-```javascript
-// class constructor
-ClickCounter = function() 
-{ 
-	// init some properties
-	this.clickCount = 0;
-	this.maxClickCount = null;
-};
-// define methods
-ClickCounter.prototype = {
-	// this method is automaticaly binded for event click on element with id btn
-	btn_click: function(sender)
-	{
-		// this refers to a service class instance
-		// the element that triggered the event is passed as the first parameter of the method
-		this.clickCount++;
-		this.updateView();
-		if (this.maxClickCount && this.clickCount >= this.maxClickCount)
-		{
-			// elements with mu-id atribute is accesible via property this.ui.(id)
-			this.ui.btn.disabled = true;
-		}
-	},
-	updateView: function()
-	{
-		this.ui.clickCount.innerText = this.clickCount;
-	},
-	// this method is called after indexing html and bindign events
-	afterIndex: function()
-	{
-		this.updateView();
-	}
-}
-window.onload = function()
-{
-	// index passed and nested html elements and init Widgets
-	new MuWidget(document.getElementsByTagName('body')[0]);
-}
-
-``` -->
 # Very simple example
 
 <p class="codepen" data-height="524.5454406738281" data-default-tab="js,result" data-slug-hash="jOYQdxe" data-editable="true" data-user="murdej" style="height: 524.5454406738281px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
@@ -83,13 +25,6 @@ this.ui.label.innerText = "Hello world";
 ## `mu-widget`
 Widget service class. An instance of the class will be created during indexing.
 
-<!--
-1. The specified class will be extended to the prototype MuWidget
-2. Creates an instance of the specified class
-3. The property is set
-4. The `afterIndex` method is called
--->
-
 ## `mu-noindex`
 Do not index this and nested elements.
 
@@ -100,28 +35,11 @@ Do not index nested elements.
 Parameters passed to the service class in `JSON` format.
 
 ## `mu-template`
-During indexing, this block will be stored in the template collection and removed from the DOM.
+During indexing, this block will be stored in the template collection and removed from the DOM. 
+It can be used later with the [`mu-usetemplate` attribute](#mu-usetemplate) or the [`muWidgetFromTemplate` method](#muwidgetfromtemplate).
 
 ## `mu-usetemplate`
-Place element from template collection.
-
-<!-- MuWidget constructor parameters
-==
-|             |                                |
-| ----------- | ------------------------------ |
-| `container` | HTMLElement containing Widgets |
-| `opts`      | Options                        |
-
-MuWidget options
---
-
-| Field                     | What is it for                              | Default value                                                                                                                                                                     |
-| ------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `attributePrefix`         | Prefix for HTML element parameters          | `'mu-'`                                                                                                                                                                           |
-| `bindEvents`              | List of events to bind                      | `['click', 'dblclick', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'blur', 'change', 'focus', 'select', 'submit', 'keyup', 'keydown', 'scroll']` |
-| `autoMethodNameSeparator` | id / event separator for autobinded methods | `'_'`                                                                                                                                                                             |
-
--->
+Place element from template collection. 
 
 # Initialize widgets
 
@@ -179,7 +97,12 @@ Create HTML element from stored template, initialize widget and placed in the sp
 
 ### Example
 
-
+<p class="codepen" data-height="356.3636474609375" data-default-tab="js,result" data-slug-hash="rNpRPYd" data-editable="true" data-user="murdej" style="height: 356.3636474609375px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/murdej/pen/rNpRPYd">
+  MuWidget example 2</a> by Murděj Ukrutný (<a href="https://codepen.io/murdej">@murdej</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
 
 ## `muGetChildWidgets`
 
@@ -193,13 +116,18 @@ Put binded data into current container. See [bidirectional data binding](#bidire
 
 Get binded data from current container. See [bidirectional data binding](#bidirectional-data-binding)
 
-# Widget events
 
 ## `muDispatchEvent`
 
+Invoke event handlers. [See Widgets events](#widget-events)
+
 ## `muRegisterEvent`
 
+Register event name(s). [See Widgets events](#widget-events)
+
 ## `addEventListener`
+
+Add event handler to this widget; [See Widgets events](#widget-events)
 
 # Overidable methods
 
@@ -213,6 +141,8 @@ Get binded data from current container. See [bidirectional data binding](#bidire
 
 ## `ui`
 
+Object containing elements with attribute `mu-id` indexed by value of `mu-id` attribute.
+
 ## `container`
 
 Link to main HTML element of widget.
@@ -222,6 +152,8 @@ Link to main HTML element of widget.
 Array of nested widgets.
 
 ## `muNamedWidget`
+
+Object containing nested widget of elements with attribute `mu-id` and `mu-widget` indexed by value of `mu-id` attribute.
 
 ## `muParent`
 
@@ -233,9 +165,13 @@ Collection of stored templates (HTML elemets with `mu-template` attribute).
 
 ## `muOnAfterIndex`
 
+Array callbacks that run after indexing the widget. (Similar to `afterIndex`). This property is public, so it can be accessed from other widgets.
+
 # Static properties
 
 ## `widgetClasses`
+
+Object of service classes. 
 
 # Static methods
 
@@ -244,6 +180,8 @@ Collection of stored templates (HTML elemets with `mu-template` attribute).
 ## `registerAs`
 
 ## `startup`
+
+Initalize widgets on page or element. [See Initialize widgets](#initialize-widgets)
 
 # Event procesing
 
