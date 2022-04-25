@@ -1,27 +1,5 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-var MuBinder = /** @class */ (function () {
-    function MuBinder() {
-    }
-    MuBinder.parse = function (src, element) {
+class MuBinder {
+    static parse(src, element) {
         /*
         source
         source:target
@@ -29,11 +7,11 @@ var MuBinder = /** @class */ (function () {
         source;target
         sourcer|filter():target
         */
-        var mode = "source";
-        var optsList = [];
-        var sp = new StrParser(src);
-        var p;
-        var lastP = 0;
+        let mode = "source";
+        const optsList = [];
+        const sp = new StrParser(src);
+        let p;
+        let lastP = 0;
         function parseFetchBind(chunk, opts) {
             switch (chunk) {
                 case ":":
@@ -53,7 +31,7 @@ var MuBinder = /** @class */ (function () {
         }
         function parseFilter(sp, bindPart, opts) {
             p = sp.findNext(["::", ":", "|", "^", ";", "("]);
-            var filter = {
+            let filter = {
                 methodName: sp.substring(lastP, p).trim(),
                 args: []
             };
@@ -68,7 +46,7 @@ var MuBinder = /** @class */ (function () {
                 sp.toEndChunk();
                 lastP = sp.position;
                 if (p.chunk === "(") {
-                    var argStart = sp.pos();
+                    const argStart = sp.pos();
                     while (true) {
                         p = sp.findNext([")", "\""]);
                         if (p === null)
@@ -87,7 +65,7 @@ var MuBinder = /** @class */ (function () {
                             sp.toEndChunk();
                         } while (p.chunk === "\\\"");
                     }
-                    var sArgs = sp.substring(argStart, p);
+                    const sArgs = sp.substring(argStart, p);
                     try {
                         filter.args = JSON.parse("[" + sArgs + "]");
                     }
@@ -104,7 +82,7 @@ var MuBinder = /** @class */ (function () {
         //@ts-ignore
         while (!sp.isEnd() && mode != "end") {
             mode = "source";
-            var opts = {
+            const opts = {
                 element: element,
                 source: null,
                 target: null,
@@ -163,9 +141,9 @@ var MuBinder = /** @class */ (function () {
             lastP = sp.position;
         }
         return optsList;
-    };
-    MuBinder.setDefaults = function (mbo) {
-        var defaults = {};
+    }
+    static setDefaults(mbo) {
+        const defaults = {};
         // mbo.element.hasAttribute("mu-widget")
         if (mbo.element.hasAttribute("mu-widget")) {
             defaults.forBind = true;
@@ -197,22 +175,21 @@ var MuBinder = /** @class */ (function () {
             defaults.forFetch = false;
             defaults.target = "text";
         }
-        for (var k in defaults) {
+        for (const k in defaults) {
             if (mbo[k] === null)
                 mbo[k] = defaults[k];
         }
-        var targetAlias = {
+        const targetAlias = {
             text: "innerText",
             html: "innerHTML"
         };
         if (targetAlias[mbo.target])
             mbo.target = targetAlias[mbo.target];
-    };
-    MuBinder.beforeIndexElement = function (ev) {
+    }
+    static beforeIndexElement(ev) {
         if (ev.opts.bind) {
-            var bindSrc = ev.opts.bind;
-            for (var _i = 0, _a = MuBinder.parse(bindSrc, ev.element); _i < _a.length; _i++) {
-                var mbo = _a[_i];
+            const bindSrc = ev.opts.bind;
+            for (var mbo of MuBinder.parse(bindSrc, ev.element)) {
                 MuBinder.setDefaults(mbo);
                 if (!ev.widget.muBindOpts)
                     ev.widget.muBindOpts = {};
@@ -221,31 +198,29 @@ var MuBinder = /** @class */ (function () {
                 ev.widget.muBindOpts[mbo.source].push(mbo);
             }
         }
-    };
-    MuBinder.register = function (muWidget) {
+    }
+    static register(muWidget) {
         // @ts-ignore
         muWidget.plugIns.push({
             beforeIndexElement: MuBinder.beforeIndexElement
         });
-    };
-    MuBinder.bindData = function (bindOpts, srcData, widget) {
-        for (var k in srcData) {
+    }
+    static bindData(bindOpts, srcData, widget) {
+        for (const k in srcData) {
             if (bindOpts[k]) {
-                for (var _i = 0, _a = bindOpts[k]; _i < _a.length; _i++) {
-                    var mbo = _a[_i];
+                for (const mbo of bindOpts[k]) {
                     if (mbo.forBind) {
-                        var val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
+                        let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
                         MuBinder.setValue(val, mbo.target, mbo.element, widget);
                     }
                 }
             }
         }
-    };
-    MuBinder.fetchData = function (bindOpts, widget) {
-        var resData = {};
-        for (var k in bindOpts) {
-            for (var _i = 0, _a = bindOpts[k]; _i < _a.length; _i++) {
-                var mbo = _a[_i];
+    }
+    static fetchData(bindOpts, widget) {
+        const resData = {};
+        for (const k in bindOpts) {
+            for (const mbo of bindOpts[k]) {
                 if (mbo.forFetch) {
                     /* resData[k] = mbo.element[mbo.target];
                     let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
@@ -255,13 +230,12 @@ var MuBinder = /** @class */ (function () {
             }
         }
         return resData;
-    };
-    MuBinder.UseFilters = function (val, filters, widget) {
+    }
+    static UseFilters(val, filters, widget) {
         var _a, _b, _c;
-        for (var _i = 0, filters_1 = filters; _i < filters_1.length; _i++) {
-            var filter = filters_1[_i];
-            var obj = null;
-            var fn = void 0;
+        for (const filter of filters) {
+            let obj = null;
+            let fn;
             if (filter.methodName in widget)
                 obj = widget; // fn = <MuBindFilterCallback>widget[filter.methodName];
             else if (widget.muParent && filter.methodName in widget.muParent)
@@ -270,7 +244,7 @@ var MuBinder = /** @class */ (function () {
                 obj = MuBinder.filters; //fn = MuBinder.filters[filter.methodName];
             else {
                 // Parent widgets
-                var w = (_a = widget.muParent) === null || _a === void 0 ? void 0 : _a.muParent;
+                let w = (_a = widget.muParent) === null || _a === void 0 ? void 0 : _a.muParent;
                 while (w) {
                     if (filter.methodName in w) {
                         obj = w;
@@ -282,37 +256,36 @@ var MuBinder = /** @class */ (function () {
             if (!obj)
                 throw new Error("Unknown filter '" + filter.methodName + "'. Source widget: '" + ((_c = (_b = widget) === null || _b === void 0 ? void 0 : _b.costructor) === null || _c === void 0 ? void 0 : _c.name) + "'");
             fn = obj[filter.methodName];
-            val = fn.call.apply(fn, __spreadArray([obj, val, {}], filter.args, false));
+            val = fn.call(obj, val, {}, ...filter.args);
         }
         return val;
-    };
-    MuBinder.setValue = function (val, target, element, widget) {
+    }
+    static setValue(val, target, element, widget) {
         if (target === "@widget") {
             element["widget"].muBindData(val);
         }
         else if (target === "foreach" || target === "@foreach") {
             element.innerHTML = "";
-            for (var k in widget.muTemplateParents) {
+            for (const k in widget.muTemplateParents) {
                 if (element === widget.muTemplateParents[k]) {
-                    var arr = [];
+                    let arr = [];
                     if (!Array.isArray(val)) {
-                        for (var k_1 in val) {
+                        for (const k in val) {
                             arr.push({
-                                key: k_1,
-                                value: val[k_1]
+                                key: k,
+                                value: val[k]
                             });
                         }
                     }
                     else
                         arr = val;
-                    for (var _i = 0, arr_1 = arr; _i < arr_1.length; _i++) {
-                        var data = arr_1[_i];
-                        var widgetParams = {};
-                        for (var k_2 in data) {
-                            if (k_2.startsWith("."))
-                                widgetParams[k_2.substr(1)] = data[k_2];
+                    for (const data of arr) {
+                        const widgetParams = {};
+                        for (const k in data) {
+                            if (k.startsWith("."))
+                                widgetParams[k.substr(1)] = data[k];
                         }
-                        var itemWidget = widget.muWidgetFromTemplate(k, element, widgetParams);
+                        const itemWidget = widget.muWidgetFromTemplate(k, element, widgetParams);
                         itemWidget.muBindData(data);
                         if ("AferBind" in itemWidget) { // @ts-ignore
                             itemWidget.AferBind();
@@ -329,16 +302,15 @@ var MuBinder = /** @class */ (function () {
         else if (target == "@visible")
             element.style.display = val ? "" : "none";
         else if (target == "@options") {
-            var addOpt = function (val, text) {
-                var opt = document.createElement("option");
+            const addOpt = function (val, text) {
+                const opt = document.createElement("option");
                 opt.text = text;
                 opt.value = val;
                 element.add(opt);
             };
             element.innerHTML = "";
             if (Array.isArray(val)) {
-                for (var _a = 0, val_1 = val; _a < val_1.length; _a++) {
-                    var item = val_1[_a];
+                for (const item of val) {
                     if (typeof item === "string")
                         addOpt(item, item);
                     else
@@ -346,21 +318,20 @@ var MuBinder = /** @class */ (function () {
                 }
             }
             else if (typeof val === "object") {
-                for (var v in val) {
+                for (const v in val) {
                     addOpt(v, val[v]);
                 }
             }
         }
         else
             this.setDeep(val, element, target); // element[target] = val;
-    };
-    MuBinder.setDeep = function (value, object, path) {
-        var obj = object;
-        var fields = path.split(".");
-        var lastI = fields.length - 1;
-        var i = 0;
-        for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
-            var f = fields_1[_i];
+    }
+    static setDeep(value, object, path) {
+        let obj = object;
+        const fields = path.split(".");
+        const lastI = fields.length - 1;
+        let i = 0;
+        for (const f of fields) {
             if (i < lastI)
                 obj = obj[f];
             else
@@ -369,25 +340,24 @@ var MuBinder = /** @class */ (function () {
                 throw "Can not set value to path'" + path + "'";
             i++;
         }
-    };
-    MuBinder.getDeep = function (object, path) {
-        var obj = object;
-        var fields = path.split(".");
-        for (var _i = 0, fields_2 = fields; _i < fields_2.length; _i++) {
-            var f = fields_2[_i];
+    }
+    static getDeep(object, path) {
+        let obj = object;
+        const fields = path.split(".");
+        for (const f of fields) {
             if (!(f in obj))
                 return undefined;
             obj = obj[f];
         }
         return obj;
-    };
-    MuBinder.GetValue = function (target, element, widget) {
+    }
+    static GetValue(target, element, widget) {
         switch (target) {
             case "@widget":
                 return element["widget"].muFetchData();
             case "foreach":
             case "@foreach":
-                return widget.muGetChildWidgets(element).map(function (itemWidget) { return itemWidget.muFetchData(); });
+                return widget.muGetChildWidgets(element).map(itemWidget => itemWidget.muFetchData());
             default:
                 if (target.startsWith("."))
                     return this.getDeep(element["widget"], target.substr(1));
@@ -400,59 +370,51 @@ var MuBinder = /** @class */ (function () {
                 break;
             // return element[target];
         }
-    };
-    MuBinder.filters = {
-        toLower: function (val) {
-            return val === null || val === void 0 ? void 0 : val.toString().toLocaleLowerCase();
-        },
-        toUpper: function (val) { return val === null || val === void 0 ? void 0 : val.toString().toLocaleUpperCase(); },
-        short: function (val, ev, maxLen, sufix) {
-            if (sufix === void 0) { sufix = "..."; }
-            var str = val.toString();
-            if (str.length >= maxLen - sufix.length)
-                str = str.substr(0, maxLen) + sufix;
-            return str;
-        },
-        tern: function (val, ev, onTrue, onFalse) { return val ? onTrue : onFalse; },
-        prepend: function (val, ev, prefix, ifAny) {
-            if (ifAny === void 0) { ifAny = false; }
-            return !ifAny || val ? prefix + val : val;
-        },
-        append: function (val, ev, prefix, ifAny) {
-            if (ifAny === void 0) { ifAny = false; }
-            return !ifAny || val ? val + prefix : val;
-        },
-        map: function (val, ev, map) { return map[val]; }
-    };
-    return MuBinder;
-}());
-var MuRouter = /** @class */ (function () {
-    function MuRouter() {
-        var _this = this;
+    }
+}
+MuBinder.filters = {
+    toLower: val => {
+        return val === null || val === void 0 ? void 0 : val.toString().toLocaleLowerCase();
+    },
+    toUpper: val => val === null || val === void 0 ? void 0 : val.toString().toLocaleUpperCase(),
+    short: (val, ev, maxLen, sufix = "...") => {
+        let str = val.toString();
+        if (str.length >= maxLen - sufix.length)
+            str = str.substr(0, maxLen) + sufix;
+        return str;
+    },
+    tern: (val, ev, onTrue, onFalse) => val ? onTrue : onFalse,
+    prepend: (val, ev, prefix, ifAny = false) => !ifAny || val ? prefix + val : val,
+    append: (val, ev, prefix, ifAny = false) => !ifAny || val ? val + prefix : val,
+    map: (val, ev, map) => map[val],
+    // toggleClass: (val, ev, trueClass : string, falseClass : string) =>
+};
+class MuRouter {
+    constructor() {
         this.routes = {};
         this.persistentKeys = [];
         this.persistentValues = {};
         this.pathPrefix = "";
         this.lastParameters = {};
-        window.onpopstate = function (ev) { return _this.route(document.location); };
+        window.onpopstate = ev => this.route(document.location);
     }
-    MuRouter.prototype.addRoute = function (name, re, callback) {
-        var route = {
+    addRoute(name, re, callback) {
+        const route = {
             callback: callback,
             name: name,
-            reText: re
+            reText: re,
         };
         MuRouter.compileRe(route);
         this.routes[name] = route;
         return this;
-    };
-    MuRouter.compileRe = function (route) {
-        var defaultReChunk = "[^/?#]*";
-        var p = 0;
-        var lastP = 0;
-        var re = "";
-        var s;
-        var rete = route.reText;
+    }
+    static compileRe(route) {
+        const defaultReChunk = "[^/?#]*";
+        let p = 0;
+        let lastP = 0;
+        let re = "";
+        let s;
+        const rete = route.reText;
         route.chunks = [];
         route.paramNames = [];
         while (true) {
@@ -477,21 +439,21 @@ var MuRouter = /** @class */ (function () {
             if (p < 0) {
                 throw new Error("Missing parametr end");
             }
-            var chunk = rete.substring(lastP, p);
-            var p1 = chunk.indexOf(" ");
-            var reChunk = void 0;
-            var name_1 = void 0;
+            let chunk = rete.substring(lastP, p);
+            const p1 = chunk.indexOf(" ");
+            let reChunk;
+            let name;
             if (p1 >= 0) {
                 reChunk = chunk.substr(p1 + 1);
-                name_1 = chunk.substr(0, p1);
+                name = chunk.substr(0, p1);
             }
             else {
                 reChunk = defaultReChunk;
-                name_1 = chunk;
+                name = chunk;
             }
-            route.chunks.push({ name: name_1 });
+            route.chunks.push({ name: name });
             re += "(" + reChunk + ")";
-            route.paramNames.push(name_1);
+            route.paramNames.push(name);
             lastP = p + 1;
         }
         /* const re = route.reText.replace(/<[^>]+>/, (chunk) => {
@@ -512,9 +474,8 @@ var MuRouter = /** @class */ (function () {
         return reChunk;
         }); */
         route.re = new RegExp(re);
-    };
-    MuRouter.prototype.route = function (location) {
-        if (location === void 0) { location = null; }
+    }
+    route(location = null) {
         if (!location)
             location = window.location;
         if (this.pathPrefix) {
@@ -524,41 +485,40 @@ var MuRouter = /** @class */ (function () {
             location = location.substr(this.pathPrefix.length);
         }
         if (typeof location == "string") {
-            var p = location.indexOf("?");
+            let p = location.indexOf("?");
             location = {
                 pathname: p >= 0 ? location.substr(0, p) : location,
                 search: p >= 0 ? location.substr(p) : ""
             };
         }
-        for (var routeName in this.routes) {
-            var route = this.routes[routeName];
-            var m = route.re.exec(location.pathname);
+        for (let routeName in this.routes) {
+            const route = this.routes[routeName];
+            const m = route.re.exec(location.pathname);
             if (!m)
                 continue;
-            var res = this.parseQueryString(location.search);
-            for (var i = 0; i < m.length; i++) {
+            const res = this.parseQueryString(location.search);
+            for (let i = 0; i < m.length; i++) {
                 if (i > 0) {
                     res[route.paramNames[i - 1]] = decodeURIComponent(m[i]);
                 }
             }
             this.updatePersistent(res);
-            route.callback({ parameters: res, routeName: routeName });
+            route.callback({ parameters: res, routeName });
             break;
             // console.log(m);
         }
-    };
-    MuRouter.prototype.makeUrl = function (name, currParams) {
-        var url = "";
-        var used = [];
-        var params = __assign({}, this.persistentValues);
-        for (var k in currParams)
+    }
+    makeUrl(name, currParams) {
+        let url = "";
+        let used = [];
+        const params = Object.assign({}, this.persistentValues);
+        for (const k in currParams)
             if (currParams[k] !== null)
                 params[k] = currParams[k];
         if (!(name in this.routes))
             throw new Error("No route '" + name + "'");
-        var route = this.routes[name];
-        for (var _i = 0, _a = route.chunks; _i < _a.length; _i++) {
-            var chunk = _a[_i];
+        let route = this.routes[name];
+        for (const chunk of route.chunks) {
             if (typeof chunk == "string") {
                 url += chunk;
             }
@@ -567,42 +527,37 @@ var MuRouter = /** @class */ (function () {
                 used.push(chunk.name);
             }
         }
-        var q = Object.keys(params).filter(function (k) { return used.indexOf(k) < 0; }).sort().map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]); }).join("&");
+        const q = Object.keys(params).filter(k => used.indexOf(k) < 0).sort().map(k => encodeURIComponent(k) + "=" + encodeURIComponent(params[k])).join("&");
         if (q)
             url += "?" + q;
         return this.pathPrefix + url;
-    };
-    MuRouter.prototype.push = function (name, params) {
-        if (params === void 0) { params = {}; }
+    }
+    push(name, params = {}) {
         this.updatePersistent(params);
         history.pushState({}, null, this.makeUrl(name, params));
-    };
-    MuRouter.prototype.replace = function (name, params) {
-        if (params === void 0) { params = {}; }
+    }
+    replace(name, params = {}) {
         this.updatePersistent(params);
         history.replaceState({}, null, this.makeUrl(name, params));
-    };
-    MuRouter.prototype.update = function (name, params) {
-        if (params === void 0) { params = {}; }
+    }
+    update(name, params = {}) {
         this.updatePersistent(params, true);
-        history.replaceState({}, null, this.makeUrl(name, __assign(__assign({}, this.lastParameters), params)));
-    };
-    MuRouter.prototype.navigate = function (name, params) {
-        if (params === void 0) { params = {}; }
+        history.replaceState({}, null, this.makeUrl(name, Object.assign(Object.assign({}, this.lastParameters), params)));
+    }
+    navigate(name, params = {}) {
         this.push(name, params);
         this.routes[name].callback({ parameters: params, routeName: name });
-    };
-    MuRouter.prototype.parseQueryString = function (queryString) {
+    }
+    parseQueryString(queryString) {
         var res = {};
         if (queryString.startsWith("?"))
             queryString = queryString.substr(1);
-        for (var _i = 0, _a = queryString.split("&"); _i < _a.length; _i++) {
-            var item = _a[_i];
+        for (let item of queryString.split("&")) {
             if (!item)
                 continue;
-            var p = item.indexOf("=");
-            var k = void 0;
-            var v = void 0;
+            const p = item.indexOf("=");
+            let k;
+            let v;
             if (p >= 0) {
                 k = decodeURIComponent(item.substr(0, p));
                 v = decodeURIComponent(item.substr(p + 1));
@@ -614,13 +569,11 @@ var MuRouter = /** @class */ (function () {
             res[k] = v;
         }
         return res;
-    };
-    MuRouter.prototype.updatePersistent = function (res, patch) {
-        if (patch === void 0) { patch = false; }
-        for (var _i = 0, _a = this.persistentKeys; _i < _a.length; _i++) {
-            var k = _a[_i];
+    }
+    updatePersistent(res, patch = false) {
+        for (let k of this.persistentKeys) {
             if (k in res) {
-                var v = res[k];
+                const v = res[k];
                 if (v !== null)
                     this.persistentValues[k] = v;
                 else
@@ -628,8 +581,8 @@ var MuRouter = /** @class */ (function () {
             }
         }
         if (patch) {
-            for (var k in res) {
-                var v = res[k];
+            for (let k in res) {
+                const v = res[k];
                 if (v !== null)
                     this.lastParameters[k] = v;
                 else
@@ -638,28 +591,24 @@ var MuRouter = /** @class */ (function () {
         }
         else
             this.lastParameters = res;
-    };
-    MuRouter.prototype.getParameters = function () {
-        return this.lastParameters;
-    };
-    return MuRouter;
-}());
-var MuUIDs = /** @class */ (function () {
-    function MuUIDs() {
     }
-    MuUIDs.next = function (k) {
+    getParameters() {
+        return this.lastParameters;
+    }
+}
+class MuUIDs {
+    static next(k) {
         MuUIDs.counters[k]++;
         return MuUIDs.prefix + MuUIDs.counters[k].toString();
-    };
-    MuUIDs.counters = {
-        id: 0,
-        name: 0
-    };
-    MuUIDs.prefix = "_Mu_";
-    return MuUIDs;
-}());
-var MuWidget = /** @class */ (function () {
-    function MuWidget(container) {
+    }
+}
+MuUIDs.counters = {
+    id: 0,
+    name: 0
+};
+MuUIDs.prefix = "_Mu_";
+class MuWidget {
+    constructor(container) {
         this.ui = {};
         this.muOpts = {};
         this.muWidgetEventHandlers = {};
@@ -674,11 +623,8 @@ var MuWidget = /** @class */ (function () {
         this.muBindOpts = {};
         this.container = container;
     }
-    MuWidget.prototype.muWidgetFromTemplate = function (templateName, container, params, position, ref) {
-        if (params === void 0) { params = null; }
-        if (position === void 0) { position = "last"; }
-        if (ref === void 0) { ref = null; }
-        var finalContainer;
+    muWidgetFromTemplate(templateName, container, params = null, position = "last", ref = null) {
+        let finalContainer;
         if (typeof container == 'string') {
             var containerName = container;
             finalContainer = this.ui[container];
@@ -732,35 +678,33 @@ var MuWidget = /** @class */ (function () {
             opts.id = templateName;
         this.muAddEvents(opts, element, widget);
         return widget;
-    };
+    }
     ;
-    MuWidget.prototype.muRemoveSelf = function () {
+    muRemoveSelf() {
         this.container.parentNode.removeChild(this.container);
-    };
+    }
     ;
-    MuWidget.prototype.muGetChildWidgets = function (container) {
+    muGetChildWidgets(container) {
         return MuWidget.getChildWidgets((typeof container === "string")
             ? this.ui[container]
             : container);
-    };
-    MuWidget.prototype.muBindList = function (list, templateName, container, commonParams, finalCalback) {
-        if (commonParams === void 0) { commonParams = null; }
-        if (finalCalback === void 0) { finalCalback = null; }
-    };
-    MuWidget.prototype.muVisible = function (state, control) { };
-    MuWidget.prototype.muBindData = function (srcData) {
+    }
+    muBindList(list, templateName, container, commonParams = null, finalCalback = null) {
+    }
+    muVisible(state, control) { }
+    muBindData(srcData) {
         MuBinder.bindData(this.muBindOpts, srcData, this);
         this.muAfterBindData();
-    };
-    MuWidget.prototype.muFetchData = function () {
+    }
+    muFetchData() {
         return MuBinder.fetchData(this.muBindOpts, this);
-    };
+    }
     // protected muRegisterEvent(...args) { }
     // public addEventListener(name : string, handler : (...args)=>void) { }
     // public muEventNames() : string[] { return []; }
-    MuWidget.prototype.muAfterBindData = function () { };
+    muAfterBindData() { }
     // public constructor(container : AnyElement)
-    MuWidget.prototype.muInit = function (container) {
+    muInit(container) {
         this.muOnAfterIndex = [];
         this.ui = {};
         this.muOpts =
@@ -786,19 +730,15 @@ var MuWidget = /** @class */ (function () {
         this.beforeIndex();
         this.muAddEvents({ id: 'container' }, this.container);
         this.muIndexTree(container, true);
-    };
-    MuWidget.prototype.beforeIndex = function () { };
-    MuWidget.prototype.muDispatchEvent = function (name) {
-        var args = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            args[_i - 1] = arguments[_i];
-        }
+    }
+    beforeIndex() { }
+    muDispatchEvent(name, ...args) {
         if (!(name in this.muWidgetEventHandlers))
             throw new Error("Unknown event '" + name + "' on class '" + this.constructor.name + "'.");
         if (this.muWidgetEventHandlers[name]) {
             // const args = Array.from(arguments);
             // args[0] = <MuEvent>{
-            var ev = {
+            const ev = {
                 sender: this,
                 originalEvent: event,
                 args: Array.from(arguments).slice(1)
@@ -806,52 +746,45 @@ var MuWidget = /** @class */ (function () {
             //console.log(args, arguments);
             /* for(const handler of this.muWidgetEventHandlers[name])
             handler.apply(this, args); */
-            for (var i = 0, l = this.muWidgetEventHandlers[name].length; i < l; i++) {
-                var handler = this.muWidgetEventHandlers[name][i];
+            for (let i = 0, l = this.muWidgetEventHandlers[name].length; i < l; i++) {
+                const handler = this.muWidgetEventHandlers[name][i];
                 handler.call(this, ev);
             }
         }
-    };
-    MuWidget.prototype.muRegisterEvent = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
+    }
+    muRegisterEvent(...args) {
         // for(var i = 0; i < arguments.length; i++) this.muWidgetEventHandlers[arguments[i]] = [];
-        for (var _a = 0, args_1 = args; _a < args_1.length; _a++) {
-            var eventName = args_1[_a];
+        for (const eventName of args)
             this.muWidgetEventHandlers[eventName] = [];
-        }
-    };
-    MuWidget.prototype.addEventListener = function (name, handler) {
+    }
+    addEventListener(name, handler) {
         if (!(name in this.muWidgetEventHandlers))
             throw new Error("Unknown event '" + name + "' on class '" + this.constructor.name + "'.");
         this.muWidgetEventHandlers[name].push(handler);
-    };
-    MuWidget.prototype.muEventNames = function () {
+    }
+    muEventNames() {
         return Object.keys(this.muWidgetEventHandlers);
-    };
-    MuWidget.prototype.muActivateWidget = function (element, opts, extraParams) {
-        if (extraParams === void 0) { extraParams = {}; }
+    }
+    muActivateWidget(element, opts, extraParams = {}) {
         if (!opts)
             opts = this.muGetElementOpts(element);
-        var widgetName = opts.widget;
-        var c = MuWidget.widgetClasses[widgetName] || window[widgetName];
+        const widgetName = opts.widget;
+        const c = MuWidget.widgetClasses[widgetName] || window[widgetName];
         if (!c)
             throw "Class '" + opts.widget + "' is not defined.";
-        var widget = new c(element, opts);
+        const widget = new c(element, opts);
         if (!(widget instanceof MuWidget))
             console.error("Widget '" + widgetName + "' is not a descendant of the MuWidget class.");
         widget.muParent = this;
         widget.muRoot = this.muRoot || this;
         if (opts.params) {
-            var params = JSON.parse(opts.params);
-            for (var k in params) {
+            const params = JSON.parse(opts.params);
+            for (const k in params) {
                 widget[k] = params[k];
             }
         }
         if (extraParams) {
-            for (var k in extraParams) {
+            for (const k in extraParams) {
                 widget[k] = extraParams[k];
             }
         }
@@ -862,8 +795,8 @@ var MuWidget = /** @class */ (function () {
         // MuWidget.call(widget, element, /*opts.opts || this.muOpts */);
         widget.muInit(element);
         return widget;
-    };
-    MuWidget.prototype.muGetElementOpts = function (element) {
+    }
+    muGetElementOpts(element) {
         var res = {};
         for (var i = 0, attributes = element.attributes, n = attributes.length, arr = []; i < n; i++) {
             var name = attributes[i].nodeName;
@@ -873,10 +806,9 @@ var MuWidget = /** @class */ (function () {
             }
         }
         return res;
-    };
-    MuWidget.prototype.muIndexTree = function (element, indexWidget, useName) {
+    }
+    muIndexTree(element, indexWidget, useName = null) {
         var _a;
-        if (useName === void 0) { useName = null; }
         var ev = { element: element, widget: this, opts: this.muGetElementOpts(element) };
         //TODO: MuBinder
         // this.muCallPlugin("indexPrepareElement", ev);
@@ -890,7 +822,7 @@ var MuWidget = /** @class */ (function () {
         this.muIndexOpts = opts;
         useName = useName || opts.usename;
         if (useName) {
-            var n = (_a = element.attributes.getNamedItem("name")) === null || _a === void 0 ? void 0 : _a.value;
+            const n = (_a = element.attributes.getNamedItem("name")) === null || _a === void 0 ? void 0 : _a.value;
             if (n)
                 opts.id = n;
         }
@@ -915,12 +847,9 @@ var MuWidget = /** @class */ (function () {
             // Index children
             var elements = [];
             // Create copy, template modify children
-            for (var _i = 0, _b = element.children; _i < _b.length; _i++) {
-                var el = _b[_i];
+            for (const el of element.children)
                 elements.push(el);
-            }
-            for (var _c = 0, elements_1 = elements; _c < elements_1.length; _c++) {
-                var el = elements_1[_c];
+            for (const el of elements) {
                 // if (elements[i])
                 this.muIndexTree(el, false, useName);
             }
@@ -937,21 +866,20 @@ var MuWidget = /** @class */ (function () {
                 this.muOnAfterIndex[i](this);
             }
         }
-    };
-    MuWidget.prototype.muAddUi = function (id, element) {
+    }
+    muAddUi(id, element) {
         if (id in this.ui)
             console.error("The widget already contains an element with mu-id '" + id + "'.");
         this.ui[id] = element;
-    };
-    MuWidget.prototype.muCallPlugin = function (eventName, eventArgs) {
-        for (var _i = 0, _a = MuWidget.plugIns; _i < _a.length; _i++) {
-            var plugin = _a[_i];
+    }
+    muCallPlugin(eventName, eventArgs) {
+        for (var plugin of MuWidget.plugIns) {
             if (plugin[eventName])
                 plugin[eventName](eventArgs);
         }
-    };
-    MuWidget.prototype.afterIndex = function () { };
-    MuWidget.prototype.preproc = function (element, preproc) {
+    }
+    afterIndex() { }
+    preproc(element, preproc) {
         var p = preproc.indexOf(" ");
         var name = preproc;
         var paramsStr = "";
@@ -962,7 +890,7 @@ var MuWidget = /** @class */ (function () {
         if (!(name in MuWidget.preproc))
             throw new Error("Preproc '" + name + '" not defined.');
         var pp = MuWidget.preproc[name];
-        var mode = pp.prototype.preproc ? "class" : "function";
+        const mode = pp.prototype.preproc ? "class" : "function";
         if (mode === "function")
             paramsStr = "[" + paramsStr + "]";
         else
@@ -983,21 +911,20 @@ var MuWidget = /** @class */ (function () {
                 inst[k] = params[k];
             inst.preproc(element);
         }
-    };
-    MuWidget.prototype.muAddEvents = function (opts, element, widget) {
-        if (widget === void 0) { widget = null; }
+    }
+    muAddEvents(opts, element, widget = null) {
         var autoMethodName;
-        var eventNames = __spreadArray([], this.muOpts.bindEvents, true);
+        var eventNames = [...this.muOpts.bindEvents];
         var wEvents = [];
         if (widget) {
             wEvents = widget.muEventNames();
-            eventNames = __spreadArray(__spreadArray([], eventNames, true), wEvents, true);
+            eventNames = [...eventNames, ...wEvents];
         }
         var tags = opts.tag ? opts.tag.split(" ") : null;
         for (var i = 0, l = eventNames.length; i < l; i++) {
-            var eventName = eventNames[i];
-            var eventTarget = (widget && wEvents.indexOf(eventName) >= 0) ? widget : element;
-            var methodName = opts[eventName];
+            const eventName = eventNames[i];
+            const eventTarget = (widget && wEvents.indexOf(eventName) >= 0) ? widget : element;
+            let methodName = opts[eventName];
             if (methodName === undefined) {
                 if (opts.id) {
                     autoMethodName = opts.id + this.muOpts.autoMethodNameSeparator + eventName;
@@ -1019,7 +946,7 @@ var MuWidget = /** @class */ (function () {
         }
         // init
         if (tags) {
-            var eventTarget = element;
+            const eventTarget = element;
             for (var i = 0, l = tags.length; i < l; i++) {
                 autoMethodName = tags[i] + this.muOpts.autoMethodNameSeparator + "init";
                 if (autoMethodName in this) {
@@ -1027,8 +954,8 @@ var MuWidget = /** @class */ (function () {
                 }
             }
         }
-    };
-    MuWidget.prototype.muFindMethod = function (name, context) {
+    }
+    muFindMethod(name, context) {
         var obj = context || this;
         //todo: blbne
         while (name.startsWith("parent.")) {
@@ -1051,21 +978,20 @@ var MuWidget = /** @class */ (function () {
             args: params,
             context: obj
         };
-    };
-    MuWidget.prototype.muGetMethodCallback = function (name, context) {
-        if (context === void 0) { context = null; }
-        var methodInfo = this.muFindMethod(name, context);
-        return function (ev /* , event : Event */) {
+    }
+    muGetMethodCallback(name, context = null) {
+        const methodInfo = this.muFindMethod(name, context);
+        return (ev /* , event : Event */) => {
             /* const callparams = [<MuEvent>{
             sender: event?.target,
             source: source,
             originalEvent: event
             }, ...methodInfo.args, ...Array.from(arguments).slice(1)]; */
-            var callparams = __spreadArray(__spreadArray([ev], methodInfo.args, true), (ev.args || []), true);
+            const callparams = [ev, ...methodInfo.args, ...(ev.args || [])];
             return methodInfo.method.apply(methodInfo.context, callparams);
         };
-    };
-    MuWidget.prototype.muAddEvent = function (eventName, element, callback) {
+    }
+    muAddEvent(eventName, element, callback) {
         element.addEventListener(eventName, callback);
         /* (element as any).addEventListener(eventName, (/*ev : Event* /) => {
         // return callback(this, ev);
@@ -1074,30 +1000,26 @@ var MuWidget = /** @class */ (function () {
         return callback(...Array.from(arguments));
         // return callback.apply(null, [this].concat(Array.from(arguments)));
         }); */
-    };
-    MuWidget.getChildWidgets = function (container) {
-        var ls = [];
-        for (var _i = 0, _a = container.children; _i < _a.length; _i++) {
-            var item = _a[_i];
+    }
+    static getChildWidgets(container) {
+        const ls = [];
+        for (const item of container.children) {
             if (item.widget)
                 ls.push(item.widget);
         }
         return ls;
-    };
-    MuWidget.registerAll = function () {
+    }
+    static registerAll() {
         for (var i = 0; i < arguments.length; i++) {
             var classes = arguments[i];
             for (var k in classes)
                 MuWidget.widgetClasses[k] = classes[k];
         }
-    };
-    MuWidget.registerAs = function (c, n) {
+    }
+    static registerAs(c, n) {
         MuWidget.widgetClasses[n] = c;
-    };
-    MuWidget.startup = function (startElement, onSucces, onBefore) {
-        if (startElement === void 0) { startElement = null; }
-        if (onSucces === void 0) { onSucces = null; }
-        if (onBefore === void 0) { onBefore = null; }
+    }
+    static startup(startElement = null, onSucces = null, onBefore = null) {
         var fn = window.addEventListener || window.attachEvent || function (type, listener) {
             if (window.onload) {
                 var curronload = window.onload;
@@ -1121,38 +1043,35 @@ var MuWidget = /** @class */ (function () {
             if (onSucces)
                 onSucces(muRoot);
         });
-    };
-    // statics
-    MuWidget.widgetClasses = {};
-    MuWidget.plugIns = [];
-    MuWidget.eventLegacy = false;
-    return MuWidget;
-}());
+    }
+}
+// statics
+MuWidget.widgetClasses = {};
+MuWidget.plugIns = [];
+MuWidget.eventLegacy = false;
 function SetAttributes(element, attrs) {
-    for (var n in attrs) {
+    for (const n in attrs) {
         element.setAttribute(n, attrs[n].toString());
     }
 }
-var StrParser = /** @class */ (function () {
-    function StrParser(str) {
+class StrParser {
+    constructor(str) {
         this.position = 0;
         this.lastMark = null;
         this.debugMode = false;
         this._onEndChunk = false;
         this.str = str;
     }
-    StrParser.prototype.findNext = function (chunk, skipChunk) {
-        if (skipChunk === void 0) { skipChunk = false; }
+    findNext(chunk, skipChunk = false) {
         if (typeof chunk === "string")
             chunk = [chunk];
         // let firstPos : number|null = null;
-        var firstPos = null;
-        var firstChunk = null;
-        var firstChunkNum = 0;
-        var i = 0;
-        for (var _i = 0, chunk_1 = chunk; _i < chunk_1.length; _i++) {
-            var ch = chunk_1[_i];
-            var pos = this.str.indexOf(ch, this.position);
+        let firstPos = null;
+        let firstChunk = null;
+        let firstChunkNum = 0;
+        let i = 0;
+        for (const ch of chunk) {
+            const pos = this.str.indexOf(ch, this.position);
             if (pos > 0 && (firstPos === null || pos < firstPos)) {
                 firstPos = pos;
                 firstChunk = ch;
@@ -1177,10 +1096,8 @@ var StrParser = /** @class */ (function () {
             this.debug("findNext(" + chunk.join('", "') + ") not found " + this.position);
             return null;
         }
-    };
-    StrParser.prototype.substring = function (start, stop) {
-        if (start === void 0) { start = null; }
-        if (stop === void 0) { stop = null; }
+    }
+    substring(start = null, stop = null) {
         if (start === null)
             start = this.position;
         else if (typeof start !== "number")
@@ -1189,32 +1106,97 @@ var StrParser = /** @class */ (function () {
             stop = this.str.length;
         else if (typeof stop !== "number")
             stop = stop.position;
-        var res = this.str.substring(start, stop);
+        const res = this.str.substring(start, stop);
         this.debug("substr " + start + ":" + stop + " > " + res);
         return res;
-    };
-    StrParser.prototype.moverel = function (mov) {
-        var newPos = this.position + mov;
+    }
+    moverel(mov) {
+        const newPos = this.position + mov;
         this.position = Math.min(this.str.length, Math.max(0, newPos));
         return { position: this.position };
-    };
-    StrParser.prototype.pos = function () {
+    }
+    pos() {
         return { position: this.position };
-    };
-    StrParser.prototype.toEndChunk = function () {
+    }
+    toEndChunk() {
         var _a, _b;
-        var l = this._onEndChunk ? 0 : (((_b = (_a = this.lastMark) === null || _a === void 0 ? void 0 : _a.chunk) === null || _b === void 0 ? void 0 : _b.length) || 0);
+        const l = this._onEndChunk ? 0 : (((_b = (_a = this.lastMark) === null || _a === void 0 ? void 0 : _a.chunk) === null || _b === void 0 ? void 0 : _b.length) || 0);
         this.moverel(l);
         this._onEndChunk = true;
         this.debug("toEndChunk +" + l.toString());
-    };
-    StrParser.prototype.debug = function (msg) {
+    }
+    debug(msg) {
         if (this.debugMode) {
             console.log(msg + "\n		%c" + this.str.substring(0, this.position) + "%c" + this.str.substring(this.position), "background: green; color: white", "color: blue");
         }
-    };
-    StrParser.prototype.isEnd = function () {
+    }
+    isEnd() {
         return this.position >= this.str.length;
-    };
-    return StrParser;
-}());
+    }
+}
+class MuLabelFor {
+    /**
+    *
+    */
+    constructor(alsoUseBind = false) {
+        this.alsoUseBind = alsoUseBind;
+    }
+    beforeIndexElement(ev) {
+        if (ev.opts.for) {
+            const id = ev.opts.for;
+            const iddb = getIdDb(ev.widget);
+            if (id.startsWith("error:")) {
+                const ids = id.substr(6).split(",").map(s => s.trim());
+                for (const eid of ids) {
+                    if (ev.widget.ui[eid]) {
+                        ev.widget.ui[eid].errorLabel = ev.element;
+                    }
+                    else if (iddb["bind:" + eid]) {
+                        iddb["bind:" + eid].errorLabel = ev.element;
+                    }
+                    else {
+                        iddb["error:" + eid] = ev.element;
+                    }
+                }
+            }
+            else {
+                if (!iddb[id])
+                    iddb[id] = MuUIDs.next("id");
+                const did = iddb[id];
+                ev.element.setAttribute("for", did);
+                if (ev.widget.ui[id])
+                    ev.widget.ui[id].id = did;
+                if (iddb["bind:" + id])
+                    iddb["bind:" + id].id = did;
+            }
+        }
+        if (ev.opts.id || (this.alsoUseBind && ev.opts.bind)) {
+            const id = ev.opts.id || ev.opts.bind;
+            const iddb = getIdDb(ev.widget);
+            if ((this.alsoUseBind && ev.opts.bind))
+                iddb["bind:" + ev.opts.bind] = ev.element;
+            if (iddb[id])
+                ev.element.id = iddb[id];
+            if (iddb["error:" + id])
+                ev.element.errorLabel = iddb["error:" + id];
+        }
+        if (ev.opts.name) {
+            const iddb = getIdDb(ev.widget);
+            const k = "name:" + ev.opts.name;
+            if (!iddb[k])
+                iddb[k] = MuUIDs.next("name");
+            ev.element.setAttribute("name", iddb[k]);
+        }
+    }
+    static register(muWidget, alsoUseBind = false) {
+        const inst = new MuLabelFor(alsoUseBind);
+        muWidget.plugIns.push({
+            beforeIndexElement: (ev) => inst.beforeIndexElement(ev)
+        });
+    }
+}
+function getIdDb(widget) {
+    if (!widget.muPluginMuLabelFor)
+        widget.muPluginMuLabelFor = {};
+    return widget.muPluginMuLabelFor;
+}

@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "demos": "npx parcel watch -d ./demo/dist/ --no-hmr --public-url . demo/index.html",
     "build-demos": "npx parcel build --no-content-hash -d ./demo/dist/ --public-url . demo/index.html",
-    "build": "tsc ; cd src ; cat MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc ../dist/MuWidget-bundle.ts ; rm ../dist/MuWidget-bundle.ts "
+    "build": "tsc ; cd src ; cat MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc --target ES2015 ../dist/MuWidget-bundle.ts ; rm ../dist/MuWidget-bundle.ts "
   },
   "repository": {
     "type": "git",

@@ -87,13 +87,13 @@ Hide or show element(s). Use CSS property `display`. The `state` argument determ
 
 Create HTML element from stored template, initialize widget and placed in the specified container.
 
-| Argument       | Type (default value)         | Meaning                        |
-| -------------- | ---------------------------- | ------------------------------ |
-| `templateName` | `string`                     | Template name                  |
-| `container`    | `string\|AnyElement`         | Container or contained `mu-id` |
-| `params`       | `Record<string, any>` (`{}`) | Inital paramters for widget    |
-| `position`     | `"first"\|"last"\|"before"\|"after"` (`"last"`) | Position of new element        |
-| `ref` | `AnyElement` | Reference element for `before` and `after`
+| Argument       | Type (default value)                            | Meaning                                    |
+| -------------- | ----------------------------------------------- | ------------------------------------------ |
+| `templateName` | `string`                                        | Template name                              |
+| `container`    | `string\|AnyElement`                            | Container or contained `mu-id`             |
+| `params`       | `Record<string, any>` (`{}`)                    | Inital paramters for widget                |
+| `position`     | `"first"\|"last"\|"before"\|"after"` (`"last"`) | Position of new element                    |
+| `ref`          | `AnyElement`                                    | Reference element for `before` and `after` |
 
 ### Example
 
@@ -177,7 +177,34 @@ Object of service classes.
 
 ## `registerAll`
 
+Register all srevice class in object. It is easy to use with `require` or `import`.
+
+``` javascript
+MuWidget.registerAll(
+	require('./commonWigets'),
+	require('./myCoolWigets'),
+)
+```
+
+``` typescript
+import * as CommonWidgets from './commonWigets';
+import * as MyCoolWigets from './myCoolWigets';
+
+MuWidget.registerAll(CommonWidgets, MyCoolWigets);
+```
+
 ## `registerAs`
+
+Register single service class
+
+```typescrip
+MuWidget.registerAs(
+	class extends MuWidget {
+		...
+	},
+	'MyWidget'
+);
+```
 
 ## `startup`
 
@@ -225,7 +252,118 @@ Attribute format is `mu-[event name]`. In this case, it is possible to pass argu
 
 It is also possible to define and use events for service class. The use is similar to `HTMLElement`.
 
+TODO:
+
 # Bidirectional data binding
 
+`MuWidget` allows bidirectional data binding. It is not done automatically but on demand by calling `this.muBindData` to transfer the data to HTML or` this.muFetchData` to load the data from HTML.
+
+To enable databinding place this code before `startup`;
+
+```javascript
+MuBinder.register(MuWidget);
+```
+
+The data binding formula is written to the `mu-bind` attribute and has the following syntax.
+
+<div>
+    <b>source field</b>[[<b>|bind filter</b>[<b>(parameters)</b>][<b>|next filter</b>...]][<b>direction</b> <b>target</b>[[<b>|fetch filter</b>[[<b>(parameters)</b>]][<b>|next filter...</b>]]]]][<b>;next binding</b>]
+</div>
+
+The only required fragment is the SourceField. Others are optional.
+
+`source field` - data field from which the value is taken.
+
+`bind filter` - filter (s) to use with `muBindData`. The filter name is preceded by the `|` character. The filter can have parameters, only static parameters can be used. It is possible to arrange multiple filters in a row.
+
+`direction`
+
+| Code          | Meaning                                              |
+| ------------- | ---------------------------------------------------- |
+| `:`           | Only Bind                                            |
+| `::`          | Bind and Fetch                                       |
+| `^`           | Fetch only                                           |
+| Not specified | Automatically according to the relevant HTML element |
+
+`target` - determine where / from where the value in the element is stored / retrieved.
+
+When:
+
+- the target string starts with a letter set, the javascript property of the HTML element is set.
+* starts with a dot `.` sets the javascript property instance of the service class of the given element.
+- starts with `@attr.` the html attribute of the element is set.
+- is `@foreach` passes the value as an array and creates a new widget for each element.
+- `@options` is used to easily populate the html element`<select>`
+- `@visible` TODO:
+
+`fetch filter` - filter (s) to use with `muFetchData`. The syntax is identical to bindFiltr.
+
+## Automatic destination determination
+
+If no target is specified, it is determined according to the HTML element and possibly other parameters:
+
+| Target element                              | Direction | Target         |
+| ------------------------------------------- | ---- | ----------- |
+| `<input type="checkbox" />`                 | `::` | `checked`   |
+| `<input type="file" />`                     | `^`  | `files`     |
+| `<input ...`                                | `::` | `value`     |
+| `<img />`<br />`<audio />`<br />`<video />` | :    | `src`       |
+| All other cases                             |      | `innerText` |
+
+## Filters
+
+Filters allow you to transform a value. Filters can be local - methods defined in the service class, or global.
+
+### Predefined filters
+
+`toLower`: changes the case to lowercase.
+
+`toUpper`: changes the case to uppercase.
+
+`short (maxLen, suffix="...")`: if the string is longer than the specified number of characters, it will be shortened and added.
+
+`tern(valueOnTrue, valueOnFalse)`: similar to the ternal operator, if the value can be evaluated as `true` it will change the value to the value of the first parameter, otherwise to the value of the second parameter (example of changing `bool` to "yes" and "no ": `value|tern("yes", "no")`).
+
+`prepend (prefix, ifAny = false)`: adds text before the value. If the second parameter is `true` and the value is empty, the text will not be added.
+
+`append (suffix, ifAny = false)`: add text after the value. If the second parameter is `true` and the value is empty, the text will not be added.
+
+### Custom filters
+
+The local filter (valid only for the current widget) is written as a method of the service class of the widget in which it is used.
+
+Parameter 1 contains the value (or result of the previous filter).
+The 2nd parameter will contain additional data (currently empty object, for future use).
+3. and other parameters contain optional parameters from the formula.
+
+```javascript
+public strRepeat (value, ev, count: number) {
+     return value.repeat (count);
+}
+```
+
+Global filters are entered into the static collection `MuBinder.filters`
+
+```javascript
+MuBinder.filters.strRepeat (value, ev, count: number) => value.repeat (count);
+```
+
+# Routing
+
+TODO:
+
+# HTML ID helper
+
+This helper allows you to link `<label>` with `<input>` without having to type a unique id.
+
+To use it, just register helper
+
+```javascript
+MuLabelFor.register(MuWidget, true);
+```
+
+ and start using the `mu-for` attribute. This attribute works similarly to the regular `for` attribute, except that it contains the `mu-id` (`mu-id` must be unique only in widget scope) of the referenced `<input>`. Helper will generate a `id` that is unique within the page.
+
+TODO:
 
 <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>

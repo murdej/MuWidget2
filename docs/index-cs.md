@@ -5,14 +5,14 @@
 
 Všechny údaje pro `MuWidget` se zapisují jako atributy začínající `mu-`
 
-| Atribut       | Význam                                                       |
-| ------------- | ------------------------------------------------------------ |
-| `mu-widget`   | Určuje že HTML element je samostatný widget. Obsahem je název servisní třídy. |
-| `mu-id`       | Identifikátor elementu který má být dostupný v kolekci `this.ui`, dále se používá při obsluze událostí. |
+| Atribut       | Význam                                                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `mu-widget`   | Určuje že HTML element je samostatný widget. Obsahem je název servisní třídy.                                                 |
+| `mu-id`       | Identifikátor elementu který má být dostupný v kolekci `this.ui`, dále se používá při obsluze událostí.                       |
 | `mu-template` | Určuje že HTML element je šablona. Při indexaci se element vyjme z dokumentu a uschová pro dynamické vytváření nových widgetů |
-| `mu-params`   | Iniciační parametry servisní třídy. Nastaví se při aktivaci widgetu. |
-| `mu-bind`     | Formule pro databinding                                      |
-| `mu-noindex`  | Nezpracovávat tento ani podřízené elementy.                  |
+| `mu-params`   | Iniciační parametry servisní třídy. Nastaví se při aktivaci widgetu.                                                          |
+| `mu-bind`     | Formule pro databinding                                                                                                       |
+| `mu-noindex`  | Nezpracovávat tento ani podřízené elementy.                                                                                   |
 
 # Přístup k elementů a podřízeným widgetům
 
@@ -126,11 +126,11 @@ Jediný povinný fragment je ZdrojovéPole. Ostatní jsou nepovinné.
 
 **Směr**
 
-|Kód | Význam |
-| -------- | ------------------------- |
-| `:`      | Pouze Bind                |
-| `::`     | Bind i Fetch             |
-| `^`      | Pouze Fetch              |
+| Kód      | Význam                                    |
+| -------- | ----------------------------------------- |
+| `:`      | Pouze Bind                                |
+| `::`     | Bind i Fetch                              |
+| `^`      | Pouze Fetch                               |
 | Nezadáno | Automaticky dle příslušného HTML elementu |
 
 **cíl** - určujě kam / odkud se hodnota v elementu uloží / získá.
