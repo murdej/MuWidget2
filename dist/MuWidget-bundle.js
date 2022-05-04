@@ -713,7 +713,7 @@ class MuWidget {
                 bindEvents: [
                     'click', 'dblclick', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'blur',
                     'change', 'focus', 'select', 'submit', 'keyup', 'keydown', 'keypress', 'scroll',
-                    'drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'
+                    'drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop', 'input'
                 ],
                 autoMethodNameSeparator: "_"
             };
