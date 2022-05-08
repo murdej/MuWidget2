@@ -17,7 +17,7 @@ import { MuBinder, MuBindOpts } from "./MuBinder";
 
 export class MuWidget {
 
-	public ui : Record<string, AnyElementA> = {};
+	public ui : MuUi<{}> = {}; //Record<string, AnyElementA> = {};
 	
 	public muOpts: MuOpts = {} as MuOpts;
 	
@@ -113,7 +113,7 @@ export class MuWidget {
 
 	public muSubWidgets : MuWidget[] = [];
 
-	public muNamedWidget : Record<string, MuWidget> = {};
+	public muNamedWidget : MuNamedWidgets<{}> = {}; // Record<string, MuWidget> = {};
 
 	public muRoot : MuWidget = this;
 	
@@ -627,3 +627,7 @@ export type MuEvent = {
 export type MuPreprocesor = ((element : AnyElement, ...args : any[])=>void)|({preproc: (element : AnyElement) => void});
 
 export type MuHandler = (ev? : MuEvent, ...args : any[]) => void;
+
+export type MuNamedWidgets<T> = T & Record<string, MuWidget>;
+
+export type MuUi<T> = T & Record<string, AnyElementA>;

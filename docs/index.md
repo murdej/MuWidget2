@@ -1,3 +1,6 @@
+# How to get started with MuWidget
+
+## Option 1
 
 # Very simple example
 
@@ -106,7 +109,19 @@ Create HTML element from stored template, initialize widget and placed in the sp
 
 ## `muGetChildWidgets`
 
-## `muBindList`
+Passes the children of the passed container and returns array of service class instances.
+
+Parameter is container element or his `mu-id`.
+
+Used to load dynamically added widgets added by the `muWidgetFromTemplate` method.
+
+<!-- ## `muBindList`
+
+For each item in array create new element and service class instances from template. Using
+
+| Argument       | Type (default value)                            | Meaning                                    |
+| -------------- | ----------------------------------------------- | ------------------------------------------ |
+-->
 
 ## `muBindData`
 
@@ -250,9 +265,71 @@ Attribute format is `mu-[event name]`. In this case, it is possible to pass argu
 
 ## Widgets events
 
+<p class="codepen" data-height="300" data-default-tab="html,result" data-slug-hash="qBxOGGz" data-user="murdej" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/murdej/pen/qBxOGGz">
+  Untitled</a> by Murděj Ukrutný (<a href="https://codepen.io/murdej">@murdej</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
 It is also possible to define and use events for service class. The use is similar to `HTMLElement`.
 
-TODO:
+The event must be registered first. Best in the `afterIndex` method to make automatic handler mapping work.
+
+```typescript
+class SubWidget extends MuWidget
+{
+  afterIndex() {
+    this.muRegisterEvent("redalert");
+  }
+  ...
+```
+
+It is now possible to connect an event handler. 
+
+You can use `addEventHandler` or let MuWidget take care of it himself.
+
+```typescript
+class MainWidget extends MuWidget
+{
+  subWidget_redalert(ev) {
+    // Handler for event redalert on subWidget
+    ...
+  } 
+  afterIndex() {
+    // manual add handler
+    this.muNamedWidget.subWidget.addEventListener("redalert", () => ... );
+  }
+  ...
+```
+
+You can use the `muDispatchEvent` method to trigger an event.
+
+```typescript
+	this.muDispatchEvent("redalert");
+```
+
+## Passing parameters
+
+The first argument of the handler is an event in the structure:
+
+```typescript
+{
+	originalEvent : Event,
+	sender : any,
+	args: any[]|null
+}
+```
+
+The other arguments are the arguments passed when calling the `muDispatchEvent` method.
+
+```typescript
+// Triggering event
+this.muDispatchEvent("redalert", this.ui.message.value);
+
+// Event handler
+subWidget_redalert(ev, message) {
+```
 
 # Bidirectional data binding
 
@@ -348,13 +425,22 @@ Global filters are entered into the static collection `MuBinder.filters`
 MuBinder.filters.strRepeat (value, ev, count: number) => value.repeat (count);
 ```
 
+<p class="codepen" data-height="300" data-default-tab="html,result" data-slug-hash="ZErQxeq" data-user="murdej" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
+  <span>See the Pen <a href="https://codepen.io/murdej/pen/ZErQxeq">
+  MuWidget - Binding</a> by Murděj Ukrutný (<a href="https://codepen.io/murdej">@murdej</a>)
+  on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
 # Routing
 
 TODO:
 
-# HTML ID helper
+# HTML ID and NAME helper
 
 This helper allows you to link `<label>` with `<input>` without having to type a unique id.
+
+It also allows you to link a group of `<input type="checkbox" />` with a unique `name`.
 
 To use it, just register helper
 
@@ -364,6 +450,31 @@ MuLabelFor.register(MuWidget, true);
 
  and start using the `mu-for` attribute. This attribute works similarly to the regular `for` attribute, except that it contains the `mu-id` (`mu-id` must be unique only in widget scope) of the referenced `<input>`. Helper will generate a `id` that is unique within the page.
 
-TODO:
+Example:
+```html
+<label mu-for="message">Message</label>
+<textarea mu-id="message"></textarea>
+<div>
+    <input type="radio" mu-id="priorityNormal" mu-name="priority" />
+    <label mu-for="priorityNorma">Normal</label>
+
+    <input type="radio" mu-id="priorityHigh" mu-name="priority" />
+    <label mu-for="priorityHigh">High</label>
+</div>
+```
+
+After index:
+```html
+<label mu-for="message" for="_Mu_1">Message</label>
+<input mu-id="message" id="_Mu_1">
+<div>
+    <input type="radio" mu-id="priorityNormal" mu-name="priority" name="_Mu_1" id="_Mu_2">
+    <label mu-for="priorityNormal" for="_Mu_2">Normal</label>
+
+    <input type="radio" mu-id="priorityHigh" mu-name="priority" name="_Mu_1" id="_Mu_3">
+    <label mu-for="priorityHigh" for="_Mu_3">High</label>
+</div>
+```
+
 
 <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>

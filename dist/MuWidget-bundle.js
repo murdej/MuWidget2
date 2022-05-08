@@ -609,12 +609,12 @@ MuUIDs.counters = {
 MuUIDs.prefix = "_Mu_";
 class MuWidget {
     constructor(container) {
-        this.ui = {};
+        this.ui = {}; //Record<string, AnyElementA> = {};
         this.muOpts = {};
         this.muWidgetEventHandlers = {};
         this.muIndexOpts = null;
         this.muSubWidgets = [];
-        this.muNamedWidget = {};
+        this.muNamedWidget = {}; // Record<string, MuWidget> = {};
         this.muRoot = this;
         this.muParent = null;
         this.muTemplates = {};
