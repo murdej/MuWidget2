@@ -1,6 +1,17 @@
 # How to get started with MuWidget
 
-## Option 1
+There are several ways to get MuWidget into your project.
+
+Install over npm:
+
+```shell
+npm i mu-widget
+```
+
+Or download all in one file from https://github.com/murdej/MuWidget2/raw/master/dist/MuWidget-bundle.js and include into project.
+
+You can use this template to test on codepen: https://codepen.io/pen?template=qBpQVrX
+
 
 # Very simple example
 

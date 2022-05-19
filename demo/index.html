@@ -92,11 +92,26 @@
 		</div>
 	</div>
 
+	<h2>Recursive</h2>
+	<div mu-widget="Example">
+		<div mu-widget="RecursiveContent" mu-template="widget">
+			<span mu-bind="ww"></span>
+			<ul mu-bind="subitems:@foreach">
+				<li mu-template="itemTemplate" mu-widget="RecursiveContentItem">
+					<span mu-bind="label"></span>
+					<ul mu-bind="subitems:@foreach">
+						<li mu-usetemplate="ancestor:itemTemplate" mu-template="item" mu-widget="RecursiveContentItem"></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+
 	<script src="https://cdn.jsdelivr.net/npm/enlighterjs@3.4.0/dist/enlighterjs.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.2/math.js"
 		integrity="sha512-U9fwz8ekKht5NdL1x4+Yh3DoXeSrsZ0M7ALcijykvrVKD+101nax1MVdc0wNSVh4GOwZGY7yQpz+rAnnoX7O3Q=="
 		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<script src="scripts/index.js"></script>
+	<script src="scripts/index.js" type="module"></script>
 </body>
 
 </html>

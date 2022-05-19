@@ -634,7 +634,7 @@ class MuWidget {
         else
             finalContainer = container;
         var tmpElemementType = "div";
-        var tmpTemplate = this.muFindTemplate(templateName);
+        var tmpTemplate = this.muTemplates[templateName];
         if (!tmpTemplate)
             throw "No template named '" + templateName + "'.";
         tmpTemplate = tmpTemplate.toLowerCase();
@@ -672,30 +672,18 @@ class MuWidget {
                 finalContainer.appendChild(element);
                 break;
         }
-        let widget = this.muActivateWidget(element, null, params || {});
-        let opts = this.muGetElementOpts(element);
+        var widget = this.muActivateWidget(element, null, params || {});
+        var opts = this.muGetElementOpts(element);
         if (!opts.id)
             opts.id = templateName;
         this.muAddEvents(opts, element, widget);
         return widget;
     }
-    createElementFromHTML(src, container) {
-        let lSrc = src.toLowerCase();
-        let tmpElemementType = "div";
-        if (lSrc.startsWith('<tr'))
-            tmpElemementType = "tbody";
-        if (lSrc.startsWith('<td') || lSrc.startsWith('<th'))
-            tmpElemementType = "tr";
-        if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead'))
-            tmpElemementType = "table";
-        let element = document.createElementNS(container.namespaceURI, tmpElemementType);
-        element.innerHTML = src;
-        element = element.firstElementChild;
-        return element;
-    }
+    ;
     muRemoveSelf() {
         this.container.parentNode.removeChild(this.container);
     }
+    ;
     muGetChildWidgets(container) {
         return MuWidget.getChildWidgets((typeof container === "string")
             ? this.ui[container]
@@ -819,24 +807,6 @@ class MuWidget {
         }
         return res;
     }
-    muFindTemplate(templateName) {
-        let tmpTemplate = null;
-        if (templateName.startsWith("ancestor:")) {
-            let aTemplateName = templateName.substr(9);
-            let w = this;
-            while (w) {
-                if (w.muTemplates[aTemplateName]) {
-                    tmpTemplate = w.muTemplates[aTemplateName];
-                    break;
-                }
-                w = w.muParent;
-            }
-        }
-        else {
-            tmpTemplate = this.muTemplates[templateName];
-        }
-        return tmpTemplate;
-    }
     muIndexTree(element, indexWidget, useName = null) {
         var _a;
         var ev = { element: element, widget: this, opts: this.muGetElementOpts(element) };
@@ -846,25 +816,6 @@ class MuWidget {
             return;
         element = ev.element;
         var opts = ev.opts;
-        if (opts.usetemplate) {
-            var src = this.muFindTemplate(opts.usetemplate);
-            // element.outerHTML = src;
-            if (typeof src === "undefined")
-                throw new Error("Template '" + opts.usetemplate + "' not exists.");
-            var newElement = this.createElementFromHTML(src, element.parentNode);
-            element.parentNode.insertBefore(newElement, element);
-            element.parentNode.removeChild(element);
-            element = newElement;
-            if (opts.id)
-                element.setAttribute(this.muOpts.attributePrefix + "id", opts.id);
-            if (opts.params)
-                element.setAttribute(this.muOpts.attributePrefix + "params", opts.params);
-            if (opts.widget)
-                element.setAttribute(this.muOpts.attributePrefix + "widget", opts.widget);
-            if (opts.template)
-                element.setAttribute(this.muOpts.attributePrefix + "template", opts.template);
-            opts = this.muGetElementOpts(element);
-        }
         if (opts.preproc) {
             this.preproc(element, opts.preproc);
         }

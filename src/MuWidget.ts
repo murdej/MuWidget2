@@ -41,7 +41,7 @@ export class MuWidget {
 		} else finalContainer = container as AnyElement;
 		
 		var tmpElemementType = "div";
-		var tmpTemplate = this.muTemplates[templateName];
+		var tmpTemplate = this.muFindTemplate(templateName);
 		if (!tmpTemplate) throw "No template named '" + templateName + "'.";
 		tmpTemplate = tmpTemplate.toLowerCase();
 		if (tmpTemplate.startsWith('<tr')) tmpElemementType = "tbody";
@@ -76,17 +76,34 @@ export class MuWidget {
 		}
 
 
-		var widget = this.muActivateWidget(element, null, params || {});
-		var opts = this.muGetElementOpts(element);
+		let widget = this.muActivateWidget(element, null, params || {});
+		let opts = this.muGetElementOpts(element);
 		if (!opts.id) opts.id = templateName;
 		this.muAddEvents(opts, element, widget)
 
 		return widget;
-	};
+	}
+
+	public createElementFromHTML(
+		src: string, 
+		container: AnyElement
+	): AnyElement 
+	{
+		let lSrc = src.toLowerCase();
+		let tmpElemementType = "div";
+		if (lSrc.startsWith('<tr')) tmpElemementType = "tbody";
+		if (lSrc.startsWith('<td') || lSrc.startsWith('<th')) tmpElemementType = "tr";
+		if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead')) tmpElemementType = "table";
+		let element = document.createElementNS(container.namespaceURI, tmpElemementType);
+		element.innerHTML = src;
+		element = element.firstElementChild;
+
+		return element as AnyElement;
+	}
 
 	public muRemoveSelf() : void {
 		this.container.parentNode.removeChild(this.container);
-	};
+	}
 
 	public container : AnyElement;
 
@@ -276,6 +293,28 @@ export class MuWidget {
 		return res as MuWidgetOpts;
 	}
 
+	public muFindTemplate(templateName: string): null|string {
+		let tmpTemplate = null;
+		if (templateName.startsWith("ancestor:"))
+		{
+			let aTemplateName = templateName.substr(9);
+			let w: MuWidget = this;
+			while (w) {
+				if (w.muTemplates[aTemplateName]) {
+					tmpTemplate = w.muTemplates[aTemplateName];
+					break;
+				}
+				w = w.muParent;
+			}
+		}
+		else
+		{
+			tmpTemplate = this.muTemplates[templateName];
+		}
+		return tmpTemplate;
+	}
+
+
 	public muIndexTree(element : AnyElement, indexWidget : boolean, useName : string|null = null)
 	{
 		var ev : MuIndexEvent = { element: element, widget: this, opts: this.muGetElementOpts(element)};
@@ -285,6 +324,21 @@ export class MuWidget {
 		element = ev.element;
 
 		var opts = ev.opts;
+
+		if (opts.usetemplate) {
+			var src = this.muFindTemplate(opts.usetemplate);
+			// element.outerHTML = src;
+			if (typeof src === "undefined") throw new Error("Template '" + opts.usetemplate + "' not exists.");
+			var newElement = this.createElementFromHTML(src, (element as any).parentNode);
+			element.parentNode.insertBefore(newElement, element);
+			element.parentNode.removeChild(element);
+			element = newElement;
+			if (opts.id) element.setAttribute(this.muOpts.attributePrefix + "id", opts.id);
+			if (opts.params) element.setAttribute(this.muOpts.attributePrefix + "params", opts.params);
+			if (opts.widget) element.setAttribute(this.muOpts.attributePrefix + "widget", opts.widget);
+			if (opts.template) element.setAttribute(this.muOpts.attributePrefix + "template", opts.template);
+			opts = this.muGetElementOpts(element);
+		}
 
 		if (opts.preproc)
 		{
@@ -592,6 +646,7 @@ export type MuWidgetOpts = Record<string, string>|{
 	template: string|null,
 	tag: string|null,
 	nocontent: string|null,
+	usetemplate: string|null,
 	// opts: string,
 };
 

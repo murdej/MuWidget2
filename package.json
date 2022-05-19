@@ -2,15 +2,18 @@
   "name": "mu-widget",
   "version": "2.1.1",
   "description": "Simple javascript widget creation",
-  "main": "index.js",
+  "_Smain": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demos": "npx parcel watch -d ./demo/dist/ --no-hmr --public-url . demo/index.html",
+    "demos": "npx parcel watch --dist-dir ./demo/dist/ --no-hmr --public-url . demo/index.html",
+    "build": "npm run build:package && npm run build:bundle-nomodule # && npm run build:bundle-module",
     "build-demos": "npx parcel build --no-content-hash -d ./demo/dist/ --public-url . demo/index.html",
-    "build": "tsc ; cd src ; cat MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc --target ES2015 ../dist/MuWidget-bundle.ts ; rm ../dist/MuWidget-bundle.ts "
+    "build:package": "tsc",
+    "build:bundle-nomodule": "cd src ; cat MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc --target ES2015 ../dist/MuWidget-bundle.ts ; rm ../dist/MuWidget-bundle.ts ",
+    "build:bundle-module": "cd src ; tsc --target ES2015 --outFile ../dist/MuWidget-bundle-module.js MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts "
   },
   "repository": {
     "type": "git",
@@ -24,7 +27,11 @@
   },
   "homepage": "https://github.com/murdej/MuWidget2#readme",
   "devDependencies": {
+    "@parcel/transformer-sass": "^2.5.0",
     "sass": "^1.47.0",
     "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "parcel": "^2.5.0"
   }
 }

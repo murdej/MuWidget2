@@ -7,7 +7,9 @@ MuWidget.registerAll(
 	require("./Calculator"),
 	require("./ToDoList"),
 	require("../../src/UiFlashMessage"),
-	require("./SRLForm")
+	require("./SRLForm"),
+	require("./RecursiveContent"),
+	require("./CreateContent")
 );
 
 // MuWidget.registerAs(require("./IMuWidget").IMuWidget, ".")
