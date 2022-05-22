@@ -73,7 +73,7 @@ Vytvoření základní HTML šablony.
 			<span mu-id="bCancel" class="icon-button">&#128473;</span>
 			<span mu-id="bAdd" class="icon-button">&#x2795;</span>
 		</div>
-		Show: <span class="a" mu-click="show true">Complete</span>, <span class="a" mu-click="show false">Uncomplete</span>, <span class="a" mu-click="show null">All</span>
+		Show: <span class="a" mu-click="show: true">Complete</span>, <span class="a" mu-click="show: false">Uncomplete</span>, <span class="a" mu-click="show: null">All</span>
 		<div mu-id="list" class="todo-list">
 			<div mu-widget="TodoItem" class="todo-item">
 				<label mu-id="complete" class="icon-button"><input type="checkbox" /></label>
@@ -114,9 +114,24 @@ export class TodoItem extends MuWidget {
 
 `app.js`
 
-```
+```javascript
+const MuWidget = require("../../src/MuWidget").MuWidget;
+const MuBinder = require("../../src/MuBinder").MuBinder;
+
+MuWidget.registerAll(
+	require("./Widgets")
+);
+
+MuBinder.register(MuWidget);
+
+MuWidget.startup();
 
 ```
+
+---
+
+## Widget editor
+
 
 ---
 

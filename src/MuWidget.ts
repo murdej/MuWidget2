@@ -126,7 +126,25 @@ export class MuWidget {
 
 	}
 
-	public muVisible(state : boolean, control : string|string[]) { }
+	public muVisible(state : boolean, control : string|string[]|AnyElement) { 
+		if (Array.isArray(control))
+		{
+			for(const controlItem of control) this.muVisible(state, controlItem);
+		}
+		else
+		{
+			let neg = false;
+			if (typeof control === 'string') {
+				if (control.startsWith('!')) {
+					neg = true;
+					control = control.substring(1);
+				}
+				if (!(control in this.ui)) throw new Error("Control with mu-id='" + control + "' not found.");
+				control = this.ui[control];
+			}
+			control.style.display = state !== neg ? null : "none";
+		}
+	}
 
 	public muSubWidgets : MuWidget[] = [];
 

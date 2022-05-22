@@ -5,3 +5,4 @@ node_modules
 .idea
 demo/Old
 disabled/
+.parcel-cache
