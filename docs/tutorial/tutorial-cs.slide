@@ -130,8 +130,95 @@ MuWidget.startup();
 
 ---
 
-## Widget editor
+## Widget `TodoEditor`
 
+Tento widget obsluhuje editor položky. Umožnuje zaregistrovat obsluhu 3 vlastních událostí. Události je doporučeno registrovat v metodě `afterIndex`.
+
+```typescript
+export class TodoEditor extends MuWidget {
+	afterIndex(): void {
+		this.muRegisterEvent('update', 'add', 'cancel');
+	}
+```
+
+Metoda `load` naplnění dat do editoru a upraví widget podle toho jestli se jedná o vytvářecínebo editační formulář. Pro naplnění dat do formuláře se dá použít metoda `muFetchData`.
+
+```typescript
+	public load(data: TodoItemData|"new") {
+		// Načte data do editoru, "new" znamená nová položka
+		const isNew = data == "new";
+		if (data == "new") data = { complete: false, label: "" };
+		// Naplní pole editoru
+		this.muBindData(data);
+		// Zobrazí správné tlačítka podle režimu formuláře
+		this.muVisible(isNew, [
+			'!bUpdate',
+			'!bCancel',
+			'bAdd',
+		]);
+	}
+```
+
+Náseldující metody obsluhují kliky na tlačítka a volají obsluhu vlastních událostí. Pro načtení údajů z formuláře se dá použít metoda `muFetchData`.
+
+```typescript
+
+	public bUpdate_click() {
+		// Načte data a zavolá obsluhu události update
+		this.muDispatchEvent('update', this.muFetchData());
+	}
+
+	public bAdd_click() {
+		// Načte data a zavolá obsluhu události add
+		this.muDispatchEvent('add', this.muFetchData());
+	}
+	
+	public bCancel_click() {
+		// Zavolá obsluhu události cancel
+		this.muDispatchEvent('cancel');
+	}
+}
+```
+
+Poznámka: Kam jak uložit/načíst data určuje html atribut `mu-bind`.
+
+---
+
+## Widget `TodoItem`
+
+Tento widget obsluhe jednotlivé položky seznamu. 
+
+Jednotlivé metody obsluhují tlačítka a checkbox u položky. První zavolá metodu nadřazeného widgetu pro otevření aktuální položky v editoru,
+
+```typescript
+export class TodoItem extends MuWidget {
+	
+	bEdit_click() {
+		(this.muParent as Todo).editItem(this);
+	}
+```
+
+Další tlačítko odstraní atuální widget i s jeho elementem z html.
+
+```typescript	
+	bDelete_click() {
+		this.muRemoveSelf();
+	}
+```
+
+A při změně stavu checkboxu, tato metoda změní třídu elementu.
+
+
+```typescript
+	complete_change() {
+		this.container.classList.toggle('todo-item-complete', this.ui.complete.checked);
+	}
+}
+```
+
+---
+
+## Widget `ToDox	`
 
 ---
 
