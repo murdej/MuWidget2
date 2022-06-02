@@ -115,8 +115,8 @@ export class TodoItem extends MuWidget {
 `app.js`
 
 ```javascript
-const MuWidget = require("../../src/MuWidget").MuWidget;
-const MuBinder = require("../../src/MuBinder").MuBinder;
+import { MuBinder } from "mu-widget/lib/MuBinder";
+import { MuWidget } from "mu-widget/lib/MuWidget";
 
 MuWidget.registerAll(
 	require("./Widgets")
