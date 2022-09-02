@@ -1,6 +1,6 @@
 {
   "name": "mu-widget",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Simple javascript widget creation",
   "_Smain": "index.js",
   "directories": {
@@ -32,6 +32,5 @@
     "typescript": "^4.5.4",
     "parcel": "^2.5.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
