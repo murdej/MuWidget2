@@ -345,7 +345,9 @@ export class MuBinder {
 	private static GetValue(target: string, element: AnyElement, widget: MuWidget): any {
 		switch (target) {
 			case "@widget":
-				return (element["widget"] as MuWidget).muFetchData();
+				return (element as any).widget == widget 
+					? null
+					: (element["widget"] as MuWidget).muFetchData();
 			case "foreach":
 			case "@foreach":
 				return widget.muGetChildWidgets<MuWidget>(element).map(itemWidget => itemWidget.muFetchData());

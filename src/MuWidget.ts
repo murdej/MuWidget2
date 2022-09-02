@@ -93,7 +93,7 @@ export class MuWidget {
 		let tmpElemementType = "div";
 		if (lSrc.startsWith('<tr')) tmpElemementType = "tbody";
 		if (lSrc.startsWith('<td') || lSrc.startsWith('<th')) tmpElemementType = "tr";
-		if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead')) tmpElemementType = "table";
+		if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead') || lSrc.startsWith('<tfoot')) tmpElemementType = "table";
 		let element = document.createElementNS(container.namespaceURI, tmpElemementType);
 		element.innerHTML = src;
 		element = element.firstElementChild;
@@ -126,7 +126,7 @@ export class MuWidget {
 
 	}
 
-	public muVisible(state : boolean, control : string|string[]|AnyElement) { 
+	public muVisible(state : boolean|"toggle", control : string|string[]|AnyElement) { 
 		if (Array.isArray(control))
 		{
 			for(const controlItem of control) this.muVisible(state, controlItem);
@@ -142,6 +142,7 @@ export class MuWidget {
 				if (!(control in this.ui)) throw new Error("Control with mu-id='" + control + "' not found.");
 				control = this.ui[control];
 			}
+			if (state === "toggle") state = control.style.display === "none";
 			control.style.display = state !== neg ? null : "none";
 		}
 	}
@@ -196,7 +197,8 @@ export class MuWidget {
 				bindEvents: [
 					'click', 'dblclick', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'blur',
 					'change', 'focus', 'select', 'submit', 'keyup', 'keydown', 'keypress', 'scroll',
-					'drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop', 'input'
+					'drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop', 'input', 
+					'touchstart', 'touchmove', 'touchend', 'touchcancel',
 				],
 				autoMethodNameSeparator: "_"
 			};

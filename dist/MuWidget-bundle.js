@@ -354,7 +354,9 @@ class MuBinder {
     static GetValue(target, element, widget) {
         switch (target) {
             case "@widget":
-                return element["widget"].muFetchData();
+                return element.widget == widget
+                    ? null
+                    : element["widget"].muFetchData();
             case "foreach":
             case "@foreach":
                 return widget.muGetChildWidgets(element).map(itemWidget => itemWidget.muFetchData());
@@ -686,7 +688,7 @@ class MuWidget {
             tmpElemementType = "tbody";
         if (lSrc.startsWith('<td') || lSrc.startsWith('<th'))
             tmpElemementType = "tr";
-        if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead'))
+        if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead') || lSrc.startsWith('<tfoot'))
             tmpElemementType = "table";
         let element = document.createElementNS(container.namespaceURI, tmpElemementType);
         element.innerHTML = src;
@@ -719,6 +721,8 @@ class MuWidget {
                     throw new Error("Control with mu-id='" + control + "' not found.");
                 control = this.ui[control];
             }
+            if (state === "toggle")
+                state = control.style.display === "none";
             control.style.display = state !== neg ? null : "none";
         }
     }
@@ -743,7 +747,8 @@ class MuWidget {
                 bindEvents: [
                     'click', 'dblclick', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'blur',
                     'change', 'focus', 'select', 'submit', 'keyup', 'keydown', 'keypress', 'scroll',
-                    'drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop', 'input'
+                    'drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop', 'input',
+                    'touchstart', 'touchmove', 'touchend', 'touchcancel',
                 ],
                 autoMethodNameSeparator: "_"
             };

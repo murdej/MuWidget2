@@ -1,0 +1,197 @@
+<h1 id="muwidget">MuWidget</h1>
+<p>Tutorial</p>
+<hr />
+<h2 id="instalace-prostředí">Instalace prostředí</h2>
+<p>npm a parceljs</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb1-1" title="1"><span class="ex">npm</span> init</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="ex">npm</span> install --save-dev parcel</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="ex">npm</span> install mu-widget</a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="fu">touch</span> index.html</a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="ex">npx</span> parcel index.html</a></code></pre></div>
+<p>http://localhost:1234</p>
+<hr />
+<h2 id="html">HTML</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb2-1" title="1"><span class="dt">&lt;!DOCTYPE </span>html<span class="dt">&gt;</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="kw">&lt;html</span><span class="ot"> lang=</span><span class="st">&quot;en&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb2-3" title="3"></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="kw">&lt;head&gt;</span></a>
+<a class="sourceLine" id="cb2-5" title="5">    <span class="kw">&lt;meta</span><span class="ot"> charset=</span><span class="st">&quot;utf-8&quot;</span> <span class="kw">/&gt;</span></a>
+<a class="sourceLine" id="cb2-6" title="6">    <span class="kw">&lt;meta</span><span class="ot"> http-equiv=</span><span class="st">&quot;x-ua-compatible&quot;</span><span class="ot"> content=</span><span class="st">&quot;ie=edge&quot;</span> <span class="kw">/&gt;</span></a>
+<a class="sourceLine" id="cb2-7" title="7">    <span class="kw">&lt;meta</span><span class="ot"> name=</span><span class="st">&quot;viewport&quot;</span><span class="ot"> content=</span><span class="st">&quot;width=device-width, initial-scale=1&quot;</span> <span class="kw">/&gt;</span></a>
+<a class="sourceLine" id="cb2-8" title="8">    <span class="kw">&lt;title&gt;</span>Todo list<span class="kw">&lt;/title&gt;</span></a>
+<a class="sourceLine" id="cb2-9" title="9">    <span class="kw">&lt;link</span><span class="ot"> rel=</span><span class="st">&quot;stylesheet&quot;</span><span class="ot"> href=</span><span class="st">&quot;styles/main.scss&quot;</span> <span class="kw">/&gt;</span></a>
+<a class="sourceLine" id="cb2-10" title="10"><span class="kw">&lt;/head&gt;</span></a>
+<a class="sourceLine" id="cb2-11" title="11"></a>
+<a class="sourceLine" id="cb2-12" title="12"><span class="kw">&lt;body&gt;</span></a>
+<a class="sourceLine" id="cb2-13" title="13">    <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;todo&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb2-14" title="14">        <span class="kw">&lt;h1&gt;</span>Todo list<span class="kw">&lt;/h1&gt;</span></a>
+<a class="sourceLine" id="cb2-15" title="15">        <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;todo-editor&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb2-16" title="16">            <span class="kw">&lt;input</span><span class="ot"> type=</span><span class="st">&quot;text&quot;</span> <span class="kw">/&gt;</span></a>
+<a class="sourceLine" id="cb2-17" title="17">            <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;check;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb2-18" title="18">            <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#128473;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb2-19" title="19">            <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#x2795;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb2-20" title="20">        <span class="kw">&lt;/div&gt;</span></a>
+<a class="sourceLine" id="cb2-21" title="21">        Show: <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;a&quot;</span><span class="kw">&gt;</span>Complete<span class="kw">&lt;/span&gt;</span>, <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;a&quot;</span><span class="kw">&gt;</span>Uncomplete<span class="kw">&lt;/span&gt;</span>, <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;a&quot;</span><span class="kw">&gt;</span>All<span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb2-22" title="22">        <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;todo-list&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb2-23" title="23">            <span class="kw">&lt;div</span><span class="ot"> class=</span><span class="st">&quot;todo-item&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb2-24" title="24">                <span class="kw">&lt;label</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span> <span class="kw">/&gt;&lt;/label&gt;</span></a>
+<a class="sourceLine" id="cb2-25" title="25">                <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#x1F589;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb2-26" title="26">                <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#x1F5D1;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb2-27" title="27">                <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;todo-item-label&quot;</span><span class="kw">&gt;</span>New item<span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb2-28" title="28">            <span class="kw">&lt;/div&gt;</span></a>
+<a class="sourceLine" id="cb2-29" title="29">        <span class="kw">&lt;/div&gt;</span></a>
+<a class="sourceLine" id="cb2-30" title="30"></a>
+<a class="sourceLine" id="cb2-31" title="31">    <span class="kw">&lt;/div&gt;</span></a>
+<a class="sourceLine" id="cb2-32" title="32">    <span class="kw">&lt;script</span><span class="ot"> src=</span><span class="st">&quot;scripts/app.js&quot;</span><span class="ot"> type=</span><span class="st">&quot;module&quot;</span><span class="kw">&gt;&lt;/script&gt;</span></a>
+<a class="sourceLine" id="cb2-33" title="33"><span class="kw">&lt;/body&gt;</span></a>
+<a class="sourceLine" id="cb2-34" title="34"></a>
+<a class="sourceLine" id="cb2-35" title="35"><span class="kw">&lt;/html&gt;</span></a></code></pre></div>
+<p>Vytvoření základní HTML šablony.</p>
+<hr />
+<h2 id="doplnění-mu--artibutů">Doplnění <code>mu-</code> artibutů</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode html"><code class="sourceCode html"><a class="sourceLine" id="cb3-1" title="1">...</a>
+<a class="sourceLine" id="cb3-2" title="2">    <span class="kw">&lt;div</span><span class="ot"> mu-widget=</span><span class="st">&quot;Todo&quot;</span><span class="ot"> class=</span><span class="st">&quot;todo&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb3-3" title="3">        <span class="kw">&lt;h1&gt;</span>Todo list<span class="kw">&lt;/h1&gt;</span></a>
+<a class="sourceLine" id="cb3-4" title="4">        <span class="kw">&lt;div</span><span class="ot"> mu-widget=</span><span class="st">&quot;TodoEditor&quot;</span><span class="ot"> mu-id=</span><span class="st">&quot;editor&quot;</span><span class="ot"> class=</span><span class="st">&quot;todo-editor&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb3-5" title="5">            <span class="kw">&lt;input</span><span class="ot"> mu-id=</span><span class="st">&quot;label&quot;</span><span class="ot"> mu-bind=</span><span class="st">&quot;label&quot;</span><span class="ot"> type=</span><span class="st">&quot;text&quot;</span> <span class="kw">/&gt;</span></a>
+<a class="sourceLine" id="cb3-6" title="6">            <span class="kw">&lt;span</span><span class="ot"> mu-id=</span><span class="st">&quot;bUpdate&quot;</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;check;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb3-7" title="7">            <span class="kw">&lt;span</span><span class="ot"> mu-id=</span><span class="st">&quot;bCancel&quot;</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#128473;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb3-8" title="8">            <span class="kw">&lt;span</span><span class="ot"> mu-id=</span><span class="st">&quot;bAdd&quot;</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#x2795;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb3-9" title="9">        <span class="kw">&lt;/div&gt;</span></a>
+<a class="sourceLine" id="cb3-10" title="10">        Show: <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;a&quot;</span><span class="ot"> mu-click=</span><span class="st">&quot;show: true&quot;</span><span class="kw">&gt;</span>Complete<span class="kw">&lt;/span&gt;</span>, <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;a&quot;</span><span class="ot"> mu-click=</span><span class="st">&quot;show: false&quot;</span><span class="kw">&gt;</span>Uncomplete<span class="kw">&lt;/span&gt;</span>, <span class="kw">&lt;span</span><span class="ot"> class=</span><span class="st">&quot;a&quot;</span><span class="ot"> mu-click=</span><span class="st">&quot;show: null&quot;</span><span class="kw">&gt;</span>All<span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb3-11" title="11">        <span class="kw">&lt;div</span><span class="ot"> mu-id=</span><span class="st">&quot;list&quot;</span><span class="ot"> class=</span><span class="st">&quot;todo-list&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb3-12" title="12">            <span class="kw">&lt;div</span><span class="ot"> mu-widget=</span><span class="st">&quot;TodoItem&quot;</span><span class="ot"> class=</span><span class="st">&quot;todo-item&quot;</span><span class="kw">&gt;</span></a>
+<a class="sourceLine" id="cb3-13" title="13">                <span class="kw">&lt;label</span><span class="ot"> mu-id=</span><span class="st">&quot;complete&quot;</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;&lt;input</span><span class="ot"> type=</span><span class="st">&quot;checkbox&quot;</span> <span class="kw">/&gt;&lt;/label&gt;</span></a>
+<a class="sourceLine" id="cb3-14" title="14">                <span class="kw">&lt;span</span><span class="ot"> mu-id=</span><span class="st">&quot;bEdit&quot;</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#x1F589;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb3-15" title="15">                <span class="kw">&lt;span</span><span class="ot"> mu-id=</span><span class="st">&quot;bDelete&quot;</span><span class="ot"> class=</span><span class="st">&quot;icon-button&quot;</span><span class="kw">&gt;</span><span class="dv">&amp;#x1F5D1;</span><span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb3-16" title="16">                <span class="kw">&lt;span</span><span class="ot"> mu-id=</span><span class="st">&quot;label&quot;</span><span class="ot"> class=</span><span class="st">&quot;todo-item-label&quot;</span><span class="ot"> mu-bind=</span><span class="st">&quot;label::text&quot;</span><span class="kw">&gt;</span>New item<span class="kw">&lt;/span&gt;</span></a>
+<a class="sourceLine" id="cb3-17" title="17">            <span class="kw">&lt;/div&gt;</span></a>
+<a class="sourceLine" id="cb3-18" title="18">        <span class="kw">&lt;/div&gt;</span></a>
+<a class="sourceLine" id="cb3-19" title="19">...</a></code></pre></div>
+<p><code>mu-id</code> - jako html id ale platné jen v aktuálním widgetu. <code>mu-click</code> - jako html onclick ale místo funkcí se hledají metody v aktuálním widgetu. <code>mu-template</code> - uloží blok kódu pro pozdější použití <code>mu-bind</code> - určuje jak se budou přenášet data při použití <code>muBind</code> a <code>muFetch</code></p>
+<hr />
+<h2 id="vytvoření-kostry-widgetů">Vytvoření kostry widgetů</h2>
+<p><code>Widgets.ts</code></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb4-1" title="1"><span class="im">import</span> <span class="op">{</span> MuWidget <span class="op">}</span> <span class="im">from</span> <span class="st">&#39;mu-widget/lib/MuWidget&#39;</span><span class="op">;</span></a>
+<a class="sourceLine" id="cb4-2" title="2"></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="im">export</span> <span class="kw">class</span> Todo <span class="kw">extends</span> MuWidget <span class="op">{</span></a>
+<a class="sourceLine" id="cb4-4" title="4"></a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="op">}</span></a>
+<a class="sourceLine" id="cb4-6" title="6"></a>
+<a class="sourceLine" id="cb4-7" title="7"><span class="im">export</span> <span class="kw">class</span> TodoItem <span class="kw">extends</span> MuWidget <span class="op">{</span></a>
+<a class="sourceLine" id="cb4-8" title="8"></a>
+<a class="sourceLine" id="cb4-9" title="9"><span class="op">}</span></a></code></pre></div>
+<h3 id="section"></h3>
+<h2 id="registrace-a-iniciace-widgetů">Registrace a iniciace widgetů</h2>
+<p><code>app.js</code></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode javascript"><code class="sourceCode javascript"><a class="sourceLine" id="cb5-1" title="1"><span class="im">import</span> <span class="op">{</span> MuBinder <span class="op">}</span> <span class="im">from</span> <span class="st">&quot;mu-widget/lib/MuBinder&quot;</span><span class="op">;</span></a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="im">import</span> <span class="op">{</span> MuWidget <span class="op">}</span> <span class="im">from</span> <span class="st">&quot;mu-widget/lib/MuWidget&quot;</span><span class="op">;</span></a>
+<a class="sourceLine" id="cb5-3" title="3"></a>
+<a class="sourceLine" id="cb5-4" title="4"><span class="va">MuWidget</span>.<span class="at">registerAll</span>(</a>
+<a class="sourceLine" id="cb5-5" title="5">    <span class="at">require</span>(<span class="st">&quot;./Widgets&quot;</span>)</a>
+<a class="sourceLine" id="cb5-6" title="6">)<span class="op">;</span></a>
+<a class="sourceLine" id="cb5-7" title="7"></a>
+<a class="sourceLine" id="cb5-8" title="8"><span class="va">MuBinder</span>.<span class="at">register</span>(MuWidget)<span class="op">;</span></a>
+<a class="sourceLine" id="cb5-9" title="9"></a>
+<a class="sourceLine" id="cb5-10" title="10"><span class="va">MuWidget</span>.<span class="at">startup</span>()<span class="op">;</span></a></code></pre></div>
+<hr />
+<h2 id="widget-todoeditor">Widget <code>TodoEditor</code></h2>
+<p>Tento widget obsluhuje editor položky. Umožnuje zaregistrovat obsluhu 3 vlastních událostí. Události je doporučeno registrovat v metodě <code>afterIndex</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb6-1" title="1"><span class="im">export</span> <span class="kw">class</span> TodoEditor <span class="kw">extends</span> MuWidget <span class="op">{</span></a>
+<a class="sourceLine" id="cb6-2" title="2">    <span class="fu">afterIndex</span>()<span class="op">:</span> <span class="dt">void</span> <span class="op">{</span></a>
+<a class="sourceLine" id="cb6-3" title="3">        <span class="va">this</span><span class="op">.</span><span class="fu">muRegisterEvent</span>(<span class="st">&#39;update&#39;</span><span class="op">,</span> <span class="st">&#39;add&#39;</span><span class="op">,</span> <span class="st">&#39;cancel&#39;</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb6-4" title="4">    <span class="op">}</span></a></code></pre></div>
+<p>Metoda <code>load</code> naplnění dat do editoru a upraví widget podle toho jestli se jedná o vytvářecínebo editační formulář. Pro naplnění dat do formuláře se dá použít metoda <code>muFetchData</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb7-1" title="1">    <span class="kw">public</span> <span class="fu">load</span>(data<span class="op">:</span> TodoItemData<span class="op">|</span><span class="st">&quot;new&quot;</span>) <span class="op">{</span></a>
+<a class="sourceLine" id="cb7-2" title="2">        <span class="co">// Načte data do editoru, &quot;new&quot; znamená nová položka</span></a>
+<a class="sourceLine" id="cb7-3" title="3">        <span class="kw">const</span> isNew <span class="op">=</span> data <span class="op">==</span> <span class="st">&quot;new&quot;</span><span class="op">;</span></a>
+<a class="sourceLine" id="cb7-4" title="4">        <span class="fu">if</span> (data <span class="op">==</span> <span class="st">&quot;new&quot;</span>) data <span class="op">=</span> <span class="op">{</span> complete<span class="op">:</span> <span class="kw">false</span><span class="op">,</span> label<span class="op">:</span> <span class="st">&quot;&quot;</span> <span class="op">};</span></a>
+<a class="sourceLine" id="cb7-5" title="5">        <span class="co">// Naplní pole editoru</span></a>
+<a class="sourceLine" id="cb7-6" title="6">        <span class="va">this</span><span class="op">.</span><span class="fu">muBindData</span>(data)<span class="op">;</span></a>
+<a class="sourceLine" id="cb7-7" title="7">        <span class="co">// Zobrazí správné tlačítka podle režimu formuláře</span></a>
+<a class="sourceLine" id="cb7-8" title="8">        <span class="va">this</span><span class="op">.</span><span class="fu">muVisible</span>(isNew<span class="op">,</span> <span class="op">[</span></a>
+<a class="sourceLine" id="cb7-9" title="9">            <span class="st">&#39;!bUpdate&#39;</span><span class="op">,</span></a>
+<a class="sourceLine" id="cb7-10" title="10">            <span class="st">&#39;!bCancel&#39;</span><span class="op">,</span></a>
+<a class="sourceLine" id="cb7-11" title="11">            <span class="st">&#39;bAdd&#39;</span><span class="op">,</span></a>
+<a class="sourceLine" id="cb7-12" title="12">        <span class="op">]</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb7-13" title="13">    <span class="op">}</span></a></code></pre></div>
+<p>Náseldující metody obsluhují kliky na tlačítka a volají obsluhu vlastních událostí. Pro načtení údajů z formuláře se dá použít metoda <code>muFetchData</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb8-1" title="1"></a>
+<a class="sourceLine" id="cb8-2" title="2">    <span class="kw">public</span> <span class="fu">bUpdate_click</span>() <span class="op">{</span></a>
+<a class="sourceLine" id="cb8-3" title="3">        <span class="co">// Načte data a zavolá obsluhu události update</span></a>
+<a class="sourceLine" id="cb8-4" title="4">        <span class="va">this</span><span class="op">.</span><span class="fu">muDispatchEvent</span>(<span class="st">&#39;update&#39;</span><span class="op">,</span> <span class="va">this</span><span class="op">.</span><span class="fu">muFetchData</span>())<span class="op">;</span></a>
+<a class="sourceLine" id="cb8-5" title="5">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb8-6" title="6"></a>
+<a class="sourceLine" id="cb8-7" title="7">    <span class="kw">public</span> <span class="fu">bAdd_click</span>() <span class="op">{</span></a>
+<a class="sourceLine" id="cb8-8" title="8">        <span class="co">// Načte data a zavolá obsluhu události add</span></a>
+<a class="sourceLine" id="cb8-9" title="9">        <span class="va">this</span><span class="op">.</span><span class="fu">muDispatchEvent</span>(<span class="st">&#39;add&#39;</span><span class="op">,</span> <span class="va">this</span><span class="op">.</span><span class="fu">muFetchData</span>())<span class="op">;</span></a>
+<a class="sourceLine" id="cb8-10" title="10">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb8-11" title="11">    </a>
+<a class="sourceLine" id="cb8-12" title="12">    <span class="kw">public</span> <span class="fu">bCancel_click</span>() <span class="op">{</span></a>
+<a class="sourceLine" id="cb8-13" title="13">        <span class="co">// Zavolá obsluhu události cancel</span></a>
+<a class="sourceLine" id="cb8-14" title="14">        <span class="va">this</span><span class="op">.</span><span class="fu">muDispatchEvent</span>(<span class="st">&#39;cancel&#39;</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb8-15" title="15">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb8-16" title="16">}</a></code></pre></div>
+<p>Poznámka: Kam jak uložit/načíst data určuje html atribut <code>mu-bind</code>.</p>
+<hr />
+<h2 id="widget-todoitem">Widget <code>TodoItem</code></h2>
+<p>Tento widget obsluhe jednotlivé položky seznamu.</p>
+<p>Jednotlivé metody obsluhují tlačítka a checkbox u položky. První zavolá metodu nadřazeného widgetu pro otevření aktuální položky v editoru,</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb9-1" title="1"><span class="im">export</span> <span class="kw">class</span> TodoItem <span class="kw">extends</span> MuWidget <span class="op">{</span></a>
+<a class="sourceLine" id="cb9-2" title="2">    </a>
+<a class="sourceLine" id="cb9-3" title="3">    <span class="fu">bEdit_click</span>() <span class="op">{</span></a>
+<a class="sourceLine" id="cb9-4" title="4">        (<span class="va">this</span><span class="op">.</span><span class="at">muParent</span> <span class="im">as</span> Todo).<span class="fu">editItem</span>(<span class="kw">this</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb9-5" title="5">    <span class="op">}</span></a></code></pre></div>
+<p>Další tlačítko odstraní atuální widget i s jeho elementem z html.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb10-1" title="1">    <span class="fu">bDelete_click</span>() <span class="op">{</span></a>
+<a class="sourceLine" id="cb10-2" title="2">        <span class="va">this</span><span class="op">.</span><span class="fu">muRemoveSelf</span>()<span class="op">;</span></a>
+<a class="sourceLine" id="cb10-3" title="3">    <span class="op">}</span></a></code></pre></div>
+<p>A při změně stavu checkboxu, tato metoda změní třídu elementu.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb11-1" title="1">    <span class="fu">complete_change</span>() <span class="op">{</span></a>
+<a class="sourceLine" id="cb11-2" title="2">        <span class="va">this</span><span class="op">.</span><span class="va">container</span><span class="op">.</span><span class="va">classList</span><span class="op">.</span><span class="fu">toggle</span>(<span class="st">&#39;todo-item-complete&#39;</span><span class="op">,</span> <span class="va">this</span><span class="op">.</span><span class="va">ui</span><span class="op">.</span><span class="va">complete</span><span class="op">.</span><span class="at">checked</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb11-3" title="3">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb11-4" title="4">}</a></code></pre></div>
+<hr />
+<h2 id="widget-todo">Widget <code>Todo</code></h2>
+<p>Toto je hlavní widget který propojuje ostatní widgety.</p>
+<p><strong>Tip:</strong> Přetypováním property <code>muNamedWidget</code> je možné ušetřit si přetypování v kódu a využít našeptávání.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb12-1" title="1"><span class="im">export</span> <span class="kw">class</span> Todo <span class="kw">extends</span> MuWidget <span class="op">{</span></a>
+<a class="sourceLine" id="cb12-2" title="2">    muNamedWidget<span class="op">:</span> MuNamedWidgets<span class="op">&lt;{</span></a>
+<a class="sourceLine" id="cb12-3" title="3">        editor<span class="op">:</span> TodoEditor</a>
+<a class="sourceLine" id="cb12-4" title="4">    <span class="op">}&gt;;</span></a></code></pre></div>
+<p>Po spuštění inicializuje formalář pro novou položku.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb13-1" title="1">    <span class="kw">public</span> <span class="fu">afterIndex</span>()<span class="op">:</span> <span class="dt">void</span> <span class="op">{</span></a>
+<a class="sourceLine" id="cb13-2" title="2">        <span class="va">this</span><span class="op">.</span><span class="va">muNamedWidget</span><span class="op">.</span><span class="va">editor</span><span class="op">.</span><span class="fu">load</span>(<span class="st">&quot;new&quot;</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb13-3" title="3">    <span class="op">}</span></a></code></pre></div>
+<p>Tato metoda uloží si aktuálně editovanou položku pro pozdělší aktualizaci. Dále načte data z aktuální položky a naplní jimi editační formulář. Volá se z widgetu položky <code>TodoItem</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb14-1" title="1">    <span class="fu">editItem</span>(item<span class="op">:</span> TodoItem) <span class="op">{</span></a>
+<a class="sourceLine" id="cb14-2" title="2">        <span class="va">this</span><span class="op">.</span><span class="at">currentItem</span> <span class="op">=</span> item<span class="op">;</span></a>
+<a class="sourceLine" id="cb14-3" title="3">        <span class="kw">const</span> data <span class="op">=</span> <span class="va">item</span><span class="op">.</span><span class="fu">muFetchData</span>()<span class="op">;</span></a>
+<a class="sourceLine" id="cb14-4" title="4">        <span class="va">this</span><span class="op">.</span><span class="va">muNamedWidget</span><span class="op">.</span><span class="va">editor</span><span class="op">.</span><span class="fu">load</span>(data)<span class="op">;</span></a>
+<a class="sourceLine" id="cb14-5" title="5">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb14-6" title="6"></a>
+<a class="sourceLine" id="cb14-7" title="7">    <span class="kw">protected</span> currentItem<span class="op">:</span> <span class="dt">null</span><span class="op">|</span>TodoItem <span class="op">=</span> <span class="kw">null</span><span class="op">;</span></a></code></pre></div>
+<p>Obsluha události <code>update</code> widgetu <code>editor</code>. Aktualizuje položku předanými data a vynuluje formulář.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb15-1" title="1">    <span class="kw">public</span> <span class="fu">editor_update</span>(ev<span class="op">:</span> MuEvent<span class="op">,</span> data<span class="op">:</span> TodoItemData) <span class="op">{</span></a>
+<a class="sourceLine" id="cb15-2" title="2">        <span class="va">this</span><span class="op">.</span><span class="va">currentItem</span><span class="op">.</span><span class="fu">muBindData</span>(data)<span class="op">;</span></a>
+<a class="sourceLine" id="cb15-3" title="3">        <span class="va">this</span><span class="op">.</span><span class="va">muNamedWidget</span><span class="op">.</span><span class="va">editor</span><span class="op">.</span><span class="fu">load</span>(<span class="st">&quot;new&quot;</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb15-4" title="4">    <span class="op">}</span></a></code></pre></div>
+<p>Obsluha události <code>update</code> widgetu <code>editor</code>. Vytvoří novou položku s předanými data a vynuluje formulář.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb16-1" title="1">    <span class="kw">public</span> <span class="fu">editor_add</span>(ev<span class="op">:</span> MuEvent<span class="op">,</span> data<span class="op">:</span> TodoItemData) <span class="op">{</span></a>
+<a class="sourceLine" id="cb16-2" title="2">        <span class="kw">const</span> newItem <span class="op">=</span> <span class="va">this</span><span class="op">.</span><span class="fu">muWidgetFromTemplate</span>(<span class="st">&#39;todoItem&#39;</span><span class="op">,</span> <span class="st">&#39;list&#39;</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb16-3" title="3">        <span class="va">newItem</span><span class="op">.</span><span class="fu">muBindData</span>(data)<span class="op">;</span></a>
+<a class="sourceLine" id="cb16-4" title="4">        <span class="va">this</span><span class="op">.</span><span class="va">muNamedWidget</span><span class="op">.</span><span class="va">editor</span><span class="op">.</span><span class="fu">load</span>(<span class="st">&quot;new&quot;</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb16-5" title="5">    <span class="op">}</span></a></code></pre></div>
+<p>Událost <code>add</code> volaná z widgetu <code>editor</code> - vynuluje formulář</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb17-1" title="1">    <span class="kw">public</span> <span class="fu">editor_cancel</span>(ev<span class="op">:</span> MuEvent) <span class="op">{</span></a>
+<a class="sourceLine" id="cb17-2" title="2">        <span class="va">this</span><span class="op">.</span><span class="va">muNamedWidget</span><span class="op">.</span><span class="va">editor</span><span class="op">.</span><span class="fu">load</span>(<span class="st">&quot;new&quot;</span>)<span class="op">;</span></a>
+<a class="sourceLine" id="cb17-3" title="3">    <span class="op">}</span></a></code></pre></div>
+<p>Obsluha kliknutí na filtrovací tlačítka. Projde všechny widgeta položek v konteineru <code>list</code> a nastaví viditelnost podle aktuálního filtru.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode typescript"><code class="sourceCode typescript"><a class="sourceLine" id="cb18-1" title="1">    <span class="kw">public</span> <span class="fu">show</span>(ev<span class="op">:</span> MuEvent<span class="op">,</span> state<span class="op">:</span> <span class="dt">boolean</span><span class="op">|</span><span class="dt">null</span>) <span class="op">{</span></a>
+<a class="sourceLine" id="cb18-2" title="2">        <span class="co">// vyfiltruje položky podle </span></a>
+<a class="sourceLine" id="cb18-3" title="3">        <span class="va">this</span><span class="op">.</span><span class="fu">muGetChildWidgets</span><span class="op">&lt;</span>TodoItem<span class="op">&gt;</span>(<span class="st">&quot;list&quot;</span>).<span class="fu">map</span>(iw <span class="kw">=&gt;</span> <span class="va">iw</span><span class="op">.</span><span class="va">container</span><span class="op">.</span><span class="va">style</span><span class="op">.</span><span class="at">display</span> <span class="op">=</span> </a>
+<a class="sourceLine" id="cb18-4" title="4">            state <span class="op">===</span> <span class="kw">null</span> <span class="op">||</span> <span class="va">iw</span><span class="op">.</span><span class="va">ui</span><span class="op">.</span><span class="va">complete</span><span class="op">.</span><span class="at">checked</span> <span class="op">===</span> state</a>
+<a class="sourceLine" id="cb18-5" title="5">            <span class="op">?</span> null <span class="op">:</span> <span class="st">&quot;none&quot;</span> </a>
+<a class="sourceLine" id="cb18-6" title="6">        )</a>
+<a class="sourceLine" id="cb18-7" title="7">    <span class="op">}</span></a>
+<a class="sourceLine" id="cb18-8" title="8">}</a></code></pre></div>
