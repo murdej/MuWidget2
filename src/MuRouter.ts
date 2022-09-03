@@ -105,7 +105,7 @@ export class MuRouter
 		{
 			if (typeof location != "string")
 			{
-				location = location.pathname + location.search;
+				location = location.pathname + location.search + location.hash;
 			}
 			location = location.substr(this.pathPrefix.length);
 		}
