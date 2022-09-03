@@ -98,7 +98,7 @@ export class MuRouter
 
 	protected lastParameters : MuParameters = {};
 
-	public route(location : Location|{pathname : string, search : string}|string = null)
+	public route(location : Location|{pathname : string, search : string, hash: string}|string = null)
 	{
 		if (!location) location = window.location;
 		if (this.pathPrefix)
