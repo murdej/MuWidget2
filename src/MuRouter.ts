@@ -98,7 +98,7 @@ export class MuRouter
 
 	protected lastParameters : MuParameters = {};
 
-	public route(location : Location|{pathname : string, search : string, hash: string}|string = null)
+	public route(location : Location|{pathname : string, search : string, hash: string}|string = null): Route|null
 	{
 		if (!location) location = window.location;
 		if (this.pathPrefix)
@@ -131,9 +131,11 @@ export class MuRouter
 			}
 			this.updatePersistent(res);
 			route.callback({parameters: res, routeName});
-			break;
+			return route;
 			// console.log(m);
 		}
+
+		return null;
 	}
 
 	public makeUrl(name : string, currParams : any) : string
