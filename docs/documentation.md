@@ -223,7 +223,7 @@ MuWidget.registerAll(CommonWidgets, MyCoolWigets);
 
 Register single service class
 
-```typescrip
+``` typescript
 MuWidget.registerAs(
 	class extends MuWidget {
 		...

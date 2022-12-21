@@ -17,6 +17,8 @@ import { MuBinder, MuBindOpts } from "./MuBinder";
 
 export class MuWidget {
 
+	public static fixOldWidgets: boolean|"silent" = false;
+
 	public ui : MuUi<{}> = {}; //Record<string, AnyElementA> = {};
 	
 	public muOpts: MuOpts = {} as MuOpts;
@@ -270,7 +272,15 @@ export class MuWidget {
 		if (!c) throw "Class '" + opts.widget + "' is not defined.";
 		const widget = new c(element, opts);
 
-		if (!(widget instanceof MuWidget)) console.error("Widget '" + widgetName + "' is not a descendant of the MuWidget class.");
+		if (!(widget instanceof MuWidget)) {
+			if (MuWidget.fixOldWidgets) {
+				if (MuWidget.fixOldWidgets !== "silent") console.error("Widget '" + widgetName + "' is not a descendant of the MuWidget class.");
+				// extends prototype, class.prototype can not be enumarated
+				for(var k of [ 'addEventListener', 'addEventListener(name, handler)', 'beforeIndex', 'createElementFromHTML', 'muActivateWidget', 'muAddEvent', 'muAddEvents', 'muAddUi', 'muAfterBindData', 'muBindData', 'muBindList', 'muCallPlugin', 'muDispatchEvent', 'muEventNames', 'muFetchData', 'muFindMethod', 'muFindTemplate', 'muGetChildWidgets', 'muGetElementOpts', 'muGetMethodCallback', 'muIndexTree', 'muInit', 'muRegisterEvent', 'muRemoveSelf', 'muVisible', 'muWidgetFromTemplate' ]) 
+					if (!c.prototype[k])
+						c.prototype[k] = MuWidget.prototype[k];
+			} else throw "Widget '" + widgetName + "' is not a descendant of the MuWidget class.";
+		}
 		widget.muParent = this;
 		widget.muRoot = this.muRoot || this;
 		if (opts.params)
