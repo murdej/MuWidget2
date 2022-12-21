@@ -5,3 +5,5 @@ docs
 dist
 disabled
 lib/demo
+tmp
+node_modules
