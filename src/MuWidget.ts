@@ -279,7 +279,27 @@ export class MuWidget {
 				for(var k of [ 'addEventListener', 'addEventListener(name, handler)', 'beforeIndex', 'createElementFromHTML', 'muActivateWidget', 'muAddEvent', 'muAddEvents', 'muAddUi', 'muAfterBindData', 'muBindData', 'muBindList', 'muCallPlugin', 'muDispatchEvent', 'muEventNames', 'muFetchData', 'muFindMethod', 'muFindTemplate', 'muGetChildWidgets', 'muGetElementOpts', 'muGetMethodCallback', 'muIndexTree', 'muInit', 'muRegisterEvent', 'muRemoveSelf', 'muVisible', 'muWidgetFromTemplate' ]) 
 					if (!c.prototype[k])
 						c.prototype[k] = MuWidget.prototype[k];
-			} else throw "Widget '" + widgetName + "' is not a descendant of the MuWidget class.";
+				c.prototype.muIndexForm = function(form)
+				{
+					if (!form)
+					{
+						if (this.container.tagName == 'FORM') form = this.container;
+						else form = this.container.querySelector('form');
+					}
+					if (form)
+					{
+						this.muAddUi('form', form);
+						this.muAddEvents({ id: 'form' }, form);
+						for(var i = 0, l = form.elements.length; i < l; i++)
+						{
+							var element = form.elements[i];
+							this.muAddUi(element.name, element);
+							this.muAddEvents({ id: element.name }, element);
+						}
+					}
+				}
+			} else 
+				throw "Widget '" + widgetName + "' is not a descendant of the MuWidget class.";
 		}
 		widget.muParent = this;
 		widget.muRoot = this.muRoot || this;

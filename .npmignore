@@ -7,3 +7,6 @@ disabled
 lib/demo
 tmp
 node_modules
+.parcel-cache
+.htmlnanorc.js
+trim-eximport.js
