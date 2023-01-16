@@ -115,6 +115,19 @@
 		integrity="sha512-U9fwz8ekKht5NdL1x4+Yh3DoXeSrsZ0M7ALcijykvrVKD+101nax1MVdc0wNSVh4GOwZGY7yQpz+rAnnoX7O3Q=="
 		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script src="scripts/index.js" type="module"></script>
+
+	<h2>Keybind</h2>
+	<div mu-widget="KeyBind">
+		<div tabindex="0" mu-keybind="ctrl+F:bFind;Enter:bEnter;Escape:bEsc">
+			Click here and try press <kbd>Ctrl+F</kbd>, <kbd>Enter</kbd> or <kbd>Esc</kbd>
+			<div>
+				<span class="a" mu-click="showButton" mu-id="bFind">Find</span>
+				<span class="a" mu-click="showButton" mu-id="bEnter">Enter</span>
+				<span class="a" mu-click="showButton" mu-id="bEsc">Esc</span>
+			</div>
+			<div mu-id="message"></div>
+		</div>
+	</div>
 </body>
 
 </html>

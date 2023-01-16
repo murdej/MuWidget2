@@ -15,11 +15,14 @@
 
 import { MuBinder, MuBindOpts } from "./MuBinder";
 
-export class MuWidget {
+// export class MuWidget<TP extends MuWidget = MuWidget<any,{},{}>, TU extends Record<string, any&AnyElement> = {}, TW extends Record<string, any&AnyElement> = {}> {
+export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, any&AnyElement> = {}, TW extends Record<string, any&AnyElement> = {}> {
 
 	public static fixOldWidgets: boolean|"silent" = false;
 
-	public ui : MuUi<{}> = {}; //Record<string, AnyElementA> = {};
+	public static sharedTemplates: Record<string, string> = {};
+
+	public ui : MuUi<TU> = {} as unknown as MuUi<TU>; //Record<string, AnyElementA> = {};
 	
 	public muOpts: MuOpts = {} as MuOpts;
 	
@@ -29,7 +32,7 @@ export class MuWidget {
 	
 	public muWidgetFromTemplate(
 		templateName : string, 
-		container : string|AnyElement, 
+		container : string|AnyElement|null, 
 		params : Record<string, any>|((widget : MuWidget)=>Record<string, any>)|null = null, 
 		position : "first"|"before"|"after"|"last" = "last",
 		ref : AnyElement|null = null) : MuWidget 
@@ -43,38 +46,42 @@ export class MuWidget {
 		} else finalContainer = container as AnyElement;
 		
 		var tmpElemementType = "div";
-		var tmpTemplate = this.muFindTemplate(templateName);
+		var templateContent = this.muFindTemplate(templateName);
+		var tmpTemplate = templateContent;
 		if (!tmpTemplate) throw "No template named '" + templateName + "'.";
 		tmpTemplate = tmpTemplate.toLowerCase();
 		if (tmpTemplate.startsWith('<tr')) tmpElemementType = "tbody";
 		if (tmpTemplate.startsWith('<td') || tmpTemplate.startsWith('<th')) tmpElemementType = "tr";
 		if (tmpTemplate.startsWith('<tbody')) tmpElemementType = "table";
-		var element = document.createElementNS(finalContainer.namespaceURI, tmpElemementType) as AnyElement;
-		element.innerHTML = this.muTemplates[templateName];
+		var element = document.createElementNS((finalContainer || this.container).namespaceURI, tmpElemementType) as AnyElement;
+		element.innerHTML = templateContent;
 		element = element.firstElementChild as AnyElement;
 		// if (params) element.setAttribute('mu-params', JSON.stringify(params));
 		
-		switch(position) {
-			case 'first':
-				if (finalContainer.firstElementChild) {
-					finalContainer.insertBefore(element, finalContainer.firstElementChild);
-				} else {
+		if (finalContainer)
+		{
+			switch(position) {
+				case 'first':
+					if (finalContainer.firstElementChild) {
+						finalContainer.insertBefore(element, finalContainer.firstElementChild);
+					} else {
+						finalContainer.appendChild(element);
+					}
+					break;
+				case 'before':
+					finalContainer.insertBefore(element, ref);
+					break;
+				case 'after':
+					if (ref.nextElementSibling) {
+						finalContainer.insertBefore(element, ref.nextElementSibling);
+					} else {
+						finalContainer.appendChild(element);
+					}
+					break;
+				case 'last':
 					finalContainer.appendChild(element);
-				}
-				break;
-			case 'before':
-				finalContainer.insertBefore(element, ref);
-				break;
-			case 'after':
-				if (ref.nextElementSibling) {
-					finalContainer.insertBefore(element, ref.nextElementSibling);
-				} else {
-					finalContainer.appendChild(element);
-				}
-				break;
-			case 'last':
-				finalContainer.appendChild(element);
-				break;
+					break;
+			}
 		}
 
 
@@ -84,6 +91,10 @@ export class MuWidget {
 		this.muAddEvents(opts, element, widget)
 
 		return widget;
+	}
+
+	muAppendContent(html: string): void {
+		this.container.innerHTML += html;
 	}
 
 	public createElementFromHTML(
@@ -141,8 +152,11 @@ export class MuWidget {
 					neg = true;
 					control = control.substring(1);
 				}
-				if (!(control in this.ui)) throw new Error("Control with mu-id='" + control + "' not found.");
-				control = this.ui[control];
+				if (control === ".")
+					control = this.container;
+				else if (!(control in this.ui)) throw new Error("Control with mu-id='" + control + "' not found.");
+				else
+					control = this.ui[control];
 			}
 			if (state === "toggle") state = control.style.display === "none";
 			control.style.display = state !== neg ? null : "none";
@@ -151,11 +165,11 @@ export class MuWidget {
 
 	public muSubWidgets : MuWidget[] = [];
 
-	public muNamedWidget : MuNamedWidgets<{}> = {}; // Record<string, MuWidget> = {};
+	public muNamedWidget : MuNamedWidgets<TW> = {} as undefined as MuNamedWidgets<TW>; // Record<string, MuWidget> = {};
 
 	public muRoot : MuWidget = this;
 	
-	public muParent : MuWidget|null = null;
+	public muParent : TP/*|null = null */;
 
 	public muTemplates : Record<string, string> = {};
 
@@ -168,7 +182,7 @@ export class MuWidget {
 	public muBindData(srcData : any)
 	{
 		MuBinder.bindData(this.muBindOpts, srcData, this);
-		this.muAfterBindData();
+		this.muAfterBindData(srcData);
 	}
 
 	public muFetchData() : any
@@ -182,7 +196,7 @@ export class MuWidget {
 
 	// public muEventNames() : string[] { return []; }
 
-	protected muAfterBindData() { }
+	protected muAfterBindData(data: any) { }
 
 	public constructor(container : AnyElement) {
 		this.container = container;
@@ -192,7 +206,7 @@ export class MuWidget {
 	public muInit(container : AnyElement)
 	{
 		this.muOnAfterIndex = [];
-		this.ui = {};
+		this.ui = {} as unknown as MuUi<TU>;
 		this.muOpts = 
 			{
 				attributePrefix: "mu-",
@@ -209,7 +223,7 @@ export class MuWidget {
 		this.container = container;
 		this.container.widget = this;
 		this.muSubWidgets = [];
-		this.muNamedWidget = {};
+		this.muNamedWidget = {} as MuNamedWidgets<TW>;
 		this.muTemplates = {};
 		this.muTemplateParents = {};
 		this.muRoot = this;
@@ -305,7 +319,7 @@ export class MuWidget {
 		widget.muRoot = this.muRoot || this;
 		if (opts.params)
 		{
-			const params = JSON.parse(opts.params);
+			const params = typeof opts.params === "string" ? JSON.parse(opts.params) : opts.params;
 			for(const k in params)
 			{
 				(widget as any)[k] = params[k];
@@ -345,6 +359,11 @@ export class MuWidget {
 
 	public muFindTemplate(templateName: string): null|string {
 		let tmpTemplate = null;
+		if (templateName.startsWith("shared:"))
+		{
+			let aTemplateName = templateName.substr(7);
+			tmpTemplate = MuWidget.sharedTemplates[aTemplateName];
+		}
 		if (templateName.startsWith("ancestor:"))
 		{
 			let aTemplateName = templateName.substr(9);
@@ -361,13 +380,26 @@ export class MuWidget {
 		{
 			tmpTemplate = this.muTemplates[templateName];
 		}
+
 		return tmpTemplate;
 	}
 
+	public muMetaData: {
+		id: string,
+		widget: string,
+	};
 
 	public muIndexTree(element : AnyElement, indexWidget : boolean, useName : string|null = null)
 	{
 		var ev : MuIndexEvent = { element: element, widget: this, opts: this.muGetElementOpts(element)};
+		if (indexWidget) 
+		{
+			this.muMetaData = { 
+				id: ev.opts.id,
+				widget: this.constructor.name,
+			};
+		}
+
 		//TODO: MuBinder
 		// this.muCallPlugin("indexPrepareElement", ev);
 		if (!ev.element) return;
@@ -405,9 +437,15 @@ export class MuWidget {
 		if (opts.template) 
 		{
 			element.removeAttribute(this.muOpts.attributePrefix + "template");
-			if (opts.template in this.muTemplates) console.error("The widget already contains template '" + opts.template + "'.");
-			this.muTemplates[opts.template] = element.outerHTML;
-			this.muTemplateParents[opts.template] = (element.parentNode as AnyElement);
+			if (opts.template.startsWith("shared:")) {
+				const name = opts.template.substring(7);
+				if (opts.template in MuWidget.sharedTemplates) console.error("The widget already contains template '" + opts.template + "'.");
+				MuWidget.sharedTemplates[opts.template] = element.outerHTML;
+			} else {
+				if (opts.template in this.muTemplates) console.error("The widget already contains template '" + opts.template + "'.");
+				this.muTemplates[opts.template] = element.outerHTML;
+				this.muTemplateParents[opts.template] = (element.parentNode as AnyElement);
+			}
 			if (element.parentNode) element.parentNode.removeChild(element);
 			return;
 		}
@@ -443,11 +481,16 @@ export class MuWidget {
 				this.muOnAfterIndex[i](this);
 			}
 		}
+		this.muCallPlugin("afterIndexElement", ev);
 	}
 	muAddUi(id: string, element: AnyElement) {
-		if (id in this.ui) console.error("The widget already contains an element with mu-id '" + id + "'.");
+		if (id in this.ui) console.error("The widget '" + /*this.muGetIdentification()*/ this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.");
 		this.ui[id] = element as AnyElementA;
 	}
+
+	/* muGetIdentification() {
+		return this.muIndexOpts.widget + (this.muIndexOpts.id ? "#" + this.muIndexOpts.id : "");
+	} */
 
 	muCallPlugin(eventName : MuPluginEventNames, eventArgs : MuIndexEvent)
 	{
@@ -672,9 +715,9 @@ export class MuWidget {
 	}
 }
 
-export type MuPluginEventNames = "beforeIndexElement";
+export type MuPluginEventNames = "beforeIndexElement"|"afterIndexElement";
 
-export type MuPlugin = Record<MuPluginEventNames, (ev: MuIndexEvent)=>void>;
+export type MuPlugin = Partial<Record<MuPluginEventNames, (ev: MuIndexEvent)=>void>>;
 
 export type OptionalCallback = (()=>void)|null;
 
@@ -733,6 +776,9 @@ export type MuPreprocesor = ((element : AnyElement, ...args : any[])=>void)|({pr
 
 export type MuHandler = (ev? : MuEvent, ...args : any[]) => void;
 
-export type MuNamedWidgets<T> = T & Record<string, MuWidget>;
+export type MuNamedWidgets<T extends Record<string, any&AnyElement>> = T & Record<string, MuWidget>;
 
-export type MuUi<T> = T & Record<string, AnyElementA>;
+export type MuUi<T extends Record<string, any&AnyElement>> = T & Record<string, AnyElementA>;
+
+// export class MuWidget extends MuWidgetTyped<MuWidget, {}, {}> { }
+

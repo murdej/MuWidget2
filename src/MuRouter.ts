@@ -130,6 +130,7 @@ export class MuRouter
 				}
 			}
 			this.updatePersistent(res);
+			this.lastName = route.name;
 			route.callback({parameters: res, routeName});
 			return route;
 			// console.log(m);
@@ -163,26 +164,43 @@ export class MuRouter
 		return this.pathPrefix + url;
 	}
 
-	public push(name : string, params : MuParameters = {})
+	public lastName = "";
+	public getName(name: string|null): string {
+		if (name) this.lastName = name;
+		return this.lastName;
+	}
+
+	public push(name : string|null, params : MuParameters = {})
 	{
+		name = this.getName(name);
 		this.updatePersistent(params);
 		history.pushState({}, null, this.makeUrl(name, params));
 	}
 
-	public replace(name : string, params : MuParameters = {})
+	public pushUpdate(name : string|null, params : MuParameters = {})
 	{
+		name = this.getName(name);
+		this.updatePersistent(params, true);
+		history.pushState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
+	}
+
+	public replace(name : string|null, params : MuParameters = {})
+	{
+		name = this.getName(name);
 		this.updatePersistent(params);
 		history.replaceState({}, null, this.makeUrl(name, params));
 	}
 
-	public update(name : string, params : MuParameters = {})
+	public update(name : string|null, params : MuParameters = {})
 	{
+		name = this.getName(name);
 		this.updatePersistent(params, true);
 		history.replaceState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
 	}
 
-	public navigate(name : string, params : MuParameters = {})
+	public navigate(name : string|null, params : MuParameters = {})
 	{
+		name = this.getName(name);
 		this.push(name, params);
 		this.routes[name].callback({ parameters: params, routeName : name });
 	}

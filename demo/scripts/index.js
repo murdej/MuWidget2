@@ -1,5 +1,6 @@
 const MuWidget = require("../../src/MuWidget").MuWidget;
 const MuBinder = require("../../src/MuBinder").MuBinder;
+const MuKeyBind = require("../../src/MuKeyBind").MuKeyBind;
 
 MuWidget.registerAll(
 	require("./Example"),
@@ -10,6 +11,7 @@ MuWidget.registerAll(
 	require("./SRLForm"),
 	require("./RecursiveContent"),
 	require("./CreateContent"),
+	require("./KeyBind"),
 );
 
 LegacyWidget = function() { }
@@ -21,6 +23,8 @@ LegacyWidget.prototype = {
 
 // MuWidget.registerAs(require("./IMuWidget").IMuWidget, ".")
 MuBinder.register(MuWidget);
+
+MuKeyBind.register(MuWidget);
 
 MuWidget.fixOldWidgets = true;
 MuWidget.startup();
