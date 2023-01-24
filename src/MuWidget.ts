@@ -364,7 +364,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			let aTemplateName = templateName.substr(7);
 			tmpTemplate = MuWidget.sharedTemplates[aTemplateName];
 		}
-		if (templateName.startsWith("ancestor:"))
+		else if (templateName.startsWith("ancestor:"))
 		{
 			let aTemplateName = templateName.substr(9);
 			let w: MuWidget = this;
@@ -439,8 +439,8 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			element.removeAttribute(this.muOpts.attributePrefix + "template");
 			if (opts.template.startsWith("shared:")) {
 				const name = opts.template.substring(7);
-				if (opts.template in MuWidget.sharedTemplates) console.error("The widget already contains template '" + opts.template + "'.");
-				MuWidget.sharedTemplates[opts.template] = element.outerHTML;
+				if (name in MuWidget.sharedTemplates) console.error("The widget already contains template '" + opts.template + "'.");
+				MuWidget.sharedTemplates[name] = element.outerHTML;
 			} else {
 				if (opts.template in this.muTemplates) console.error("The widget already contains template '" + opts.template + "'.");
 				this.muTemplates[opts.template] = element.outerHTML;
