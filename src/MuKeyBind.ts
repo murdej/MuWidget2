@@ -41,7 +41,7 @@ export class MuKeyBind
 				console.error("Invalid keybind '" + def + "'");
 				continue;
 			}
-			console.log(m);
+			// console.log(m);
 			res.push({
 				modificators: (m[1] || "").split("+").filter(k => !!k),
 				key: m[3],

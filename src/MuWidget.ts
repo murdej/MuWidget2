@@ -52,10 +52,11 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		tmpTemplate = tmpTemplate.toLowerCase();
 		if (tmpTemplate.startsWith('<tr')) tmpElemementType = "tbody";
 		if (tmpTemplate.startsWith('<td') || tmpTemplate.startsWith('<th')) tmpElemementType = "tr";
-		if (tmpTemplate.startsWith('<tbody')) tmpElemementType = "table";
+		if (tmpTemplate.startsWith('<tbody') || tmpTemplate.startsWith('<thead') || tmpTemplate.startsWith('<tfoot')) tmpElemementType = "table";
 		var element = document.createElementNS((finalContainer || this.container).namespaceURI, tmpElemementType) as AnyElement;
 		element.innerHTML = templateContent;
 		element = element.firstElementChild as AnyElement;
+		// const element = this.createElementFromHTML(templateContent, container || this.container);
 		// if (params) element.setAttribute('mu-params', JSON.stringify(params));
 		
 		if (finalContainer)
@@ -115,12 +116,12 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	}
 
 	public muRemoveSelf() : void {
-		this.container.parentNode.removeChild(this.container);
+		if (this.container.parentNode) this.container.parentNode.removeChild(this.container);
 	}
 
 	public container : AnyElement;
 
-	public muGetChildWidgets<T>(container : string|AnyElement) : T[]
+	public muGetChildWidgets<T = MuWidget>(container : string|AnyElement) : T[]
 	{
 		return MuWidget.getChildWidgets(
 			(typeof container === "string")
@@ -231,7 +232,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 		this.beforeIndex();
 		this.muAddEvents({ id: 'container' }, this.container);
-		this.muIndexTree(container, true);
+		this.muIndexTree(this.container, true);
 	}
 
 	public beforeIndex() { }
@@ -712,6 +713,16 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			MuWidget.root = muRoot;
 			if (onSucces) onSucces(muRoot);
 		});
+	}
+
+	public static getWidget(el: AnyElement): MuWidget|null
+	{
+		while(el) {
+			if (el.widget) return el.widget;
+			//@ts-ignore
+			el = el.parentElement;
+		}
+		return null;
 	}
 }
 
