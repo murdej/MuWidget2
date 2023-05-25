@@ -291,7 +291,12 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			if (MuWidget.fixOldWidgets) {
 				if (MuWidget.fixOldWidgets !== "silent") console.error("Widget '" + widgetName + "' is not a descendant of the MuWidget class.");
 				// extends prototype, class.prototype can not be enumarated
-				for(var k of [ 'addEventListener', 'addEventListener(name, handler)', 'beforeIndex', 'createElementFromHTML', 'muActivateWidget', 'muAddEvent', 'muAddEvents', 'muAddUi', 'muAfterBindData', 'muBindData', 'muBindList', 'muCallPlugin', 'muDispatchEvent', 'muEventNames', 'muFetchData', 'muFindMethod', 'muFindTemplate', 'muGetChildWidgets', 'muGetElementOpts', 'muGetMethodCallback', 'muIndexTree', 'muInit', 'muRegisterEvent', 'muRemoveSelf', 'muVisible', 'muWidgetFromTemplate' ]) 
+				for(var k of [ 
+					'addEventListener', 'addEventListener(name, handler)', 'beforeIndex', 'createElementFromHTML', 'muActivateWidget', 'muAddEvent', 'muAddEvents', 
+					'muAddUi', 'muAfterBindData', 'muBindData', 'muBindList', 'muCallPlugin', 'muDispatchEvent', 'muEventNames', 'muFetchData', 'muFindMethod', 
+					'muFindTemplate', 'muGetChildWidgets', 'muGetElementOpts', 'muGetMethodCallback', 'muIndexTree', 'muInit', 'muRegisterEvent', 'muRemoveSelf', 
+					'muVisible', 'muWidgetFromTemplate', 'muGetRoot'
+				])
 					if (!c.prototype[k])
 						c.prototype[k] = MuWidget.prototype[k];
 				c.prototype.muIndexForm = function(form)
@@ -553,7 +558,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		if (widget)
 		{
 			wEvents = widget.muEventNames();
-			eventNames = [...eventNames, ...wEvents];
+			eventNames = [ ... new Set([...eventNames, ...wEvents]) ];
 		}
 
 		var tags = opts.tag ? opts.tag.split(" ") : null;
@@ -657,6 +662,12 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			return callback(...Array.from(arguments));
 			// return callback.apply(null, [this].concat(Array.from(arguments)));
 		}); */
+	}
+
+	public muGetRoot()
+	{
+		//@ts-ignore
+		return this.muParent ? this.muParent.muGetRoot() : this;
 	}
 
 	// statics

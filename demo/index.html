@@ -117,15 +117,33 @@
 	<script src="scripts/index.js" type="module"></script>
 
 	<h2>Keybind</h2>
-	<div mu-widget="KeyBind">
-		<div tabindex="0" mu-keybind="ctrl+F:bFind;Enter:bEnter;Escape:bEsc">
-			Click here and try press <kbd>Ctrl+F</kbd>, <kbd>Enter</kbd> or <kbd>Esc</kbd>
-			<div>
-				<span class="a" mu-click="showButton" mu-id="bFind">Find</span>
-				<span class="a" mu-click="showButton" mu-id="bEnter">Enter</span>
-				<span class="a" mu-click="showButton" mu-id="bEsc">Esc</span>
+		<div mu-widget="Example">
+			<div mu-widget="KeyBind" mu-template="widget">
+			<div tabindex="0" mu-keybind="ctrl+F:bFind;Enter:bEnter;Escape:bEsc">
+				Click here and try press <kbd>Ctrl+F</kbd>, <kbd>Enter</kbd> or <kbd>Esc</kbd>
+				<div>
+					<span class="a" mu-click="showButton" mu-id="bFind">Find</span>
+					<span class="a" mu-click="showButton" mu-id="bEnter">Enter</span>
+					<span class="a" mu-click="showButton" mu-id="bEsc">Esc</span>
+				</div>
+				<div mu-id="message"></div>
 			</div>
-			<div mu-id="message"></div>
+		</div>
+	</div>
+
+	<h2>Widget event</h2>
+	<div mu-widget="Example">
+		<div mu-widget="WEMain" mu-template="widget">
+			<span mu-widget="WEPlusMinus" mu-id="red"></span>
+			<span mu-widget="WEPlusMinus" mu-id="green"></span>
+			<span mu-widget="WEPlusMinus" mu-id="blue"></span>
+			<div mu-id="log"></div>
+		</div>
+	</div>
+
+	<h2>Radiolist demo</h2>
+	<div mu-widget="Example">
+		<div mu-widget="RadioListDemo" mu-template="widget">
 		</div>
 	</div>
 </body>

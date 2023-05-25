@@ -383,6 +383,7 @@ When:
 - is `@foreach` passes the value as an array and creates a new widget for each element.
 - `@options` is used to easily populate the html element`<select>`
 - `@visible` TODO:
+- `@addClass` TODO c+d
 
 `fetch filter` - filter (s) to use with `muFetchData`. The syntax is identical to bindFiltr.
 

@@ -208,7 +208,7 @@ export class MuBinder {
 			if (bindOpts[k]) {
 				for (const mbo of bindOpts[k]) {
 					if (mbo.forBind) {
-						let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
+						let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget, { dataset: srcData });
 						MuBinder.setValue(val, mbo.target, mbo.element, widget);
 					}
 				}
@@ -225,14 +225,14 @@ export class MuBinder {
 					let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
 					; */
 
-					resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget);
+					resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget, { originalValue: resData[k], dataset: resData });
 				}
 			}
 		}
 		return resData;
 	}
 
-	private static UseFilters(val: any, filters: MuBindFilter[], widget: MuWidget): any {
+	private static UseFilters(val: any, filters: MuBindFilter[], widget: MuWidget, ev: Partial<MuBindFilterEv>): any {
 		for (const filter of filters) {
 			let obj = null;
 			let fn: MuBindFilterCallback;
@@ -252,7 +252,7 @@ export class MuBinder {
 			}
 			if (!obj) throw new Error("Unknown filter '" + filter.methodName + "'. Source widget: '" + (widget as any)?.costructor?.name + "'");
 			fn = obj[filter.methodName];
-			val = fn.call(obj, val, <MuBindFilterEv>{}, ...filter.args);
+			val = fn.call(obj, val, <MuBindFilterEv>{ ...ev }, ...filter.args);
 		}
 		return val;
 	}
@@ -403,5 +403,6 @@ export type MuBindFilter = {
 }
 
 export type MuBindFilterEv = {
-
+	originalValue: any,
+	dataset: Record<string|number, any>,
 }
