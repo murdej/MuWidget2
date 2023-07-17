@@ -12,4 +12,4 @@ A simple (java/type)script OOP component based framework for creating web UIs fr
    - forget the `document.getElementById("foo").parentElement.parentElement` ...
  - HTML `id` not required
 
-[Documentation](./docs/index.md)
+[Documentation](./docs/documentation.md)
