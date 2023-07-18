@@ -12,4 +12,11 @@ A simple (java/type)script OOP component based framework for creating web UIs fr
    - forget the `document.getElementById("foo").parentElement.parentElement` ...
  - HTML `id` not required
 
-[Documentation](./docs/documentation.md)
+-----
+
+ - [Documentation](./docs/documentation.md)
+ - [Tutorial CS](docs/tutorial/tutorial-cs.md)
+ - Install via npm
+```bash
+npm install mu-widget
+```
