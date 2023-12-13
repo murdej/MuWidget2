@@ -1,0 +1,40 @@
+.mu-content-editor {
+	&__block {
+		border: 1px dashed #ddd;
+
+		&:hover {
+			border-color: #bbb;
+		}
+	}
+
+	&__block-commands {
+		/* Styly pro .mu-content-editor__block-commands */
+	}
+
+	&__btn {
+		cursor: pointer;
+		display: inline-block;
+		padding: 0.5ex;
+		border: 1px solid blue;
+	}
+
+	&__display-flex {
+		display: flex;
+	}
+
+	&__flex-1 {
+		flex: 1;
+	}
+
+	&__small-buttons {
+		/* Styly pro .mu-content-editor__small-buttons */
+	}
+
+	&__collection-create {
+		/* Styly pro .mu-content-editor__collection-create */
+
+		&__button {
+			/* Styly pro .mu-content-editor__collection-create__button */
+		}
+	}
+}

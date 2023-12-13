@@ -262,6 +262,16 @@ export class MuRouter
 	{
 		return this.lastParameters;
 	}
+
+	public prepareAnchor(a: HTMLAnchorElement, name: string, params: MuParameters, cancelBubble = false)
+	{
+		a.href = this.makeUrl(name, params);
+		a.addEventListener("click", (ev) => {
+			ev.preventDefault();
+			if (cancelBubble) ev.stopPropagation();
+			this.navigate(name, params);
+		});
+	}
 }
 
 type RouteCallback = (context: MuRouterContext) => void;
