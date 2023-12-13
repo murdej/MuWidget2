@@ -379,11 +379,12 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		const simpleAttributeValue = element.getAttribute(simpleAttributeName);
 		const ire = MuWidget.identifierRe;
 		if (simpleAttributeValue) {
-			const m = simpleAttributeValue.match('(' + ire + ')?(:(' + ire + '))?(@(' + ire + '))?');
+			const m = simpleAttributeValue.match('(' + ire + ')?(:(' + ire + '))?(@(' + ire + '))?(#(.*))?');
 			if (m) {
 				if (m[1]) element.setAttribute(this.muOpts.attributePrefix + 'id', m[1]);
 				if (m[3]) element.setAttribute(this.muOpts.attributePrefix + 'widget', m[3]);
 				if (m[5]) element.setAttribute(this.muOpts.attributePrefix + 'template', m[5]);
+				if (m[7]) element.setAttribute(this.muOpts.attributePrefix + 'bind', m[7]);
 				element.removeAttribute(simpleAttributeName);
 			}
 		}
