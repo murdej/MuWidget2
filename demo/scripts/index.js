@@ -15,7 +15,10 @@ MuWidget.registerAll(
 	require("./KeyBind"),
 	require("./WidgetEvents"),
 	require("./RadioListDemo"),
+	require("./MuBindSelf"),
 );
+
+MuWidget.registerAs(MuWidget, '.');
 
 LegacyWidget = function() { }
 LegacyWidget.prototype = {

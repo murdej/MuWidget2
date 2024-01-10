@@ -146,7 +146,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 	}
 
-	public muVisible(state : boolean|"toggle", control : string|string[]|AnyElement) { 
+	public muVisible(state : boolean|"toggle", control : string|string[]|HTMLElement|SVGElement) { 
 		if (Array.isArray(control))
 		{
 			for(const controlItem of control) this.muVisible(state, controlItem);
@@ -379,7 +379,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		const simpleAttributeValue = element.getAttribute(simpleAttributeName);
 		const ire = MuWidget.identifierRe;
 		if (simpleAttributeValue) {
-			const m = simpleAttributeValue.match('(' + ire + ')?(:(' + ire + '))?(@(' + ire + '))?(#(.*))?');
+			const m = simpleAttributeValue.match('(' + ire + ')? *(:(' + ire + '))? *(@(' + ire + '))? *(#(.*))?');
 			if (m) {
 				if (m[1]) element.setAttribute(this.muOpts.attributePrefix + 'id', m[1]);
 				if (m[3]) element.setAttribute(this.muOpts.attributePrefix + 'widget', m[3]);

@@ -204,11 +204,19 @@ export class MuBinder {
 	}
 
 	public static bindData(bindOpts: Record<string, MuBindOpts[]>, srcData: any, widget: MuWidget) {
-		for (const k in srcData) {
+		//todo: . stack overflow
+		let bindedWidget = false;
+		let bindedWidgetParam = false;
+		for (const k of [ /*'.',*/ ...Object.keys(srcData)]) {
 			if (bindOpts[k]) {
 				for (const mbo of bindOpts[k]) {
 					if (mbo.forBind) {
-						let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget, { dataset: srcData });
+						let val = MuBinder.UseFilters(
+							k === "." ? srcData : srcData[k],
+							mbo.bindFilters, widget, { dataset: srcData }
+						);
+						if (k === '@widget') bindedWidget = true;
+						else if (k[0] === '.') bindedWidgetParam = true;
 						MuBinder.setValue(val, mbo.target, mbo.element, widget);
 					}
 				}
@@ -217,15 +225,20 @@ export class MuBinder {
 	}
 
 	static fetchData(bindOpts: Record<string, MuBindOpts[]>, widget: MuWidget): any {
-		const resData = {};
-		for (const k in bindOpts) {
-			for (const mbo of bindOpts[k]) {
-				if (mbo.forFetch) {
-					/* resData[k] = mbo.element[mbo.target];
-					let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
-					; */
-
-					resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget, { originalValue: resData[k], dataset: resData });
+		let resData = {};
+		//todo: . stack overflow
+		for (const k of [ /*'.',*/ ...Object.keys(bindOpts)]) {
+			if (bindOpts[k]) {
+				for (const mbo of bindOpts[k]) {
+					if (mbo.forFetch) {
+						/* resData[k] = mbo.element[mbo.target];
+						let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
+						; */
+	
+						const values = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget, { originalValue: resData[k], dataset: resData });
+						if (k === '.') resData = { resData, ...values };
+						else resData[k] = values;
+					}
 				}
 			}
 		}
