@@ -15,7 +15,9 @@ MuWidget.registerAll(
 	require("./KeyBind"),
 	require("./WidgetEvents"),
 	require("./RadioListDemo"),
-	require("./MuBindSelf"),
+	// require("./MuBindSelf"),
+	require("../../src/components/TreeView"),
+	require("./TreeViewDemo"),
 );
 
 MuWidget.registerAs(MuWidget, '.');
