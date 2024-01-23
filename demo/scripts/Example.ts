@@ -39,10 +39,11 @@ export class Example extends MuWidget
 
 	highlight(el : AnyElement, lang : string) : void
 	{
-		EnlighterJS.enlight(el, {
-			language: lang,
-			theme: 'bootstrap4',
-		});
+		if (window.EnlighterJS)
+			window.EnlighterJS.enlight(el, {
+				language: lang,
+				theme: 'bootstrap4',
+			});
 	}
 
 }
