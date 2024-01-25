@@ -109,12 +109,13 @@ export class MuRouter
 			}
 			location = location.substr(this.pathPrefix.length);
 		}
-		if (typeof location == "string")
+		if (typeof location === "string")
 		{
 			let p = location.indexOf("?");
 			location = {
 				pathname: p >= 0 ? location.substr(0, p) : location,
-				search:  p >= 0 ? location.substr(p) : ""
+				search:  p >= 0 ? location.substr(p) : "",
+				hash: ""
 			}
 		}
 		for(let routeName in this.routes)
@@ -263,13 +264,15 @@ export class MuRouter
 		return this.lastParameters;
 	}
 
-	public prepareAnchor(a: HTMLAnchorElement, name: string, params: MuParameters, cancelBubble = false)
+	public prepareAnchor(a: HTMLAnchorElement|HTMLElement, name: string, params: MuParameters, cancelBubble = false)
 	{
-		a.href = this.makeUrl(name, params);
+		const fullParams = { ...this.persistentValues, ...params };
+		if (a instanceof HTMLAnchorElement)
+			a.href = this.makeUrl(name, params);
 		a.addEventListener("click", (ev) => {
 			ev.preventDefault();
 			if (cancelBubble) ev.stopPropagation();
-			this.navigate(name, params);
+			this.navigate(name, fullParams);
 		});
 	}
 }
