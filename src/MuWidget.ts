@@ -852,7 +852,7 @@ export type MuHandler = (ev? : MuEvent, ...args : any[]) => void;
 
 export type MuNamedWidgets<T extends Record<string, any&AnyElement>> = T & Record<string, MuWidget>;
 
-export type MuUi<T extends Record<string, any&AnyElement>> = T & Record<string, AnyElementA>;
+export type MuUi<T extends Record<string, any&AnyElement>> = T & Record<string, AnyElementA> & { [key: string ]: AnyElementA };
 
 // export class MuWidget extends MuWidgetTyped<MuWidget, {}, {}> { }
 

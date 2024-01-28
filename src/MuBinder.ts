@@ -205,6 +205,7 @@ export class MuBinder {
 
 	public static bindData(bindOpts: Record<string, MuBindOpts[]>, srcData: any, widget: MuWidget) {
 		//todo: . stack overflow
+		if (srcData === null) return;
 		let bindedWidget = false;
 		let bindedWidgetParam = false;
 		for (const k of [ /*'.',*/ ...Object.keys(srcData)]) {

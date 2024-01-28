@@ -1,5 +1,9 @@
 # Change log
 
+## 2.10.2
+
+ - Fix: `MuBindex`.`bindData` will fail if null is passed.
+
 ## 2.10.1
 
  - `MuRouter` -> `prepareAnchor` If no anchor is passed, it does not set the href but only the click handler.
