@@ -1,5 +1,9 @@
 # Change log
 
+## 2.11.0
+
+ - Add `Pager` component
+
 ## 2.10.2
 
  - Fix: `MuBindex`.`bindData` will fail if null is passed.
