@@ -7,11 +7,9 @@
  * file that was distributed with this source code.
  */
 
-import {BaseWidget} from "../BaseWidget";
 import {MuWidget} from "mu-widget/lib/MuWidget";
-import {UiPager} from "./UiPager";
 
-export class Pager extends BaseWidget {
+export class Pager extends MuWidget {
 	private currentPageCount: number = 0;
 	private itemCount: number = -1;
 	private oldValues: {
@@ -28,7 +26,7 @@ export class Pager extends BaseWidget {
 	beforeIndex() {
 		this.muRegisterEvent('changePage');
 		this.container.classList.add('pager');
-		this.muAppendContent(`
+		this.muAppendContent(/*html*/`
 			<div class="pager__nav">
 				<span class="pager__btn" mu-id="bPrev">&lt;</span>
 				<input class="pager__page-num" title="Číslo stránky" type="number" min="2" value="1" mu-id="pageNumber" />
@@ -88,10 +86,10 @@ export class Pager extends BaseWidget {
 		// tooltip
 		// @ts-ignore
 		this.container.title = this.itemCount
-			? this.fullInfoTemplate.replace(/\{([^{}]+)\}/g, (fm, vn) => {
+			? this.fullInfoTemplate.replace(/\{([^{}]+)\}/g, (fm: string, vn: string): string => {
 				switch (vn) {
-					case "firstItem": return Math.max((newCurrentPageNum) * this.itemPerPage + 1, 0);
-					case "lastItem": return Math.min((newCurrentPageNum + 1) * this.itemPerPage, this.itemCount);
+					case "firstItem": return Math.max((newCurrentPageNum) * this.itemPerPage + 1, 0).toString();
+					case "lastItem": return Math.min((newCurrentPageNum + 1) * this.itemPerPage, this.itemCount).toString();
 					case "itemCount": return this.itemCount.toString();
 					default: return fm;
 				};
@@ -125,55 +123,12 @@ export class Pager extends BaseWidget {
 	pageNumber_change() {
 		this.update(true);
 	}
-	/* public setItemCount(count: number, launchEvent: boolean = false) {
-		this.setPageCount(Math.ceil(count / this.itemPerPage));
-		this.update(launchEvent);
-	}
-
-	/* public get itemPerPage(): number {
-		const v = this.ui.itemPerPage.valueAsNumber;
-		return isNaN(v) ? 100 : Math.max(v, 1);
-	}
-	public set itemPerPage(v) {
-		this.ui.itemPerPage.valueAsNumber = v;
-	} */
-	/* public get currentItemFrom(): number {
-		return this.currentPageNum * this.itemPerPage;
-	}
-	public get currentPageNum(): number
-	{
-		return this.ui.pageNumber.valueAsNumber - 1;
-	}
-	public set currentPageNum(v: number)
-	{
-		this.ui.pageNumber.valueAsNumber = v + 1;
-	} */
 
 	public bChangeItemPerPage_click() {
-		// this.setPageNum(this.currentItemFrom / this.itemPerPage, true);
 		this.update(true);
 	}
 
 	pageItems: PagerItem[] = [];
-
-	/* public setPageNum(current: number, launchEvent: boolean = false) {
-		current = Math.min(Math.max(0, current), this.currentPageCount);
-		if (this.currentPageNum === current) return;
-		for(const item of this.pageItems) item.setSelected(item.num == current);
-		this.currentPageNum = current;
-		if (launchEvent) this.muDispatchEvent('changePage', current);
-	}
-
-	public setPageCount(count: number) {
-		this.currentPageCount = count;
-		this.ui.pages.innerHTML = "";
-		for(let n = 0; n < count; n++) {
-			this.pageItems[n] = this.muWidgetFromTemplate('item', 'pages', {num: n}) as unknown as UiPagerItem;
-		}
-		this.setPageNum(this.currentPageNum, false);
-		this.ui.pageNumber.max = (count + 1).toString();
-	} */
-
 
 	bPrev_click() {
 		this.currentPageNum--;
@@ -182,11 +137,6 @@ export class Pager extends BaseWidget {
 	bNext_click() {
 		this.currentPageNum++;
 	}
-
-	/* private setCurrentPage(page: number, fireEvent: boolean) {
-		this.ui.pageNumber.valueAsNumber = page + 1;
-		if (fireEvent) this.muDispatchEvent('changePage', )
-	} */
 }
 
 export class PagerItem extends MuWidget<Pager> {
