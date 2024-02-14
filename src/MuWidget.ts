@@ -165,7 +165,9 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 				else
 					control = this.ui[control];
 			}
+			//@ts-ignore
 			if (state === "toggle") state = control.style.display === "none";
+			//@ts-ignore
 			control.style.display = state !== neg ? null : "none";
 		}
 	}
@@ -174,6 +176,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 	public muNamedWidget : MuNamedWidgets<TW> = {} as undefined as MuNamedWidgets<TW>; // Record<string, MuWidget> = {};
 
+	//@ts-ignore
 	public muRoot : MuWidget = this;
 	
 	public muParent : TP/*|null = null */;
@@ -188,12 +191,14 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 	public muBindData(srcData : any)
 	{
+		//@ts-ignore
 		MuBinder.bindData(this.muBindOpts, srcData, this);
 		this.muAfterBindData(srcData);
 	}
 
 	public muFetchData() : any
 	{
+		//@ts-ignore
 		return MuBinder.fetchData(this.muBindOpts, this);
 	}
 
@@ -228,11 +233,13 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		/*	opts ? opts : {}
 		);*/
 		this.container = container;
+		//@ts-ignore
 		this.container.widget = this;
 		this.muSubWidgets = [];
 		this.muNamedWidget = {} as MuNamedWidgets<TW>;
 		this.muTemplates = {};
 		this.muTemplateParents = {};
+		//@ts-ignore
 		this.muRoot = this;
 		this.muWidgetEventHandlers = {};
 
@@ -312,6 +319,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			if (MuWidget.fixOldWidgets) {
 				if (MuWidget.fixOldWidgets !== "silent") console.error("Widget '" + widgetName + "' is not a descendant of the MuWidget class.");
 				// extends prototype, class.prototype can not be enumarated
+				//@ts-ignore
 				if (c === null) c = { prototype: widget.__proto__ };
 				for(var k of [ 
 					'addEventListener', 'addEventListener(name, handler)', 'beforeIndex', 'createElementFromHTML', 'muActivateWidget', 'muAddEvent', 'muAddEvents', 
@@ -344,6 +352,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 				throw "Widget '" + widgetName + "' is not a descendant of the MuWidget class.";
 		}
 		widget.muParent = this;
+		//@ts-ignore
 		widget.muRoot = this.muRoot || this;
 		if (opts.params)
 		{
@@ -362,6 +371,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		}
 		// MuWidget.extendPrototype(widget);
 		this.muSubWidgets.push(widget);
+		//@ts-ignore
 		if (opts.id) this.muNamedWidget[opts.id] = widget;
 		// MuWidget.call(widget, element, /*opts.opts || this.muOpts */);
 		widget.muInit(element);
@@ -413,6 +423,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		else if (templateName.startsWith("ancestor:"))
 		{
 			let aTemplateName = templateName.substr(9);
+			//@ts-ignore
 			let w: MuWidget = this;
 			while (w) {
 				if (w.muTemplates[aTemplateName]) {
@@ -437,6 +448,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 	public muIndexTree(element : AnyElement, indexWidget : boolean, useName : string|null = null)
 	{
+		//@ts-ignore
 		var ev : MuIndexEvent = { element: element, widget: this, opts: this.muGetElementOpts(element)};
 		if (indexWidget) 
 		{
@@ -532,6 +544,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	
 	muAddUi(id: string, element: AnyElement) {
 		if (id in this.ui) console.error("The widget '" + /*this.muGetIdentification()*/ this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.");
+		//@ts-ignore
 		this.ui[id] = element as AnyElementA;
 	}
 
@@ -814,13 +827,14 @@ export type MuWidgetOpts = Record<string, string>|{
 	tag: string|null,
 	nocontent: string|null,
 	usetemplate: string|null,
+	keybind: string|null,
 	// opts: string,
 };
 
 export type MuIndexEvent = {
 	element: AnyElement,
 	widget: MuWidget,
-	opts: MuWidgetOpts
+	opts: MuWidgetOpts,
 }
 
 export type AnyElement = (HTMLElement | SVGElement | HTMLInputElement) & {

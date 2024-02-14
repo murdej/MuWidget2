@@ -206,11 +206,20 @@ class MuBinder {
         });
     }
     static bindData(bindOpts, srcData, widget) {
-        for (const k in srcData) {
+        //todo: . stack overflow
+        if (srcData === null)
+            return;
+        let bindedWidget = false;
+        let bindedWidgetParam = false;
+        for (const k of [/*'.',*/ ...Object.keys(srcData)]) {
             if (bindOpts[k]) {
                 for (const mbo of bindOpts[k]) {
                     if (mbo.forBind) {
-                        let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
+                        let val = MuBinder.UseFilters(k === "." ? srcData : srcData[k], mbo.bindFilters, widget, { dataset: srcData });
+                        if (k === '@widget')
+                            bindedWidget = true;
+                        else if (k[0] === '.')
+                            bindedWidgetParam = true;
                         MuBinder.setValue(val, mbo.target, mbo.element, widget);
                     }
                 }
@@ -218,21 +227,28 @@ class MuBinder {
         }
     }
     static fetchData(bindOpts, widget) {
-        const resData = {};
-        for (const k in bindOpts) {
-            for (const mbo of bindOpts[k]) {
-                if (mbo.forFetch) {
-                    /* resData[k] = mbo.element[mbo.target];
-                    let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
-                    ; */
-                    resData[k] = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget);
+        let resData = {};
+        //todo: . stack overflow
+        for (const k of [/*'.',*/ ...Object.keys(bindOpts)]) {
+            if (bindOpts[k]) {
+                for (const mbo of bindOpts[k]) {
+                    if (mbo.forFetch) {
+                        /* resData[k] = mbo.element[mbo.target];
+                        let val = MuBinder.UseFilters(srcData[k], mbo.bindFilters, widget);
+                        ; */
+                        const values = MuBinder.UseFilters(MuBinder.GetValue(mbo.target, mbo.element, widget), mbo.fetchFilters, widget, { originalValue: resData[k], dataset: resData });
+                        if (k === '.')
+                            resData = Object.assign({ resData }, values);
+                        else
+                            resData[k] = values;
+                    }
                 }
             }
         }
         return resData;
     }
-    static UseFilters(val, filters, widget) {
-        var _a, _b, _c;
+    static UseFilters(val, filters, widget, ev) {
+        var _a, _b;
         for (const filter of filters) {
             let obj = null;
             let fn;
@@ -254,9 +270,9 @@ class MuBinder {
                 }
             }
             if (!obj)
-                throw new Error("Unknown filter '" + filter.methodName + "'. Source widget: '" + ((_c = (_b = widget) === null || _b === void 0 ? void 0 : _b.costructor) === null || _c === void 0 ? void 0 : _c.name) + "'");
+                throw new Error("Unknown filter '" + filter.methodName + "'. Source widget: '" + ((_b = widget === null || widget === void 0 ? void 0 : widget.costructor) === null || _b === void 0 ? void 0 : _b.name) + "'");
             fn = obj[filter.methodName];
-            val = fn.call(obj, val, {}, ...filter.args);
+            val = fn.call(obj, val, Object.assign({}, ev), ...filter.args);
         }
         return val;
     }
@@ -392,14 +408,6 @@ MuBinder.filters = {
     // toggleClass: (val, ev, trueClass : string, falseClass : string) =>
 };
 class MuRouter {
-    constructor() {
-        this.routes = {};
-        this.persistentKeys = [];
-        this.persistentValues = {};
-        this.pathPrefix = "";
-        this.lastParameters = {};
-        window.onpopstate = ev => this.route(document.location);
-    }
     addRoute(name, re, callback) {
         const route = {
             callback: callback,
@@ -482,15 +490,16 @@ class MuRouter {
             location = window.location;
         if (this.pathPrefix) {
             if (typeof location != "string") {
-                location = location.pathname + location.search;
+                location = location.pathname + location.search + location.hash;
             }
             location = location.substr(this.pathPrefix.length);
         }
-        if (typeof location == "string") {
+        if (typeof location === "string") {
             let p = location.indexOf("?");
             location = {
                 pathname: p >= 0 ? location.substr(0, p) : location,
-                search: p >= 0 ? location.substr(p) : ""
+                search: p >= 0 ? location.substr(p) : "",
+                hash: ""
             };
         }
         for (let routeName in this.routes) {
@@ -505,10 +514,12 @@ class MuRouter {
                 }
             }
             this.updatePersistent(res);
+            this.lastName = route.name;
             route.callback({ parameters: res, routeName });
-            break;
+            return route;
             // console.log(m);
         }
+        return null;
     }
     makeUrl(name, currParams) {
         let url = "";
@@ -534,19 +545,33 @@ class MuRouter {
             url += "?" + q;
         return this.pathPrefix + url;
     }
+    getName(name) {
+        if (name)
+            this.lastName = name;
+        return this.lastName;
+    }
     push(name, params = {}) {
+        name = this.getName(name);
         this.updatePersistent(params);
         history.pushState({}, null, this.makeUrl(name, params));
     }
+    pushUpdate(name, params = {}) {
+        name = this.getName(name);
+        this.updatePersistent(params, true);
+        history.pushState({}, null, this.makeUrl(name, Object.assign(Object.assign({}, this.lastParameters), params)));
+    }
     replace(name, params = {}) {
+        name = this.getName(name);
         this.updatePersistent(params);
         history.replaceState({}, null, this.makeUrl(name, params));
     }
     update(name, params = {}) {
+        name = this.getName(name);
         this.updatePersistent(params, true);
         history.replaceState({}, null, this.makeUrl(name, Object.assign(Object.assign({}, this.lastParameters), params)));
     }
     navigate(name, params = {}) {
+        name = this.getName(name);
         this.push(name, params);
         this.routes[name].callback({ parameters: params, routeName: name });
     }
@@ -571,6 +596,15 @@ class MuRouter {
             res[k] = v;
         }
         return res;
+    }
+    constructor() {
+        this.routes = {};
+        this.persistentKeys = [];
+        this.persistentValues = {};
+        this.pathPrefix = "";
+        this.lastParameters = {};
+        this.lastName = "";
+        window.onpopstate = ev => this.route(document.location);
     }
     updatePersistent(res, patch = false) {
         for (let k of this.persistentKeys) {
@@ -597,6 +631,17 @@ class MuRouter {
     getParameters() {
         return this.lastParameters;
     }
+    prepareAnchor(a, name, params, cancelBubble = false) {
+        const fullParams = Object.assign(Object.assign({}, this.persistentValues), params);
+        if (a instanceof HTMLAnchorElement)
+            a.href = this.makeUrl(name, params);
+        a.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            if (cancelBubble)
+                ev.stopPropagation();
+            this.navigate(name, fullParams);
+        });
+    }
 }
 class MuUIDs {
     static next(k) {
@@ -609,22 +654,8 @@ MuUIDs.counters = {
     name: 0
 };
 MuUIDs.prefix = "_Mu_";
+// export class MuWidget<TP extends MuWidget = MuWidget<any,{},{}>, TU extends Record<string, any&AnyElement> = {}, TW extends Record<string, any&AnyElement> = {}> {
 class MuWidget {
-    constructor(container) {
-        this.ui = {}; //Record<string, AnyElementA> = {};
-        this.muOpts = {};
-        this.muWidgetEventHandlers = {};
-        this.muIndexOpts = null;
-        this.muSubWidgets = [];
-        this.muNamedWidget = {}; // Record<string, MuWidget> = {};
-        this.muRoot = this;
-        this.muParent = null;
-        this.muTemplates = {};
-        this.muTemplateParents = {};
-        this.muOnAfterIndex = [];
-        this.muBindOpts = {};
-        this.container = container;
-    }
     muWidgetFromTemplate(templateName, container, params = null, position = "last", ref = null) {
         let finalContainer;
         if (typeof container == 'string') {
@@ -636,50 +667,63 @@ class MuWidget {
         else
             finalContainer = container;
         var tmpElemementType = "div";
-        var tmpTemplate = this.muFindTemplate(templateName);
-        if (!tmpTemplate)
-            throw "No template named '" + templateName + "'.";
+        let templateContent;
+        if (typeof templateName === "string") {
+            templateContent = this.muFindTemplate(templateName);
+            if (!templateContent)
+                throw "No template named '" + templateName + "'.";
+        }
+        else {
+            templateContent = templateName.html;
+        }
+        var tmpTemplate = templateContent;
         tmpTemplate = tmpTemplate.toLowerCase();
         if (tmpTemplate.startsWith('<tr'))
             tmpElemementType = "tbody";
         if (tmpTemplate.startsWith('<td') || tmpTemplate.startsWith('<th'))
             tmpElemementType = "tr";
-        if (tmpTemplate.startsWith('<tbody'))
+        if (tmpTemplate.startsWith('<tbody') || tmpTemplate.startsWith('<thead') || tmpTemplate.startsWith('<tfoot'))
             tmpElemementType = "table";
-        var element = document.createElementNS(finalContainer.namespaceURI, tmpElemementType);
-        element.innerHTML = this.muTemplates[templateName];
+        var element = document.createElementNS((finalContainer || this.container).namespaceURI, tmpElemementType);
+        element.innerHTML = templateContent;
         element = element.firstElementChild;
+        // const element = this.createElementFromHTML(templateContent, container || this.container);
         // if (params) element.setAttribute('mu-params', JSON.stringify(params));
-        switch (position) {
-            case 'first':
-                if (finalContainer.firstElementChild) {
-                    finalContainer.insertBefore(element, finalContainer.firstElementChild);
-                }
-                else {
+        if (finalContainer) {
+            switch (position) {
+                case 'first':
+                    if (finalContainer.firstElementChild) {
+                        finalContainer.insertBefore(element, finalContainer.firstElementChild);
+                    }
+                    else {
+                        finalContainer.appendChild(element);
+                    }
+                    break;
+                case 'before':
+                    finalContainer.insertBefore(element, ref);
+                    break;
+                case 'after':
+                    if (ref.nextElementSibling) {
+                        finalContainer.insertBefore(element, ref.nextElementSibling);
+                    }
+                    else {
+                        finalContainer.appendChild(element);
+                    }
+                    break;
+                case 'last':
                     finalContainer.appendChild(element);
-                }
-                break;
-            case 'before':
-                finalContainer.insertBefore(element, ref);
-                break;
-            case 'after':
-                if (ref.nextElementSibling) {
-                    finalContainer.insertBefore(element, ref.nextElementSibling);
-                }
-                else {
-                    finalContainer.appendChild(element);
-                }
-                break;
-            case 'last':
-                finalContainer.appendChild(element);
-                break;
+                    break;
+            }
         }
-        let widget = this.muActivateWidget(element, null, params || {});
+        let widget = this.muActivateWidget(element, null, params || {}, typeof templateName === "string" ? null : templateName);
         let opts = this.muGetElementOpts(element);
         if (!opts.id)
-            opts.id = templateName;
+            opts.id = (typeof templateName === "string") ? templateName : null;
         this.muAddEvents(opts, element, widget);
         return widget;
+    }
+    muAppendContent(html) {
+        this.container.innerHTML += html;
     }
     createElementFromHTML(src, container) {
         let lSrc = src.toLowerCase();
@@ -696,7 +740,8 @@ class MuWidget {
         return element;
     }
     muRemoveSelf() {
-        this.container.parentNode.removeChild(this.container);
+        if (this.container.parentNode)
+            this.container.parentNode.removeChild(this.container);
     }
     muGetChildWidgets(container) {
         return MuWidget.getChildWidgets((typeof container === "string")
@@ -717,26 +762,48 @@ class MuWidget {
                     neg = true;
                     control = control.substring(1);
                 }
-                if (!(control in this.ui))
+                if (control === ".")
+                    control = this.container;
+                else if (!(control in this.ui))
                     throw new Error("Control with mu-id='" + control + "' not found.");
-                control = this.ui[control];
+                else
+                    control = this.ui[control];
             }
+            //@ts-ignore
             if (state === "toggle")
                 state = control.style.display === "none";
+            //@ts-ignore
             control.style.display = state !== neg ? null : "none";
         }
     }
     muBindData(srcData) {
+        //@ts-ignore
         MuBinder.bindData(this.muBindOpts, srcData, this);
-        this.muAfterBindData();
+        this.muAfterBindData(srcData);
     }
     muFetchData() {
+        //@ts-ignore
         return MuBinder.fetchData(this.muBindOpts, this);
     }
     // protected muRegisterEvent(...args) { }
     // public addEventListener(name : string, handler : (...args)=>void) { }
     // public muEventNames() : string[] { return []; }
-    muAfterBindData() { }
+    muAfterBindData(data) { }
+    constructor(container) {
+        this.ui = {}; //Record<string, AnyElementA> = {};
+        this.muOpts = {};
+        this.muWidgetEventHandlers = {};
+        this.muIndexOpts = null;
+        this.muSubWidgets = [];
+        this.muNamedWidget = {}; // Record<string, MuWidget> = {};
+        //@ts-ignore
+        this.muRoot = this;
+        this.muTemplates = {};
+        this.muTemplateParents = {};
+        this.muOnAfterIndex = [];
+        this.muBindOpts = {};
+        this.container = container;
+    }
     // public constructor(container : AnyElement)
     muInit(container) {
         this.muOnAfterIndex = [];
@@ -755,16 +822,18 @@ class MuWidget {
         /*	opts ? opts : {}
         );*/
         this.container = container;
+        //@ts-ignore
         this.container.widget = this;
         this.muSubWidgets = [];
         this.muNamedWidget = {};
         this.muTemplates = {};
         this.muTemplateParents = {};
+        //@ts-ignore
         this.muRoot = this;
         this.muWidgetEventHandlers = {};
         this.beforeIndex();
         this.muAddEvents({ id: 'container' }, this.container);
-        this.muIndexTree(container, true);
+        this.muIndexTree(this.container, true);
     }
     beforeIndex() { }
     muDispatchEvent(name, ...args) {
@@ -800,20 +869,69 @@ class MuWidget {
     muEventNames() {
         return Object.keys(this.muWidgetEventHandlers);
     }
-    muActivateWidget(element, opts, extraParams = {}) {
+    muActivateWidget(element, opts, extraParams = {}, widgetDef = null) {
         if (!opts)
             opts = this.muGetElementOpts(element);
         const widgetName = opts.widget;
-        const c = MuWidget.widgetClasses[widgetName] || window[widgetName];
-        if (!c)
-            throw "Class '" + opts.widget + "' is not defined.";
-        const widget = new c(element, opts);
-        if (!(widget instanceof MuWidget))
-            console.error("Widget '" + widgetName + "' is not a descendant of the MuWidget class.");
+        let widget;
+        if (widgetDef) {
+            if (widgetDef.classInstance) {
+                widget = widgetDef.classInstance;
+                widget.container = element;
+            }
+            else if (widgetDef.classType) {
+                widget = new widgetDef.classType(element, opts);
+            }
+        }
+        let c = null;
+        if (!widget) {
+            c = MuWidget.widgetClasses[widgetName] || window[widgetName];
+            if (!c)
+                throw "Class '" + opts.widget + "' is not defined.";
+            widget = new c(element, opts);
+        }
+        if (!(widget instanceof MuWidget)) {
+            if (MuWidget.fixOldWidgets) {
+                if (MuWidget.fixOldWidgets !== "silent")
+                    console.error("Widget '" + widgetName + "' is not a descendant of the MuWidget class.");
+                // extends prototype, class.prototype can not be enumarated
+                //@ts-ignore
+                if (c === null)
+                    c = { prototype: widget.__proto__ };
+                for (var k of [
+                    'addEventListener', 'addEventListener(name, handler)', 'beforeIndex', 'createElementFromHTML', 'muActivateWidget', 'muAddEvent', 'muAddEvents',
+                    'muAddUi', 'muAfterBindData', 'muBindData', 'muBindList', 'muCallPlugin', 'muDispatchEvent', 'muEventNames', 'muFetchData', 'muFindMethod',
+                    'muFindTemplate', 'muGetChildWidgets', 'muGetElementOpts', 'muGetMethodCallback', 'muIndexTree', 'muInit', 'muRegisterEvent', 'muRemoveSelf',
+                    'muVisible', 'muWidgetFromTemplate', 'muGetRoot'
+                ])
+                    if (!c.prototype[k])
+                        c.prototype[k] = MuWidget.prototype[k];
+                c.prototype.muIndexForm = function (form) {
+                    if (!form) {
+                        if (this.container.tagName == 'FORM')
+                            form = this.container;
+                        else
+                            form = this.container.querySelector('form');
+                    }
+                    if (form) {
+                        this.muAddUi('form', form);
+                        this.muAddEvents({ id: 'form' }, form);
+                        for (var i = 0, l = form.elements.length; i < l; i++) {
+                            var element = form.elements[i];
+                            this.muAddUi(element.name, element);
+                            this.muAddEvents({ id: element.name }, element);
+                        }
+                    }
+                };
+            }
+            else
+                throw "Widget '" + widgetName + "' is not a descendant of the MuWidget class.";
+        }
         widget.muParent = this;
+        //@ts-ignore
         widget.muRoot = this.muRoot || this;
         if (opts.params) {
-            const params = JSON.parse(opts.params);
+            const params = typeof opts.params === "string" ? JSON.parse(opts.params) : opts.params;
             for (const k in params) {
                 widget[k] = params[k];
             }
@@ -825,6 +943,7 @@ class MuWidget {
         }
         // MuWidget.extendPrototype(widget);
         this.muSubWidgets.push(widget);
+        //@ts-ignore
         if (opts.id)
             this.muNamedWidget[opts.id] = widget;
         // MuWidget.call(widget, element, /*opts.opts || this.muOpts */);
@@ -833,6 +952,25 @@ class MuWidget {
     }
     muGetElementOpts(element) {
         var res = {};
+        // Convert simplified syntax id:widget@template
+        const simpleAttributeName = this.muOpts.attributePrefix.substring(0, this.muOpts.attributePrefix.length - 1);
+        const simpleAttributeValue = element.getAttribute(simpleAttributeName);
+        const ire = MuWidget.identifierRe;
+        if (simpleAttributeValue) {
+            const m = simpleAttributeValue.match('(' + ire + ')? *(:(' + ire + '))? *(@(' + ire + '))? *(#(.*))?');
+            if (m) {
+                if (m[1])
+                    element.setAttribute(this.muOpts.attributePrefix + 'id', m[1]);
+                if (m[3])
+                    element.setAttribute(this.muOpts.attributePrefix + 'widget', m[3]);
+                if (m[5])
+                    element.setAttribute(this.muOpts.attributePrefix + 'template', m[5]);
+                if (m[7])
+                    element.setAttribute(this.muOpts.attributePrefix + 'bind', m[7]);
+                element.removeAttribute(simpleAttributeName);
+            }
+        }
+        // other mu- parameters
         for (var i = 0, attributes = element.attributes, n = attributes.length, arr = []; i < n; i++) {
             var name = attributes[i].nodeName;
             if (name.startsWith(this.muOpts.attributePrefix)) {
@@ -844,8 +982,13 @@ class MuWidget {
     }
     muFindTemplate(templateName) {
         let tmpTemplate = null;
-        if (templateName.startsWith("ancestor:")) {
+        if (templateName.startsWith("shared:")) {
+            let aTemplateName = templateName.substr(7);
+            tmpTemplate = MuWidget.sharedTemplates[aTemplateName];
+        }
+        else if (templateName.startsWith("ancestor:")) {
             let aTemplateName = templateName.substr(9);
+            //@ts-ignore
             let w = this;
             while (w) {
                 if (w.muTemplates[aTemplateName]) {
@@ -862,7 +1005,14 @@ class MuWidget {
     }
     muIndexTree(element, indexWidget, useName = null) {
         var _a;
+        //@ts-ignore
         var ev = { element: element, widget: this, opts: this.muGetElementOpts(element) };
+        if (indexWidget) {
+            this.muMetaData = {
+                id: ev.opts.id,
+                widget: this.constructor.name,
+            };
+        }
         //TODO: MuBinder
         // this.muCallPlugin("indexPrepareElement", ev);
         if (!ev.element)
@@ -902,15 +1052,23 @@ class MuWidget {
             return;
         if (opts.template) {
             element.removeAttribute(this.muOpts.attributePrefix + "template");
-            if (opts.template in this.muTemplates)
-                console.error("The widget already contains template '" + opts.template + "'.");
-            this.muTemplates[opts.template] = element.outerHTML;
-            this.muTemplateParents[opts.template] = element.parentNode;
+            if (opts.template.startsWith("shared:")) {
+                const name = opts.template.substring(7);
+                if (name in MuWidget.sharedTemplates)
+                    console.error("The widget already contains template '" + opts.template + "'.");
+                MuWidget.sharedTemplates[name] = element.outerHTML;
+            }
+            else {
+                if (opts.template in this.muTemplates)
+                    console.error("The widget already contains template '" + opts.template + "'.");
+                this.muTemplates[opts.template] = element.outerHTML;
+                this.muTemplateParents[opts.template] = element.parentNode;
+            }
             if (element.parentNode)
                 element.parentNode.removeChild(element);
             return;
         }
-        if (opts.id)
+        if (opts.id && element != this.container)
             this.muAddUi(opts.id, element);
         // if (opts.bind) this.muParseBinds(opts.bind, element);
         ev.opts = opts;
@@ -938,12 +1096,17 @@ class MuWidget {
                 this.muOnAfterIndex[i](this);
             }
         }
+        this.muCallPlugin("afterIndexElement", ev);
     }
     muAddUi(id, element) {
         if (id in this.ui)
-            console.error("The widget already contains an element with mu-id '" + id + "'.");
+            console.error("The widget '" + /*this.muGetIdentification()*/ this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.");
+        //@ts-ignore
         this.ui[id] = element;
     }
+    /* muGetIdentification() {
+    return this.muIndexOpts.widget + (this.muIndexOpts.id ? "#" + this.muIndexOpts.id : "");
+    } */
     muCallPlugin(eventName, eventArgs) {
         for (var plugin of MuWidget.plugIns) {
             if (plugin[eventName])
@@ -990,7 +1153,7 @@ class MuWidget {
         var wEvents = [];
         if (widget) {
             wEvents = widget.muEventNames();
-            eventNames = [...eventNames, ...wEvents];
+            eventNames = [...new Set([...eventNames, ...wEvents])];
         }
         var tags = opts.tag ? opts.tag.split(" ") : null;
         for (var i = 0, l = eventNames.length; i < l; i++) {
@@ -1073,6 +1236,19 @@ class MuWidget {
         // return callback.apply(null, [this].concat(Array.from(arguments)));
         }); */
     }
+    muGetRoot() {
+        //@ts-ignore
+        return this.muParent ? this.muParent.muGetRoot() : this;
+    }
+    muDebugGetClasses() {
+        const uniqueClasses = new Set();
+        this.container.querySelectorAll('[class]').forEach(function (element) {
+            element.classList.forEach(function (className) {
+                uniqueClasses.add(className);
+            });
+        });
+        return Array.from(uniqueClasses);
+    }
     static getChildWidgets(container) {
         const ls = [];
         for (const item of container.children) {
@@ -1116,7 +1292,19 @@ class MuWidget {
                 onSucces(muRoot);
         });
     }
+    static getWidget(el) {
+        while (el) {
+            if (el.widget)
+                return el.widget;
+            //@ts-ignore
+            el = el.parentElement;
+        }
+        return null;
+    }
 }
+MuWidget.fixOldWidgets = false;
+MuWidget.sharedTemplates = {};
+MuWidget.identifierRe = '[a-zA-Z_.][0-9a-zA-Z_.]*';
 // statics
 MuWidget.widgetClasses = {};
 MuWidget.plugIns = [];
@@ -1126,6 +1314,7 @@ function SetAttributes(element, attrs) {
         element.setAttribute(n, attrs[n].toString());
     }
 }
+// export class MuWidget extends MuWidgetTyped<MuWidget, {}, {}> { }
 class StrParser {
     constructor(str) {
         this.position = 0;
@@ -1207,12 +1396,6 @@ class StrParser {
     }
 }
 class MuLabelFor {
-    /**
-    *
-    */
-    constructor(alsoUseBind = false) {
-        this.alsoUseBind = alsoUseBind;
-    }
     beforeIndexElement(ev) {
         if (ev.opts.for) {
             const id = ev.opts.for;
@@ -1265,6 +1448,12 @@ class MuLabelFor {
         muWidget.plugIns.push({
             beforeIndexElement: (ev) => inst.beforeIndexElement(ev)
         });
+    }
+    /**
+    *
+    */
+    constructor(alsoUseBind = false) {
+        this.alsoUseBind = alsoUseBind;
     }
 }
 function getIdDb(widget) {
