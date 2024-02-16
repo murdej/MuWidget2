@@ -748,7 +748,16 @@ class MuWidget {
             ? this.ui[container]
             : container);
     }
-    muBindList(list, templateName, container, commonParams = null, finalCalback = null) {
+    muBindList(list, templateName, container, commonParams = {}, finalCalback = null) {
+        var res = [];
+        for (const item of list) {
+            var params = Object.assign(Object.assign({}, item), commonParams);
+            var widget = this.muWidgetFromTemplate(templateName, container, params);
+            if (finalCalback)
+                finalCalback(widget, item);
+            res.push(widget);
+        }
+        return res;
     }
     muVisible(state, control) {
         if (Array.isArray(control)) {

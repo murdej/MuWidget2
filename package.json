@@ -1,6 +1,6 @@
 {
   "name": "mu-widget",
-  "version": "2.10.3",
+  "version": "2.10.2",
   "description": "Simple javascript widget creation",
   "_Smain": "index.js",
   "directories": {
@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "demos": "npx parcel watch --dist-dir ./demo/dist/ --no-hmr --public-url . demo/index.html",
-    "build": "npm run build:package && npm run build:bundle-nomodule",
+    "build": "npm run build:package ; npm run build:bundle-nomodule",
     "build-demos": "npx parcel build --no-content-hash --dist-dir ./demo/dist/ --public-url . demo/index.html",
     "build:package": "tsc",
     "build:bundle-nomodule": "cd src ; cat MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc --target ES2015 ../dist/MuWidget-bundle.ts #; rm ../dist/MuWidget-bundle.ts ",
