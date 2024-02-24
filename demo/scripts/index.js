@@ -18,6 +18,7 @@ MuWidget.registerAll(
 	// require("./MuBindSelf"),
 	require("../../src/components/TreeView"),
 	require("./TreeViewDemo"),
+	require("./DialogDemo"),
 );
 
 MuWidget.registerAs(MuWidget, '.');

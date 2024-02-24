@@ -20,7 +20,7 @@ export class UiTabs extends MuWidget
 
 	public afterIndex()
 	{
-		this.container.classList.add("nav nav-tabs");
+		this.container.classList.add("nav", "nav-tabs");
 		this.muParent?.muOnAfterIndex.push(() => this.makeTabs());
 	}
 

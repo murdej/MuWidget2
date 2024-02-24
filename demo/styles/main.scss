@@ -143,3 +143,21 @@ h1,h2,h3,h4,h5,h6 {
 		
 	}
 }
+dialog {
+	border: 1px solid #ccc;
+	box-shadow: 10px 10px 20px #0008;
+}
+
+.d-flex {
+	display: flex;
+}
+.flex-grow-1 {
+	flex-grow: 1;
+}
+.btn-close {
+	color: red;
+	font-weight: 900;
+	scale: 2;
+	display: inline-block;
+	cursor: pointer;
+}
