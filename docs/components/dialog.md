@@ -16,6 +16,12 @@ Widget from which the dialog opens:
 		// Here you can use the values obtained
 	}
 ```
+*Hint: Opening the dialog and getting the result can be written in a single line:*
+
+```ts
+const res = await Dialog.open('DialogDemoDialog').waitForResponse(null);
+```
+
 
 Widget displayed in an open dialog:
 
