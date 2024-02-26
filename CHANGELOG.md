@@ -1,5 +1,9 @@
 # Change log
 
+## 1.11.0
+
+ - Added dialog box component
+
 ## 2.10.2
 
  - Fix: `MuBindex`.`bindData` will fail if null is passed.
