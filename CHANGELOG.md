@@ -3,6 +3,7 @@
 ## 1.11.0
 
  - Added dialog box component
+ - Added component
 
 ## 2.10.2
 
