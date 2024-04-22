@@ -875,13 +875,16 @@ public muBindList(
 list: any[],
 templateName : string,
 container : string|AnyElement,
-commonParams : Record<string, any> = {},
+commonParams : (Record<string, any>|((item:Record<string, any>)=>Record<string, any>)) = {},
 finalCalback : ((widget : any, item: any) => void)|null = null)
 {
 var res = [];
 for(const item of list)
 {
-var params = { ...item, ...commonParams };
+var params = {
+...item,
+...(typeof commonParams === "function" ? commonParams(item) : commonParams)
+};
 var widget = this.muWidgetFromTemplate(templateName, container, params);
 if (finalCalback) finalCalback(widget, item);
 res.push(widget);

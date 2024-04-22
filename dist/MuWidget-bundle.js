@@ -751,7 +751,7 @@ class MuWidget {
     muBindList(list, templateName, container, commonParams = {}, finalCalback = null) {
         var res = [];
         for (const item of list) {
-            var params = Object.assign(Object.assign({}, item), commonParams);
+            var params = Object.assign(Object.assign({}, item), (typeof commonParams === "function" ? commonParams(item) : commonParams));
             var widget = this.muWidgetFromTemplate(templateName, container, params);
             if (finalCalback)
                 finalCalback(widget, item);
