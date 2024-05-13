@@ -20,3 +20,5 @@ A simple (java/type)script OOP component based framework for creating web UIs fr
 ```bash
 npm install mu-widget
 ```
+-----
+Big thanks to [JetBrains](https://www.jetbrains.com/) for providing a [great IDE](https://www.jetbrains.com/ides/).
