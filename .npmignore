@@ -10,3 +10,4 @@ node_modules
 .parcel-cache
 .htmlnanorc.js
 trim-eximport.js
+tests

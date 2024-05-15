@@ -19,6 +19,7 @@ MuWidget.registerAll(
 	require("../../src/components/TreeView"),
 	require("./TreeViewDemo"),
 	require("./DialogDemo"),
+	require("./JsonS"),
 );
 
 MuWidget.registerAs(MuWidget, '.');

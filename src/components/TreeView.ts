@@ -21,6 +21,7 @@ export class TreeView extends MuWidget {
 		indentField: "indent",
 		templateName: "item",
 		plungeField: "plunge",
+		prepareItem: null,
 	}
 
 	public render(data: any, opts: Partial<TreeViewOpts> = {}) {
@@ -58,8 +59,9 @@ export class TreeView extends MuWidget {
 		if (!container) { // @ts-ignore
 			container = this.container;
 		}
-		for(const item of items)
+		for(let item of items)
 		{
+			if (this.opts.prepareItem) item = this.opts.prepareItem(item);
 			const templateName = (typeof this.opts.templateName === "string")
 				? this.opts.templateName
 				: this.opts.templateName(item);
@@ -89,4 +91,5 @@ export type TreeViewOpts = {
 	indentField: string|null;
 	plungeField: string;
 	templateName: ((item: any) => string)|string;
+	prepareItem: ((item: any) => any)|null;
 }

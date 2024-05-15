@@ -6,6 +6,6 @@
 	  "outDir": "./lib",
 	  "strict": false
 	},
-	"include": ["./src/*", "./src/*/*"]/*,
-	"exclude": ["node_modules", "** /__tests__/*", ".cache", "src/disabled/*", "demo/scripts/*"]*/
+	"include": ["./src/*", "./src/*/*"],
+	"exclude": ["node_modules", "** /__tests__/*", ".cache", "src/disabled/*", "demo/scripts/*"]
   }

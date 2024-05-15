@@ -1,4 +1,5 @@
 
+
 class MuBinder {
 public static parse(src: string, element: AnyElement): MuBindOpts[] {
 /*
@@ -67,7 +68,9 @@ while (p.chunk === "\\\"")
 }
 const sArgs = sp.substring(argStart, p);
 try {
-filter.args = JSON.parse("[" + sArgs + "]");
+filter.args = MuBinder.useJsonS
+? JSONS.parse("[" + sArgs + "]")
+: JSON.parse("[" + sArgs + "]");
 } catch (exc) {
 throw "Invalid arguments - " + exc.toString() + " '" + sArgs + "'";
 }
@@ -193,6 +196,8 @@ ev.widget.muBindOpts[mbo.source].push(mbo);
 }
 }
 }
+
+public static useJsonS: boolean = true;
 
 public static register(muWidget: any) {
 // @ts-ignore
@@ -418,6 +423,7 @@ type MuBindFilterEv = {
 originalValue: any,
 dataset: Record<string|number, any>,
 }
+
 class MuRouter
 {
 protected routes : Record<string, Route> = {};
@@ -715,6 +721,7 @@ parameters: MuParameters;
 routeName : string;
 }
 
+
 class MuUIDs {
 public static counters : Counters = {
 id: 0,
@@ -734,7 +741,8 @@ return MuUIDs.prefix + MuUIDs.counters[k].toString();
 type Counters = {
 id: number,
 name: number
-}/*	This file is part of MuWidget.
+}
+/*	This file is part of MuWidget.
 
 MuWidget is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -764,6 +772,14 @@ public muOpts: MuOpts = {} as MuOpts;
 protected muWidgetEventHandlers : Record<string, MuHandler[]> = {};
 
 protected muIndexOpts: MuWidgetOpts|null = null;
+
+/*
+use json simplified in params
+true - always
+false - newer
+string - if content begining defined string
+*/
+public static paramJsonS: boolean|string = '!';
 
 public muWidgetFromTemplate(
 templateName : string|{html:string,classType?:any,classInstance?:any},
@@ -1103,7 +1119,13 @@ widget.muParent = this;
 widget.muRoot = this.muRoot || this;
 if (opts.params)
 {
-const params = typeof opts.params === "string" ? JSON.parse(opts.params) : opts.params;
+const params = typeof opts.params === "string"
+? (
+MuWidget.paramJsonS
+? JSONS.parse(opts.params)
+: JSON.parse(opts.params)
+)
+: opts.params;
 for(const k in params)
 {
 (widget as any)[k] = params[k];
@@ -1330,7 +1352,11 @@ else
 paramsStr = "{" + paramsStr + "}";
 
 try {
-var params = paramsStr ? JSON.parse(paramsStr) : null;
+var params = paramsStr
+? (MuWidget.paramJsonS
+? JSONS.parse(paramsStr)
+: JSON.parse(paramsStr))
+: null;
 }
 catch (exc : any)
 {
@@ -1422,7 +1448,11 @@ var params : any[] = [];
 var p = null;
 if (-1 != (p = name.indexOf(':')))
 {
-params = JSON.parse('[' + name.substr(p + 1) + ']');
+const jsrc = '[' + name.substr(p + 1) + ']';
+params = MuWidget.paramJsonS
+? JSONS.parse(jsrc)
+: JSON.parse(jsrc)
+;
 name = name.substr(0, p);
 }
 var method = obj[name];
@@ -1441,12 +1471,6 @@ const methodInfo = this.muFindMethod(name, context);
 
 return (ev : any/* , event : Event */) =>
 {
-
-/* const callparams = [<MuEvent>{
-sender: event?.target,
-source: source,
-originalEvent: event
-}, ...methodInfo.args, ...Array.from(arguments).slice(1)]; */
 const callparams = [ev, ...methodInfo.args, ...(ev.args||[])]
 
 return methodInfo.method.apply(methodInfo.context, callparams);
@@ -1618,6 +1642,7 @@ type MuUi<T extends Record<string, any&AnyElement>> = T & Record<string, AnyElem
 // export class MuWidget extends MuWidgetTyped<MuWidget, {}, {}> { }
 
 
+
 class StrParser
 {
 protected str : string;
@@ -1661,20 +1686,22 @@ chunkNum: firstChunkNum,
 position: firstPos
 };
 this._onEndChunk = false;
-this.debug("findNext(" + chunk.join('", "') + ") > '" + firstChunk + "', " + this.position);
+this.debug("findNext(", chunk, ") > '" + firstChunk + "', " + this.position);
 return this.lastMark;
 } else {
-this.debug("findNext(" + chunk.join('", "') + ") not found " + this.position);
+this.debug("findNext(", chunk, ") not found " + this.position);
 return null;
 }
 }
 
-public substring(start : StrParserMark|number|null = null, stop : StrParserMark|number|null = null) : string
+public substring(start : StrParserMark|number|string|null = null, stop : StrParserMark|number|string|null = null) : string
 {
 if (start === null) start = this.position;
+else if (typeof start === "string") start = this.loadPos(start)
 else if (typeof start !== "number") start = start.position;
 
 if (stop === null) stop = this.str.length;
+else if (typeof stop === "string") stop = this.loadPos(stop)
 else if (typeof stop !== "number") stop = stop.position;
 
 const res = this.str.substring(start, stop);
@@ -1694,6 +1721,20 @@ public pos()
 return { position: this.position };
 }
 
+protected storedPositions: Record<string, number> = {};
+
+public loadPos(name: string): number
+{
+if (name === '.') return this.position;
+else if (name === '>') return this.str.length;
+return this.storedPositions[name];
+}
+
+public savePos(name: string): void
+{
+this.storedPositions[name] = this.position;
+}
+
 protected _onEndChunk = false;
 public toEndChunk()
 {
@@ -1703,17 +1744,52 @@ this._onEndChunk = true;
 this.debug("toEndChunk +" + l.toString());
 }
 
-protected debug(msg : any)
+protected debug(...msgs : any)
 {
 if (this.debugMode)
 {
-console.log(msg + "\n		%c" + this.str.substring(0, this.position) + "%c" + this.str.substring(this.position), "background: green; color: white", "color: blue");
+const msg = msgs.map(ch => typeof ch === "string" ? ch : JSON.stringify(ch)).join('');
+// console.log(msg + "\n	" + this.position + "	%c" + this.str.substring(0, this.position) + "%c" + this.str.substring(this.position), "background: green; color: white", "color: blue");
+console.log(msg + "\n	" + this.position + "	" + this.str.substring(0, this.position) + "|" + this.str.substring(this.position));
 }
 }
 
 public isEnd() : boolean
 {
 return this.position >= this.str.length;
+}
+
+public startsWith(chunk : string|string[], skipChunk : boolean = false, saveLast: boolean = true) : StrParserMark|null
+{
+if (typeof chunk === "string") chunk = [chunk];
+// let firstPos : number|null = null;
+let firstPos : number|null = null;
+let firstChunk : string|null = null;
+let firstChunkNum : number = 0;
+let i = 0;
+for(const ch of chunk)
+{
+const stw = this.str.startsWith(ch, this.position);
+if (stw)
+{
+const mark = {
+chunk: ch,
+chunkNum: i,
+position: this.position
+}
+if (saveLast) this.lastMark = mark;
+if (skipChunk) this.position += ch.length;
+this.debug("startsWith(", chunk, ") > '" + ch + "'");
+return mark;
+}
+i++;
+}
+this.debug("startsWith(", chunk, ") > not found");
+return null;
+}
+
+public skipChunks(chunks: string[]) {
+while (this.startsWith(chunks, true, false));
 }
 }
 
@@ -1722,6 +1798,7 @@ chunk? : string,
 chunkNum? : number,
 position : number
 }
+
 
 
 class MuLabelFor {
@@ -1789,4 +1866,255 @@ function getIdDb(widget : /*IMuWidget*/any) {
 if (!widget.muPluginMuLabelFor)
 widget.muPluginMuLabelFor = {}
 return widget.muPluginMuLabelFor;
+}
+
+class JSONS {
+public static parse(src: string): any {
+const par = new JSONS();
+par.tokenize(src);
+return par.parseCollection();
+}
+
+constructor() {
+}
+
+protected chunkToType: Record<string, JSONSTokenType> = {
+":": "colon",
+",": "comma",
+"\n": "newLine",
+"{": "oOpen",
+"}": "oClose",
+"[": "aOpen",
+"]": "aClose",
+}
+
+protected specValues: Record<string, any> = {
+'null': null,
+'true': true,
+'false': false,
+'undefined': undefined,
+}
+
+protected stringTermChunks = [ ...Object.keys(this.chunkToType), "\\", "#", "/*" ];
+
+tokenize(src: string): JSONSToken[] {
+const res: JSONSToken[] = [];
+src = src.replace(/\r\n/g, "\n");
+const sp = new StrParser(src);
+// sp.debugMode = true;
+let lastPos = 0;
+while (!sp.isEnd()) {
+sp.skipChunks([" ", "\t"]);
+
+if (sp.startsWith(['#', '//'], true))
+{ // line comment
+sp.findNext("\n", true);
+}
+else if (sp.startsWith('/*', true))
+{ // block comment
+let d = 1;
+while(d) {
+const ch = sp.findNext(['/*', '*/'], true);
+if (!ch) throw new JSONSError('Incomplete block comment'); // EXC uncosed comment
+if (ch.chunk === '/*') d++;
+else d--;
+}
+}
+else if (sp.startsWith(Object.keys(this.chunkToType), true))
+{ // control chars
+const t = this.chunkToType[sp.lastMark.chunk];
+if (t !== "newLine")
+res.push({
+type: t,
+value: null,
+pos: sp.lastMark.position,
+});
+} else if (sp.startsWith(["'", '"'], true))
+{ // enclosed string
+const q = sp.lastMark.chunk;
+const strBegin = sp.position;
+sp.savePos('stringBegin');
+let str = "";
+let strEnd = false;
+while (!strEnd) {
+if (sp.findNext(['\\"', "\\'", q])) {
+const strPart = sp.substring('stringBegin', '.');
+// console.log(['++', strPart, str]);
+str += strPart;
+sp.toEndChunk();
+sp.savePos('stringBegin');
+// console.log('Str chunk: ' + sp.lastMark.chunk);
+switch (sp.lastMark.chunk) {
+case '\\"':
+str += "\\\"";
+break;
+case "\\'":
+str += "'";
+break;
+default:
+strEnd = true;
+break;
+}
+} else throw new JSONSError('missing the right quotation mark'); // EXC unclosed quote
+}
+let i=0;
+str = str.replace(/\n/g, "\\n");
+// console.log(["JSSTR [" + str + "]", ...[...str].map(c=>(i++) + ": " + c)]);
+res.push({
+type: "value",
+value: JSON.parse('"' + str + '"'),
+pos: strBegin,
+});
+}
+else
+{ // unenclosed string
+sp.savePos('stringBegin');
+const ch = sp.findNext(this.stringTermChunks, false);
+const valStr = sp.substring(
+'stringBegin',
+ch ? '.' : '>'
+).trim();
+const valStrL = valStr.toLowerCase();
+res.push({
+type: "value",
+value: Object.keys(this.specValues).includes(valStrL)
+? this.specValues[valStrL]
+// @ts-ignore
+: (!isNaN(valStr)
+? parseFloat(valStr)
+: valStr
+),
+pos: sp.loadPos('stringBegin'),
+});
+if (!ch) break;
+}
+if (lastPos === sp.position) {
+// console.log(["Zacyklilo se.", ...res]);
+throw Error('The parsing is looping. Please create an issue and attach the source text for parsing. https://github.com/murdej/MuWidget2/issues');
+}
+lastPos = sp.position;
+}
+this.tokens = res;
+
+return res;
+}
+
+protected tokens: JSONSToken[] = [];
+
+protected tokenI: number = 0;
+
+protected collectionDeep: number = 0;
+
+protected curToken(shift: number = 0): JSONSToken|null
+{
+return this.tokens[this.tokenI + shift] ?? null;
+}
+
+protected nextToken(): JSONSToken|null
+{
+this.tokenI++;
+return this.tokens[this.tokenI] ?? null;
+}
+
+
+parseCollection(): any
+{
+let type: "array"|"object";
+const t = this.curToken();
+if (t.type === "aOpen") {
+type = "array";
+this.nextToken();
+}
+else if (t.type === "oOpen") {
+type = "object";
+this.nextToken();
+}
+else if (t.type === "value") { // autodetect
+const nt = this.curToken(1);
+if (nt === null) return t.value;
+type = nt.type === "colon" ? "object" : "array";
+}
+
+if (type === "object") {
+const res = {};
+while (this.curToken()) {
+let ct = this.curToken();
+// end of collection
+if (ct.type === "oClose") {
+// this.nextToken();
+return res;
+}
+// key : ....
+if (ct.type === "value") {
+const key = ct.value;
+ct = this.nextToken();
+// collon
+if (ct.type !== "colon") throw new JSONSError("Expected ':' ", ct);
+ct = this.nextToken();
+switch (ct.type) {
+case "value":
+res[key] = ct.value;
+break;
+case "aOpen":
+case "oOpen":
+res[key] = this.parseCollection();
+break;
+default:
+throw new JSONSError("Expected value or [ or { or }", ct);
+}
+// optional comma
+ct = this.nextToken();
+if (ct.type === "comma")
+this.nextToken();
+} else throw new JSONSError("Expected property name ", ct);
+}
+return res;
+} else {
+const res = [];
+while (this.curToken()) {
+let ct = this.curToken();
+// end of collection
+if (ct.type === "aClose") {
+// this.nextToken();
+return res;
+}
+switch (ct.type) {
+case "value":
+res.push(ct.value);
+break;
+case "aOpen":
+case "oOpen":
+res.push(this.parseCollection());
+break;
+default:
+throw new JSONSError("Expected value or [ or { or }", ct);
+}
+
+// optional comma
+ct = this.nextToken();
+if (ct && ct.type === "comma")
+this.nextToken();
+}
+return res;
+}
+}
+}
+
+type JSONSToken = {
+type: JSONSTokenType,
+value: string|null,
+pos: number,
+}
+
+type JSONSTokenType = "value"|"colon"|"comma"|"aOpen"|"aClose"|"oOpen"|"oClose"|"newLine";
+
+class JSONSError extends Error {
+constructor(message: string, token: JSONSToken|null = null) {
+super(message + (token
+? " position: " + token.pos + " [" + token.type + ( token.type === "value" ? ": " + JSON.stringify(token.value) + ']' : '')
+: "")
+);
+this.name = "JSONSError";
+// this.token = token;
+}
 }

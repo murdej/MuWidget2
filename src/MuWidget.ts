@@ -14,6 +14,7 @@
 	along with MuWidget.  If not, see <https://www.gnu.org/licenses/>. */
 
 import { MuBinder, MuBindOpts } from "./MuBinder";
+import {JSONS} from "./utils/JSONS";
 
 // export class MuWidget<TP extends MuWidget = MuWidget<any,{},{}>, TU extends Record<string, any&AnyElement> = {}, TW extends Record<string, any&AnyElement> = {}> {
 export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, any&AnyElement> = {}, TW extends Record<string, any&AnyElement> = {}> {
@@ -29,6 +30,14 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	protected muWidgetEventHandlers : Record<string, MuHandler[]> = {};
 	
 	protected muIndexOpts: MuWidgetOpts|null = null;
+
+	/*
+	use json simplified in params
+	true - always
+	false - newer
+	string - if content begining defined string
+	 */
+	public static paramJsonS: boolean|string = '!';
 	
 	public muWidgetFromTemplate(
 		templateName : string|{html:string,classType?:any,classInstance?:any}, 
@@ -368,7 +377,13 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		widget.muRoot = this.muRoot || this;
 		if (opts.params)
 		{
-			const params = typeof opts.params === "string" ? JSON.parse(opts.params) : opts.params;
+			const params = typeof opts.params === "string"
+				? (
+					MuWidget.paramJsonS
+					? JSONS.parse(opts.params)
+					: JSON.parse(opts.params)
+				)
+				: opts.params;
 			for(const k in params)
 			{
 				(widget as any)[k] = params[k];
@@ -595,7 +610,11 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			paramsStr = "{" + paramsStr + "}";
 
 		try {
-			var params = paramsStr ? JSON.parse(paramsStr) : null;
+			var params = paramsStr
+				? (MuWidget.paramJsonS
+					? JSONS.parse(paramsStr)
+					: JSON.parse(paramsStr))
+				: null;
 		}
 		catch (exc : any)
 		{
@@ -687,7 +706,11 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		var p = null;
 		if (-1 != (p = name.indexOf(':')))
 		{
-			params = JSON.parse('[' + name.substr(p + 1) + ']');
+			const jsrc = '[' + name.substr(p + 1) + ']';
+			params = MuWidget.paramJsonS
+				? JSONS.parse(jsrc)
+				: JSON.parse(jsrc)
+			;
 			name = name.substr(0, p);
 		}
 		var method = obj[name];
@@ -706,12 +729,6 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 		return (ev : any/* , event : Event */) =>
 		{
-			
-			/* const callparams = [<MuEvent>{
-				sender: event?.target,
-				source: source, 
-				originalEvent: event 
-			}, ...methodInfo.args, ...Array.from(arguments).slice(1)]; */
 			const callparams = [ev, ...methodInfo.args, ...(ev.args||[])]
 
 			return methodInfo.method.apply(methodInfo.context, callparams);

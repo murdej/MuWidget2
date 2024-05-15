@@ -1,6 +1,10 @@
 # Change log
 
-## 1.11.0
+## 2.12.0
+
+ - Added JSONS as an alternative to JSON
+
+## 2.11.0
 
  - Added dialog box component
  - Added component

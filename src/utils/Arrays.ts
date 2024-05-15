@@ -29,14 +29,19 @@ export class Arrays {
 	}
 
 	static ToObject<TI, TK extends KeyTypes>(data: TI[], key: TK|((item: TI)=>TK), val: null|string|((item: TI)=>TK) = null): Record<TK, TI|any> {
+		// @ts-ignore
 		const res: Record<TK, TI|any> = {};
 		for(const item of data) {
 			const k = typeof key === "string"
+				// @ts-ignore
 				? item[key]
+				// @ts-ignore
 				: key(item);
 
 			if (val === null) res[k] = item;
+			// @ts-ignore
 			else if (typeof item === "string") res[k] = item[key];
+			// @ts-ignore
 			else res[k] = key(item);
 		}
 		return res;
