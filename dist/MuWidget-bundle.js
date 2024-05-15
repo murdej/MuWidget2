@@ -67,7 +67,9 @@ class MuBinder {
                     }
                     const sArgs = sp.substring(argStart, p);
                     try {
-                        filter.args = JSON.parse("[" + sArgs + "]");
+                        filter.args = MuBinder.useJsonS
+                            ? JSONS.parse("[" + sArgs + "]")
+                            : JSON.parse("[" + sArgs + "]");
                     }
                     catch (exc) {
                         throw "Invalid arguments - " + exc.toString() + " '" + sArgs + "'";
@@ -390,6 +392,7 @@ class MuBinder {
         }
     }
 }
+MuBinder.useJsonS = true;
 MuBinder.filters = {
     toLower: val => {
         return val === null || val === void 0 ? void 0 : val.toString().toLocaleLowerCase();
@@ -654,6 +657,20 @@ MuUIDs.counters = {
     name: 0
 };
 MuUIDs.prefix = "_Mu_";
+/*	This file is part of MuWidget.
+
+MuWidget is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+MuWidget is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with MuWidget.  If not, see <https://www.gnu.org/licenses/>. */
 // export class MuWidget<TP extends MuWidget = MuWidget<any,{},{}>, TU extends Record<string, any&AnyElement> = {}, TW extends Record<string, any&AnyElement> = {}> {
 class MuWidget {
     muWidgetFromTemplate(templateName, container, params = null, position = "last", ref = null) {
@@ -1600,11 +1617,11 @@ class JSONS {
                 while (!strEnd) {
                     if (sp.findNext(['\\"', "\\'", q])) {
                         const strPart = sp.substring('stringBegin', '.');
-                        console.log(['++', strPart, str]);
+                        // console.log(['++', strPart, str]);
                         str += strPart;
                         sp.toEndChunk();
                         sp.savePos('stringBegin');
-                        console.log('Str chunk: ' + sp.lastMark.chunk);
+                        // console.log('Str chunk: ' + sp.lastMark.chunk);
                         switch (sp.lastMark.chunk) {
                             case '\\"':
                                 str += "\\\"";
@@ -1648,8 +1665,8 @@ class JSONS {
                     break;
             }
             if (lastPos === sp.position) {
-                console.log(["Zacyklilo se.", ...res]);
-                break;
+                // console.log(["Zacyklilo se.", ...res]);
+                throw Error('The parsing is looping. Please create an issue and attach the source text for parsing. https://github.com/murdej/MuWidget2/issues');
             }
             lastPos = sp.position;
         }
@@ -1758,4 +1775,3 @@ class JSONSError extends Error {
         // this.token = token;
     }
 }
-export {};
