@@ -1,5 +1,6 @@
 import { AnyElement, MuWidget } from "./MuWidget";
 import { StrParser, StrParserMark } from "./StrParser";
+import {JSONS} from "./utils/JSONS";
 
 export class MuBinder {
 	public static parse(src: string, element: AnyElement): MuBindOpts[] {
@@ -69,7 +70,9 @@ export class MuBinder {
 					}
 					const sArgs = sp.substring(argStart, p);
 					try {
-						filter.args = JSON.parse("[" + sArgs + "]");
+						filter.args = MuBinder.useJsonS
+							? JSONS.parse("[" + sArgs + "]")
+							: JSON.parse("[" + sArgs + "]");
 					} catch (exc) {
 						throw "Invalid arguments - " + exc.toString() + " '" + sArgs + "'";
 					}
@@ -195,6 +198,8 @@ export class MuBinder {
 			}
 		}
 	}
+
+	public static useJsonS: boolean = true;
 
 	public static register(muWidget: any) {
 		// @ts-ignore

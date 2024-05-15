@@ -940,7 +940,11 @@ class MuWidget {
         //@ts-ignore
         widget.muRoot = this.muRoot || this;
         if (opts.params) {
-            const params = typeof opts.params === "string" ? JSON.parse(opts.params) : opts.params;
+            const params = typeof opts.params === "string"
+                ? (MuWidget.paramJsonS
+                    ? JSONS.parse(opts.params)
+                    : JSON.parse(opts.params))
+                : opts.params;
             for (const k in params) {
                 widget[k] = params[k];
             }
@@ -1140,7 +1144,11 @@ class MuWidget {
         else
             paramsStr = "{" + paramsStr + "}";
         try {
-            var params = paramsStr ? JSON.parse(paramsStr) : null;
+            var params = paramsStr
+                ? (MuWidget.paramJsonS
+                    ? JSONS.parse(paramsStr)
+                    : JSON.parse(paramsStr))
+                : null;
         }
         catch (exc) {
             throw new Error(exc.toString() + "\n" + paramsStr);
@@ -1211,7 +1219,10 @@ class MuWidget {
         var params = [];
         var p = null;
         if (-1 != (p = name.indexOf(':'))) {
-            params = JSON.parse('[' + name.substr(p + 1) + ']');
+            const jsrc = '[' + name.substr(p + 1) + ']';
+            params = MuWidget.paramJsonS
+                ? JSONS.parse(jsrc)
+                : JSON.parse(jsrc);
             name = name.substr(0, p);
         }
         var method = obj[name];
@@ -1226,11 +1237,6 @@ class MuWidget {
     muGetMethodCallback(name, context = null) {
         const methodInfo = this.muFindMethod(name, context);
         return (ev /* , event : Event */) => {
-            /* const callparams = [<MuEvent>{
-            sender: event?.target,
-            source: source,
-            originalEvent: event
-            }, ...methodInfo.args, ...Array.from(arguments).slice(1)]; */
             const callparams = [ev, ...methodInfo.args, ...(ev.args || [])];
             return methodInfo.method.apply(methodInfo.context, callparams);
         };
@@ -1313,6 +1319,13 @@ class MuWidget {
 }
 MuWidget.fixOldWidgets = false;
 MuWidget.sharedTemplates = {};
+/*
+use json simplified in params
+true - always
+false - newer
+string - if content begining defined string
+*/
+MuWidget.paramJsonS = '!';
 MuWidget.identifierRe = '[a-zA-Z_.][0-9a-zA-Z_.]*';
 // statics
 MuWidget.widgetClasses = {};
@@ -1329,6 +1342,7 @@ class StrParser {
         this.position = 0;
         this.lastMark = null;
         this.debugMode = false;
+        this.storedPositions = {};
         this._onEndChunk = false;
         this.str = str;
     }
@@ -1359,21 +1373,25 @@ class StrParser {
                 position: firstPos
             };
             this._onEndChunk = false;
-            this.debug("findNext(" + chunk.join('", "') + ") > '" + firstChunk + "', " + this.position);
+            this.debug("findNext(", chunk, ") > '" + firstChunk + "', " + this.position);
             return this.lastMark;
         }
         else {
-            this.debug("findNext(" + chunk.join('", "') + ") not found " + this.position);
+            this.debug("findNext(", chunk, ") not found " + this.position);
             return null;
         }
     }
     substring(start = null, stop = null) {
         if (start === null)
             start = this.position;
+        else if (typeof start === "string")
+            start = this.loadPos(start);
         else if (typeof start !== "number")
             start = start.position;
         if (stop === null)
             stop = this.str.length;
+        else if (typeof stop === "string")
+            stop = this.loadPos(stop);
         else if (typeof stop !== "number")
             stop = stop.position;
         const res = this.str.substring(start, stop);
@@ -1388,6 +1406,16 @@ class StrParser {
     pos() {
         return { position: this.position };
     }
+    loadPos(name) {
+        if (name === '.')
+            return this.position;
+        else if (name === '>')
+            return this.str.length;
+        return this.storedPositions[name];
+    }
+    savePos(name) {
+        this.storedPositions[name] = this.position;
+    }
     toEndChunk() {
         var _a, _b;
         const l = this._onEndChunk ? 0 : (((_b = (_a = this.lastMark) === null || _a === void 0 ? void 0 : _a.chunk) === null || _b === void 0 ? void 0 : _b.length) || 0);
@@ -1395,13 +1423,47 @@ class StrParser {
         this._onEndChunk = true;
         this.debug("toEndChunk +" + l.toString());
     }
-    debug(msg) {
+    debug(...msgs) {
         if (this.debugMode) {
-            console.log(msg + "\n		%c" + this.str.substring(0, this.position) + "%c" + this.str.substring(this.position), "background: green; color: white", "color: blue");
+            const msg = msgs.map(ch => typeof ch === "string" ? ch : JSON.stringify(ch)).join('');
+            // console.log(msg + "\n	" + this.position + "	%c" + this.str.substring(0, this.position) + "%c" + this.str.substring(this.position), "background: green; color: white", "color: blue");
+            console.log(msg + "\n	" + this.position + "	" + this.str.substring(0, this.position) + "|" + this.str.substring(this.position));
         }
     }
     isEnd() {
         return this.position >= this.str.length;
+    }
+    startsWith(chunk, skipChunk = false, saveLast = true) {
+        if (typeof chunk === "string")
+            chunk = [chunk];
+        // let firstPos : number|null = null;
+        let firstPos = null;
+        let firstChunk = null;
+        let firstChunkNum = 0;
+        let i = 0;
+        for (const ch of chunk) {
+            const stw = this.str.startsWith(ch, this.position);
+            if (stw) {
+                const mark = {
+                    chunk: ch,
+                    chunkNum: i,
+                    position: this.position
+                };
+                if (saveLast)
+                    this.lastMark = mark;
+                if (skipChunk)
+                    this.position += ch.length;
+                this.debug("startsWith(", chunk, ") > '" + ch + "'");
+                return mark;
+            }
+            i++;
+        }
+        this.debug("startsWith(", chunk, ") > not found");
+        return null;
+    }
+    skipChunks(chunks) {
+        while (this.startsWith(chunks, true, false))
+            ;
     }
 }
 class MuLabelFor {
@@ -1470,3 +1532,230 @@ function getIdDb(widget) {
         widget.muPluginMuLabelFor = {};
     return widget.muPluginMuLabelFor;
 }
+class JSONS {
+    static parse(src) {
+        const par = new JSONS();
+        par.tokenize(src);
+        return par.parseCollection();
+    }
+    constructor() {
+        this.chunkToType = {
+            ":": "colon",
+            ",": "comma",
+            "\n": "newLine",
+            "{": "oOpen",
+            "}": "oClose",
+            "[": "aOpen",
+            "]": "aClose",
+        };
+        this.specValues = {
+            'null': null,
+            'true': true,
+            'false': false,
+            'undefined': undefined,
+        };
+        this.stringTermChunks = [...Object.keys(this.chunkToType), "\\", "#", "/*"];
+        this.tokens = [];
+        this.tokenI = 0;
+        this.collectionDeep = 0;
+    }
+    tokenize(src) {
+        const res = [];
+        src = src.replace(/\r\n/g, "\n");
+        const sp = new StrParser(src);
+        // sp.debugMode = true;
+        let lastPos = 0;
+        while (!sp.isEnd()) {
+            sp.skipChunks([" ", "\t"]);
+            if (sp.startsWith(['#', '//'], true)) { // line comment
+                sp.findNext("\n", true);
+            }
+            else if (sp.startsWith('/*', true)) { // block comment
+                let d = 1;
+                while (d) {
+                    const ch = sp.findNext(['/*', '*/'], true);
+                    if (!ch)
+                        throw new JSONSError('Incomplete block comment'); // EXC uncosed comment
+                    if (ch.chunk === '/*')
+                        d++;
+                    else
+                        d--;
+                }
+            }
+            else if (sp.startsWith(Object.keys(this.chunkToType), true)) { // control chars
+                const t = this.chunkToType[sp.lastMark.chunk];
+                if (t !== "newLine")
+                    res.push({
+                        type: t,
+                        value: null,
+                        pos: sp.lastMark.position,
+                    });
+            }
+            else if (sp.startsWith(["'", '"'], true)) { // enclosed string
+                const q = sp.lastMark.chunk;
+                const strBegin = sp.position;
+                sp.savePos('stringBegin');
+                let str = "";
+                let strEnd = false;
+                while (!strEnd) {
+                    if (sp.findNext(['\\"', "\\'", q])) {
+                        const strPart = sp.substring('stringBegin', '.');
+                        console.log(['++', strPart, str]);
+                        str += strPart;
+                        sp.toEndChunk();
+                        sp.savePos('stringBegin');
+                        console.log('Str chunk: ' + sp.lastMark.chunk);
+                        switch (sp.lastMark.chunk) {
+                            case '\\"':
+                                str += "\\\"";
+                                break;
+                            case "\\'":
+                                str += "'";
+                                break;
+                            default:
+                                strEnd = true;
+                                break;
+                        }
+                    }
+                    else
+                        throw new JSONSError('missing the right quotation mark'); // EXC unclosed quote
+                }
+                let i = 0;
+                str = str.replace(/\n/g, "\\n");
+                // console.log(["JSSTR [" + str + "]", ...[...str].map(c=>(i++) + ": " + c)]);
+                res.push({
+                    type: "value",
+                    value: JSON.parse('"' + str + '"'),
+                    pos: strBegin,
+                });
+            }
+            else { // unenclosed string
+                sp.savePos('stringBegin');
+                const ch = sp.findNext(this.stringTermChunks, false);
+                const valStr = sp.substring('stringBegin', ch ? '.' : '>').trim();
+                const valStrL = valStr.toLowerCase();
+                res.push({
+                    type: "value",
+                    value: Object.keys(this.specValues).includes(valStrL)
+                        ? this.specValues[valStrL]
+                        // @ts-ignore
+                        : (!isNaN(valStr)
+                            ? parseFloat(valStr)
+                            : valStr),
+                    pos: sp.loadPos('stringBegin'),
+                });
+                if (!ch)
+                    break;
+            }
+            if (lastPos === sp.position) {
+                console.log(["Zacyklilo se.", ...res]);
+                break;
+            }
+            lastPos = sp.position;
+        }
+        this.tokens = res;
+        return res;
+    }
+    curToken(shift = 0) {
+        var _a;
+        return (_a = this.tokens[this.tokenI + shift]) !== null && _a !== void 0 ? _a : null;
+    }
+    nextToken() {
+        var _a;
+        this.tokenI++;
+        return (_a = this.tokens[this.tokenI]) !== null && _a !== void 0 ? _a : null;
+    }
+    parseCollection() {
+        let type;
+        const t = this.curToken();
+        if (t.type === "aOpen") {
+            type = "array";
+            this.nextToken();
+        }
+        else if (t.type === "oOpen") {
+            type = "object";
+            this.nextToken();
+        }
+        else if (t.type === "value") { // autodetect
+            const nt = this.curToken(1);
+            if (nt === null)
+                return t.value;
+            type = nt.type === "colon" ? "object" : "array";
+        }
+        if (type === "object") {
+            const res = {};
+            while (this.curToken()) {
+                let ct = this.curToken();
+                // end of collection
+                if (ct.type === "oClose") {
+                    // this.nextToken();
+                    return res;
+                }
+                // key : ....
+                if (ct.type === "value") {
+                    const key = ct.value;
+                    ct = this.nextToken();
+                    // collon
+                    if (ct.type !== "colon")
+                        throw new JSONSError("Expected ':' ", ct);
+                    ct = this.nextToken();
+                    switch (ct.type) {
+                        case "value":
+                            res[key] = ct.value;
+                            break;
+                        case "aOpen":
+                        case "oOpen":
+                            res[key] = this.parseCollection();
+                            break;
+                        default:
+                            throw new JSONSError("Expected value or [ or { or }", ct);
+                    }
+                    // optional comma
+                    ct = this.nextToken();
+                    if (ct.type === "comma")
+                        this.nextToken();
+                }
+                else
+                    throw new JSONSError("Expected property name ", ct);
+            }
+            return res;
+        }
+        else {
+            const res = [];
+            while (this.curToken()) {
+                let ct = this.curToken();
+                // end of collection
+                if (ct.type === "aClose") {
+                    // this.nextToken();
+                    return res;
+                }
+                switch (ct.type) {
+                    case "value":
+                        res.push(ct.value);
+                        break;
+                    case "aOpen":
+                    case "oOpen":
+                        res.push(this.parseCollection());
+                        break;
+                    default:
+                        throw new JSONSError("Expected value or [ or { or }", ct);
+                }
+                // optional comma
+                ct = this.nextToken();
+                if (ct && ct.type === "comma")
+                    this.nextToken();
+            }
+            return res;
+        }
+    }
+}
+class JSONSError extends Error {
+    constructor(message, token = null) {
+        super(message + (token
+            ? " position: " + token.pos + " [" + token.type + (token.type === "value" ? ": " + JSON.stringify(token.value) + ']' : '')
+            : ""));
+        this.name = "JSONSError";
+        // this.token = token;
+    }
+}
+export {};

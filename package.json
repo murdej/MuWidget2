@@ -12,8 +12,8 @@
     "build": "npm run build:package ; npm run build:bundle-nomodule",
     "build-demos": "npx parcel build --no-content-hash --dist-dir ./demo/dist/ --public-url . demo/index.html",
     "build:package": "tsc",
-    "build:bundle-nomodule": "cd src ; cat MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc --target ES2015 ../dist/MuWidget-bundle.ts #; rm ../dist/MuWidget-bundle.ts ",
-    "build:bundle-module": "cd src ; tsc --target ES2015 --outFile ../dist/MuWidget-bundle-module.js MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts "
+    "build:bundle-nomodule": "cd src ; (for f in MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts utils/JSONS.ts; do echo ''; cat $n ; done ) | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc --target ES2015 ../dist/MuWidget-bundle.ts #; rm ../dist/MuWidget-bundle.ts ",
+    "build:bundle-module": "cd src ; tsc --target ES2016 --outFile ../dist/MuWidget-bundle-module.js MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts StrParser.ts MuLabelFor.ts "
   },
   "repository": {
     "type": "git",
@@ -28,9 +28,17 @@
   "homepage": "https://github.com/murdej/MuWidget2#readme",
   "devDependencies": {
     "@parcel/transformer-sass": "^2.5.0",
+    "@types/node": "^20.12.10",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "parcel": "^2.5.0",
+    "process": "^0.11.10",
     "sass": "^1.47.0",
+    "stream-browserify": "^3.0.0",
     "typescript": "^4.5.4",
-    "parcel": "^2.5.0"
+    "util": "^0.12.5"
   },
-  "dependencies": {}
+  "dependencies": {
+    "readline-promise": "^1.0.5"
+  }
 }
