@@ -1,5 +1,10 @@
 # Change log
 
+## 2.13.0
+
+ - `Dialog`: you can define default container
+ - Added `Table` component
+ - Support for EsModules in `MuWidget.registerAll`
 ## 2.12.0
 
  - Added JSONS as an alternative to JSON

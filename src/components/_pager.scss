@@ -1,0 +1,46 @@
+$pager-text-color: black !default;
+$pager-bg-color: #ddd !default;
+$pager-active-text-color: white !default;
+$pager-active-bg-color: #777 !default;
+$pager-hover-text-color: white !default;
+$pager-hover-bg-color: #777 !default;
+.pager {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	&__nav {
+		min-width: 50ex;
+		align-items: center;
+		justify-content: center;
+	}
+	&__btn {
+		padding: 1ex 2ex;
+		color: $pager-text-color;
+		background: $pager-bg-color;
+		cursor: pointer;
+		&.pager__btn--active {
+			color: $pager-active-text-color;
+			background: $pager-active-bg-color;
+		}
+		&:hover {
+			color: $pager-hover-text-color;
+			background: $pager-hover-bg-color;
+		}
+	}
+	&__page-num, .pager__page-size {
+		width: 9ex;
+		margin: 0;
+		border: 1px solid darken($pager-bg-color, 10);
+	}
+	&__info {
+
+	}
+	&__numbers {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+	}
+}

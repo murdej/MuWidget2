@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import {MuWidget} from "mu-widget/lib/MuWidget";
+import { MuWidget } from "../MuWidget";
 
 export class Pager extends MuWidget {
 	private currentPageCount: number = 0;

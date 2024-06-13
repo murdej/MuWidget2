@@ -11,6 +11,8 @@ export class Dialog extends MuWidget
 		})
 	}
 
+	public static defaultContainer: (()=>HTMLElement)|HTMLElement = () => document.getElementsByTagName('body')[0];
+
 	protected emptyResponse: any = null;
 
 	private resolveCallback: ((value: any)=>void)|null = null;
@@ -36,6 +38,10 @@ export class Dialog extends MuWidget
 
 	public static open<T = Dialog>(widgetName: string, params = {}, tagName: string = 'dialog', container: HTMLElement|null = null): T {
 		const el = document.createElement(tagName) as AnyElement;
+		if (!container) {
+			if (typeof this.defaultContainer === 'function') container = this.defaultContainer();
+			else container = this.defaultContainer;
+		}
 		container = (container ?? document.documentElement);
 		container.appendChild(el);
 		(el as unknown as HTMLDialogElement).showModal();

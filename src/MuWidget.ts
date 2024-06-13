@@ -31,13 +31,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	
 	protected muIndexOpts: MuWidgetOpts|null = null;
 
-	/*
-	use json simplified in params
-	true - always
-	false - newer
-	string - if content begining defined string
-	 */
-	public static paramJsonS: boolean|string = '!';
+	public static paramJsonS: boolean = true;
 	
 	public muWidgetFromTemplate(
 		templateName : string|{html:string,classType?:any,classInstance?:any}, 
@@ -783,12 +777,17 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		return ls;
 	}
 
-	public static registerAll()
+	public static registerAll(...args)
 	{
-		for(var i = 0; i < arguments.length; i++)
+		let _: any;
+		for(let i = 0; i < args.length; i++)
 		{
-			var classes = arguments[i];
-			for(var k in classes) MuWidget.widgetClasses[k] = classes[k];
+			let classes = args[i];
+			if (classes.default?.__esModule === true) {
+				const { __esModule, ...newClasses } = classes.default;
+				classes = newClasses;
+			}
+			for(let k in classes) MuWidget.widgetClasses[k] = classes[k];
 		}
 	}
 	public static registerAs(c : new() => any, n : string)
