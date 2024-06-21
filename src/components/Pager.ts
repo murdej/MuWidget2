@@ -26,18 +26,19 @@ export class Pager extends MuWidget {
 	beforeIndex() {
 		this.muRegisterEvent('changePage');
 		this.container.classList.add('pager');
+		if (this.cssClasses === null) this.cssClasses = Pager.defaultCssClasses;
 		this.muAppendContent(`
-			<div class="pager__nav">
-				<span class="pager__btn" mu-id="bPrev">&lt;</span>
-				<input class="pager__page-num" title="Číslo stránky" type="number" min="2" value="1" mu-id="pageNumber" />
-				<span class="pager__info"> / <span mu-id="pagesCount"></span> (</span>
-				<input class="pager__page-size" title="Počet na stránku" type="number" min="1" value="100" mu-id="itemPerPage" />
-				<span class="pager__info">)</span>
-				<span class="pager__btn" mu-id="bChangeItemPerPage">Zobrazit</span>
-				<span class="pager__btn" mu-id="bNext">&gt;</span>
+			<div class="${this.cssClasses.nav}">
+				<span class="${this.cssClasses.btn}" mu-id="bPrev">&lt;</span>
+				<input class="${this.cssClasses.pageNum}" title="Číslo stránky" type="number" min="2" value="1" mu-id="pageNumber" />
+				<span class="${this.cssClasses.info}"> / <span mu-id="pagesCount"></span> (</span>
+				<input class="${this.cssClasses.pageSize}" title="Počet na stránku" type="number" min="1" value="100" mu-id="itemPerPage" />
+				<span class="${this.cssClasses.info}">)</span>
+				<span class="${this.cssClasses.btn}" mu-id="bChangeItemPerPage">Zobrazit</span>
+				<span class="${this.cssClasses.btn}" mu-id="bNext">&gt;</span>
 			</div>
-			<div class="pager__numbers" mu-id="pages">
-				<span class="pager__btn" mu-widget="PagerItem" mu-template="item">
+			<div class="${this.cssClasses.numbers}" mu-id="pages">
+				<span class="${this.cssClasses.btn}" mu-widget="PagerItem" mu-template="item">
 					<span mu-id="label"></span>
 				</span>
 			</div>
@@ -140,6 +141,16 @@ export class Pager extends MuWidget {
 		this.currentPageNum++;
 	}
 
+	public static defaultCssClasses = {
+		nav: 'pager__nav',
+		btn: 'pager__btn',
+		pageNum: 'pager__page-num',
+		info: 'pager__info',
+		pageSize: 'pager__page-size',
+		numbers: 'pager__numbers',
+	};
+
+	public cssClasses: Record<string, string>|null = null;
 }
 
 export class PagerItem extends MuWidget<Pager> {

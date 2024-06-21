@@ -1,3 +1,14 @@
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 class MuBinder {
     static parse(src, element) {
         /*
@@ -1289,10 +1300,16 @@ class MuWidget {
         }
         return ls;
     }
-    static registerAll() {
-        for (var i = 0; i < arguments.length; i++) {
-            var classes = arguments[i];
-            for (var k in classes)
+    static registerAll(...args) {
+        var _a;
+        let _;
+        for (let i = 0; i < args.length; i++) {
+            let classes = args[i];
+            if (((_a = classes.default) === null || _a === void 0 ? void 0 : _a.__esModule) === true) {
+                const _b = classes.default, { __esModule } = _b, newClasses = __rest(_b, ["__esModule"]);
+                classes = newClasses;
+            }
+            for (let k in classes)
                 MuWidget.widgetClasses[k] = classes[k];
         }
     }
@@ -1336,13 +1353,7 @@ class MuWidget {
 }
 MuWidget.fixOldWidgets = false;
 MuWidget.sharedTemplates = {};
-/*
-use json simplified in params
-true - always
-false - newer
-string - if content begining defined string
-*/
-MuWidget.paramJsonS = '!';
+MuWidget.paramJsonS = true;
 MuWidget.identifierRe = '[a-zA-Z_.][0-9a-zA-Z_.]*';
 // statics
 MuWidget.widgetClasses = {};

@@ -5,6 +5,8 @@
  - `Dialog`: you can define default container
  - Added `Table` component
  - Support for EsModules in `MuWidget.registerAll`
+ - `Pager` customizable css class names
+
 ## 2.12.0
 
  - Added JSONS as an alternative to JSON
