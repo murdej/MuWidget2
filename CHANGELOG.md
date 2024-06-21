@@ -1,11 +1,13 @@
 # Change log
 
+ - `Pager` customizable css class names
+ - `ErrorMarker` helper
+
 ## 2.13.0
 
  - `Dialog`: you can define default container
  - Added `Table` component
  - Support for EsModules in `MuWidget.registerAll`
- - `Pager` customizable css class names
 
 ## 2.12.0
 
