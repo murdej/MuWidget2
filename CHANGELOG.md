@@ -1,5 +1,12 @@
 # Change log
 
+## 2.15.0
+
+ - `MuBinder`: Using `@options` it is possible to populate `<datalist>` items
+ - `UiTable`: `CellValueTranformerEvent` also contains the whole source row
+
+## 2.14.0
+
  - `Pager` customizable css class names
  - `ErrorMarker` helper
 

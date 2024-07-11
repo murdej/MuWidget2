@@ -24,7 +24,7 @@ export class Table extends MuWidget
 			wRow.muTemplates = { ...wRow.muTemplates, ...this.muTemplates };
 
 			for(const columnInfo of this.columns) {
-				const ev = { isInteractive: isInteractive };
+				const ev: CellValueTranformerEvent = { isInteractive: isInteractive, row: row };
 				if (!isInteractive && columnInfo.interactiveOnly) continue;
 				const cell = wRow.muWidgetFromTemplate(
 					columnInfo.template || 'tableCell', wRow.container,
@@ -171,6 +171,7 @@ export type CellValueTranformer = (value: any, columnInf: ColumnInfo, cell: MuWi
 
 export type CellValueTranformerEvent = {
 	isInteractive: boolean;
+	row: any;
 }
 
 type TableCellCommandEvent = {
