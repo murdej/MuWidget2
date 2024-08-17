@@ -1,5 +1,9 @@
 # Change log
 
+## TODO: 2.16.0
+
+ - `MuBinder`: Binding `Date` or iso string to input type datetime-local and date
+
 ## 2.15.0
 
  - `MuBinder`: Using `@options` it is possible to populate `<datalist>` items

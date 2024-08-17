@@ -335,7 +335,14 @@ class MuBinder {
                 const opt = document.createElement("option");
                 opt.text = text;
                 opt.value = val;
-                element.add(opt);
+                if (element instanceof HTMLSelectElement)
+                    element.add(opt);
+                else {
+                    const optEl = document.createElement('option');
+                    optEl.value = opt.value;
+                    optEl.innerText = opt.text;
+                    element.append(optEl);
+                }
             };
             element.innerHTML = "";
             if (Array.isArray(val)) {
