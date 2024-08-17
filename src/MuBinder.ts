@@ -8,7 +8,7 @@ export class MuBinder {
 		source
 		source:target
 		source::target
-		source;target
+		source^target
 		sourcer|filter():target
 		*/
 		let mode: "source" | "target" | "bindFilter" | "fetchFilter" | "complete" | "end" = "source";
@@ -100,7 +100,7 @@ export class MuBinder {
 			// sp.debugMode = true;
 			while (mode != "complete" && mode != "end") {
 				switch (mode) {
-					case "source":
+					cas	e "source":
 						p = sp.findNext(["::", ":", "|", ";", "^"]);
 						opts.source = sp.substring(lastP, p).trim();
 						if (!p) {
@@ -408,6 +408,7 @@ export class MuBinder {
 			!ifAny || val ? val + prefix : val,
 		map: (val, ev, map) => map[val],
 		// toggleClass: (val, ev, trueClass : string, falseClass : string) =>
+		getField: (val, ev, field) => (val ?? {})[field],
 	}
 }
 

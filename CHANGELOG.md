@@ -3,6 +3,7 @@
 ## TODO: 2.16.0
 
  - `MuBinder`: Binding `Date` or iso string to input type datetime-local and date
+ - `MuBinder`: Filter `getField`
 
 ## 2.15.0
 
