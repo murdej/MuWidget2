@@ -15,7 +15,7 @@ class MuBinder {
         source
         source:target
         source::target
-        source;target
+        source^target
         sourcer|filter():target
         */
         let mode = "source";
@@ -427,6 +427,7 @@ MuBinder.filters = {
     append: (val, ev, prefix, ifAny = false) => !ifAny || val ? val + prefix : val,
     map: (val, ev, map) => map[val],
     // toggleClass: (val, ev, trueClass : string, falseClass : string) =>
+    getField: (val, ev, field) => (val !== null && val !== void 0 ? val : {})[field],
 };
 class MuRouter {
     addRoute(name, re, callback) {

@@ -100,7 +100,7 @@ export class MuBinder {
 			// sp.debugMode = true;
 			while (mode != "complete" && mode != "end") {
 				switch (mode) {
-					cas	e "source":
+					case "source":
 						p = sp.findNext(["::", ":", "|", ";", "^"]);
 						opts.source = sp.substring(lastP, p).trim();
 						if (!p) {

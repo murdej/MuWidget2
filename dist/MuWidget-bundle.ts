@@ -6,7 +6,7 @@ public static parse(src: string, element: AnyElement): MuBindOpts[] {
 source
 source:target
 source::target
-source;target
+source^target
 sourcer|filter():target
 */
 let mode: "source" | "target" | "bindFilter" | "fetchFilter" | "complete" | "end" = "source";
@@ -406,6 +406,7 @@ append: (val, ev, prefix: string, ifAny: boolean = false) =>
 !ifAny || val ? val + prefix : val,
 map: (val, ev, map) => map[val],
 // toggleClass: (val, ev, trueClass : string, falseClass : string) =>
+getField: (val, ev, field) => (val ?? {})[field],
 }
 }
 
