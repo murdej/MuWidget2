@@ -132,7 +132,7 @@ export class MuRouter
 			}
 			this.updatePersistent(res);
 			this.lastName = route.name;
-			route.callback({parameters: res, routeName});
+			route.callback({parameters: res, routeName, origin: 'route'});
 			return route;
 			// console.log(m);
 		}
@@ -199,11 +199,11 @@ export class MuRouter
 		history.replaceState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
 	}
 
-	public navigate(name : string|null, params : MuParameters = {})
+	public navigate(name : string|null, params : MuParameters = {}, origin: MuRouterOrigin = 'other')
 	{
 		name = this.getName(name);
 		this.push(name, params);
-		this.routes[name].callback({ parameters: params, routeName : name });
+		this.routes[name].callback({ parameters: params, routeName : name, origin });
 	}
 
 	public parseQueryString(queryString : string) : MuParameters
@@ -272,7 +272,7 @@ export class MuRouter
 		a.addEventListener("click", (ev) => {
 			ev.preventDefault();
 			if (cancelBubble) ev.stopPropagation();
-			this.navigate(name, fullParams);
+			this.navigate(name, fullParams, 'link');
 		});
 	}
 }
@@ -293,5 +293,8 @@ export type MuParameters = Record<string,string|true|null>;
 export type MuRouterContext = {
 	parameters: MuParameters;
 	routeName : string;
+	origin: MuRouterOrigin;
 }
+
+export type MuRouterOrigin = 'link'|'route'|'other'|string;
 
