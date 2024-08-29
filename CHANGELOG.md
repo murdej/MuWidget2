@@ -2,6 +2,7 @@
 
 ## TODO: 2.16.0
 
+ - `MuRouter`: `catchAnchor`
  - `MuBinder`: Binding `Date` or iso string to input type datetime-local and date
  - `MuBinder`: Filter `getField`
 

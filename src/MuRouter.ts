@@ -98,7 +98,7 @@ export class MuRouter
 
 	protected lastParameters : MuParameters = {};
 
-	public route(location : Location|{pathname : string, search : string, hash: string}|string = null): Route|null
+	public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
 	{
 		if (!location) location = window.location;
 		if (this.pathPrefix)
@@ -132,7 +132,12 @@ export class MuRouter
 			}
 			this.updatePersistent(res);
 			this.lastName = route.name;
-			route.callback({parameters: res, routeName, origin: 'route'});
+			this.lastParameters
+			route.callback({
+				parameters: res,
+				routeName,
+				origin
+			});
 			return route;
 			// console.log(m);
 		}
@@ -273,6 +278,13 @@ export class MuRouter
 			ev.preventDefault();
 			if (cancelBubble) ev.stopPropagation();
 			this.navigate(name, fullParams, 'link');
+		});
+	}
+
+	public catchAnchor(a: HTMLAnchorElement, cancelBubble = false) {
+		a.addEventListener("click", (ev) => {
+			if (cancelBubble) ev.stopPropagation();
+			if (this.route(a.href, 'link')) ev.preventDefault();
 		});
 	}
 }
