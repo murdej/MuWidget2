@@ -96,7 +96,7 @@ export class MuRouter
 		route.re = new RegExp(re);
 	}
 
-	protected lastParameters : MuParameters = {};
+	public lastParameters : MuParameters = {};
 
 	public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
 	{

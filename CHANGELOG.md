@@ -1,7 +1,8 @@
 # Change log
 
 ## TODO: 2.16.0
-
+ - `MuWidget`.`startup` can start on `DOMContentLoaded` event
+ - `MuRouter`: `lastParameters` is now public
  - `MuRouter`: `catchAnchor`
  - `MuBinder`: Binding `Date` or iso string to input type datetime-local and date
  - `MuBinder`: Filter `getField`

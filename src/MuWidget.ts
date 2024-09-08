@@ -795,8 +795,8 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		MuWidget.widgetClasses[n] = c;
 	}
 	
-	public static startup(startElement: AnyElement|null = null, onSucces: OptionalCallback1<MuWidget> = null, onBefore: OptionalCallback = null) {
-		var fn = window.addEventListener || (window as any).attachEvent || function(type: string, listener: (evt:any)=>void)
+	public static startup(startElement: AnyElement|null = null, onSucces: OptionalCallback1<MuWidget> = null, onBefore: OptionalCallback = null, onEvent: "DOMContentLoaded"|"load" = "load") {
+		const fn = window.addEventListener || (window as any).attachEvent || function(type: string, listener: (evt:any)=>void)
 		{
 			if (window.onload) {
 				var curronload = window.onload as (evt:any)=>void;
@@ -809,14 +809,22 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 				window.onload = listener;
 			}
 		};
-		fn('load', function() {
+		const onStart = function() {
 			if (onBefore) onBefore();
 			var element = (startElement || document.documentElement) as AnyElement;
 			var muRoot = new MuWidget(element);
 			muRoot.muInit(element);
 			MuWidget.root = muRoot;
 			if (onSucces) onSucces(muRoot);
-		});
+		}
+		if (onEvent === "DOMContentLoaded" && ['interactive', 'complete'].includes(document.readyState)
+			|| onEvent === "load" && 'complete' == document.readyState)
+		{
+			onStart();
+
+		} else {
+			fn(onEvent, onStart);
+		}
 	}
 
 	public static getWidget(el: AnyElement): MuWidget|null
