@@ -467,7 +467,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		widget: string,
 	};
 
-	public muIndexTree(element : AnyElement, indexWidget : boolean, useName : string|null = null)
+	public muIndexTree(element : AnyElement, indexWidget : boolean, useName : string|null = null, addToUi: boolean = true)
 	{
 		//@ts-ignore
 		var ev : MuIndexEvent = { element: element, widget: this, opts: this.muGetElementOpts(element)};
@@ -528,7 +528,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			if (element.parentNode) element.parentNode.removeChild(element);
 			return;
 		}
-		if (opts.id && element != this.container) this.muAddUi(opts.id, element);
+		if (opts.id && element != this.container && addToUi) this.muAddUi(opts.id, element);
 		// if (opts.bind) this.muParseBinds(opts.bind, element);
 		ev.opts = opts;
 		this.muCallPlugin("beforeIndexElement", ev);
@@ -555,7 +555,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		if (indexWidget)
 		{
 			this.afterIndex();
-			for (var i = 0, l = this.muOnAfterIndex.length; i < l; i++)
+			for (let i = 0, l = this.muOnAfterIndex.length; i < l; i++)
 			{
 				this.muOnAfterIndex[i](this);
 			}
@@ -758,6 +758,20 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		return Array.from(uniqueClasses);
 	}
 
+	public muReplaceContent(element: AnyElement|string, newContent: string): void
+	{
+		let currentElement = (typeof element === "string")
+			? this.ui[element]
+			: element;
+		if (!currentElement) throw new Error((typeof element === "string")
+			? "Element with mu-id='" + element + "' not exists."
+			: 'Argument element is empty'
+		);
+
+		currentElement.innerHTML = newContent;
+		this.muIndexTree(currentElement, true, null, false);
+	}
+
 	// statics
 	public static widgetClasses : Record<string, new(container : AnyElement/*, opts : MuOpts*/) => MuWidget> = {};
 
@@ -799,8 +813,8 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		const fn = window.addEventListener || (window as any).attachEvent || function(type: string, listener: (evt:any)=>void)
 		{
 			if (window.onload) {
-				var curronload = window.onload as (evt:any)=>void;
-				var newonload = function(evt : any) {
+				const curronload = window.onload as (evt:any)=>void;
+				const newonload = function(evt : any) {
 					curronload(evt);
 					listener(evt);
 				};
