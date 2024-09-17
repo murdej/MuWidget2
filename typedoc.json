@@ -1,0 +1,16 @@
+{
+  "entryPoints": [
+    "./src/MuBinder.ts",
+    "./src/MuKeyBind.ts",
+    "./src/MuLabelFor.ts",
+    "./src/MuRouter.ts",
+    "./src/MuUIDs.ts",
+    "./src/MuWidget.ts",
+    "./src/PPFormGroup.ts",
+    "./src/StrParser.ts",
+    "./src/UiFlashMessage.ts",
+    "./src/UiSelector.ts",
+    "./src/UiTabs.ts"
+  ],
+  "out": "api-docs"
+}
