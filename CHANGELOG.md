@@ -1,8 +1,8 @@
 # Change log
 
-## Current
+## 2.17.0
 
- - 
+ - utils functions
  - `MuWidget`.`muCreateWidget`
 
 ## 2.16.0
