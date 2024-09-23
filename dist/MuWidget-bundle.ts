@@ -530,9 +530,9 @@ return reChunk;
 route.re = new RegExp(re);
 }
 
-protected lastParameters : MuParameters = {};
+public lastParameters : MuParameters = {};
 
-public route(location : Location|{pathname : string, search : string, hash: string}|string = null): Route|null
+public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
 {
 if (!location) location = window.location;
 if (this.pathPrefix)
@@ -566,7 +566,12 @@ res[route.paramNames[i - 1]] = decodeURIComponent(m[i]);
 }
 this.updatePersistent(res);
 this.lastName = route.name;
-route.callback({parameters: res, routeName});
+this.lastParameters
+route.callback({
+parameters: res,
+routeName,
+origin
+});
 return route;
 // console.log(m);
 }
@@ -633,11 +638,11 @@ this.updatePersistent(params, true);
 history.replaceState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
 }
 
-public navigate(name : string|null, params : MuParameters = {})
+public navigate(name : string|null, params : MuParameters = {}, origin: MuRouterOrigin = 'other')
 {
 name = this.getName(name);
 this.push(name, params);
-this.routes[name].callback({ parameters: params, routeName : name });
+this.routes[name].callback({ parameters: params, routeName : name, origin });
 }
 
 public parseQueryString(queryString : string) : MuParameters
@@ -706,7 +711,14 @@ a.href = this.makeUrl(name, params);
 a.addEventListener("click", (ev) => {
 ev.preventDefault();
 if (cancelBubble) ev.stopPropagation();
-this.navigate(name, fullParams);
+this.navigate(name, fullParams, 'link');
+});
+}
+
+public catchAnchor(a: HTMLAnchorElement, cancelBubble = false) {
+a.addEventListener("click", (ev) => {
+if (cancelBubble) ev.stopPropagation();
+if (this.route(a.href, 'link')) ev.preventDefault();
 });
 }
 }
@@ -727,7 +739,10 @@ type MuParameters = Record<string,string|true|null>;
 type MuRouterContext = {
 parameters: MuParameters;
 routeName : string;
+origin: MuRouterOrigin;
 }
+
+type MuRouterOrigin = 'link'|'route'|'other'|string;
 
 
 class MuUIDs {
@@ -791,13 +806,7 @@ position : "first"|"before"|"after"|"last" = "last",
 ref : AnyElement|null = null) : MuWidget
 
 {
-let finalContainer : AnyElement;
-if (typeof container == 'string')
-{
-var containerName = container;
-finalContainer = this.ui[container];
-if (!finalContainer) throw new Error("Container with mu-id='" + containerName + "' not exists.");
-} else finalContainer = container as AnyElement;
+const finalContainer = this.muGetContainer(container);
 
 var tmpElemementType = "div";
 let templateContent: string;
@@ -818,8 +827,41 @@ element = element.firstElementChild as AnyElement;
 // const element = this.createElementFromHTML(templateContent, container || this.container);
 // if (params) element.setAttribute('mu-params', JSON.stringify(params));
 
-if (finalContainer)
+this.muPlaceElement(
+element,
+finalContainer,
+position,
+ref,
+);
+
+let widget = this.muActivateWidget(element, null, params || {}, typeof templateName === "string" ? null : templateName);
+let opts = this.muGetElementOpts(element);
+if (!opts.id) opts.id = (typeof templateName === "string") ? templateName : null;
+this.muAddEvents(opts, element, widget)
+
+return widget;
+}
+
+protected muGetContainer(
+container : string|AnyElement|null,
+): AnyElement|null {
+let finalContainer : AnyElement = null;
+if (typeof container == 'string')
 {
+var containerName = container;
+finalContainer = this.ui[container];
+if (!finalContainer) throw new Error("Container with mu-id='" + containerName + "' not exists.");
+} else finalContainer = container as AnyElement;
+
+return finalContainer;
+}
+
+protected muPlaceElement(
+element: AnyElement,
+finalContainer : AnyElement,
+position : "first"|"before"|"after"|"last" = "last",
+ref : AnyElement|null = null,
+) {
 switch(position) {
 case 'first':
 if (finalContainer.firstElementChild) {
@@ -844,23 +886,43 @@ break;
 }
 }
 
-
-let widget = this.muActivateWidget(element, null, params || {}, typeof templateName === "string" ? null : templateName);
-let opts = this.muGetElementOpts(element);
-if (!opts.id) opts.id = (typeof templateName === "string") ? templateName : null;
-this.muAddEvents(opts, element, widget)
+public muCreateWidget<T=MuWidget>(
+widgetName : string,
+container : string|AnyElement|null,
+params : Record<string, any>|((widget : MuWidget)=>Record<string, any>)|null = null,
+elementName = 'div',
+position : "first"|"before"|"after"|"last" = "last",
+ref : AnyElement|null = null,
+) : T {
+const finalContainer = this.muGetContainer(container);
+const element = document.createElementNS(finalContainer.namespaceURI, elementName) as AnyElement;
+element.setAttribute("mu-widget", widgetName);
+this.muPlaceElement(element, finalContainer, position, ref)
+// @ts-ignore
+const cWidget = new MuWidget(finalContainer);
+const widget = cWidget.muActivateWidget(
+// @ts-ignore
+element,
+{
+widget: widgetName,
+},
+{ muParent: this, ...params }
+) as unknown as T;
 
 return widget;
 }
 
 muAppendContent(html: string): void {
-this.container.innerHTML += html;
+for (const node of this.createNodeArrayFromHTML(html, this.container)) {
+this.container.appendChild(node);
+}
+// this.container.innerHTML += html;
 }
 
-public createElementFromHTML(
+public createNodeArrayFromHTML(
 src: string,
 container: AnyElement
-): AnyElement
+): AnyElement[]
 {
 let lSrc = src.toLowerCase();
 let tmpElemementType = "div";
@@ -869,9 +931,16 @@ if (lSrc.startsWith('<td') || lSrc.startsWith('<th')) tmpElemementType = "tr";
 if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead') || lSrc.startsWith('<tfoot')) tmpElemementType = "table";
 let element = document.createElementNS(container.namespaceURI, tmpElemementType);
 element.innerHTML = src;
-element = element.firstElementChild;
 
-return element as AnyElement;
+return Array.from(element.childNodes) as AnyElement[];
+}
+
+public createElementFromHTML(
+src: string,
+container: AnyElement
+): AnyElement
+{
+return this.createNodeArrayFromHTML(src, container).find(item => item instanceof Element);
 }
 
 public muRemoveSelf() : void {
@@ -1217,7 +1286,7 @@ id: string,
 widget: string,
 };
 
-public muIndexTree(element : AnyElement, indexWidget : boolean, useName : string|null = null)
+public muIndexTree(element : AnyElement, indexWidget : boolean, useName : string|null = null, addToUi: boolean = true)
 {
 //@ts-ignore
 var ev : MuIndexEvent = { element: element, widget: this, opts: this.muGetElementOpts(element)};
@@ -1278,7 +1347,7 @@ this.muTemplateParents[opts.template] = (element.parentNode as AnyElement);
 if (element.parentNode) element.parentNode.removeChild(element);
 return;
 }
-if (opts.id && element != this.container) this.muAddUi(opts.id, element);
+if (opts.id && element != this.container && addToUi) this.muAddUi(opts.id, element);
 // if (opts.bind) this.muParseBinds(opts.bind, element);
 ev.opts = opts;
 this.muCallPlugin("beforeIndexElement", ev);
@@ -1305,7 +1374,7 @@ this.muAddEvents(opts, element, widget);
 if (indexWidget)
 {
 this.afterIndex();
-for (var i = 0, l = this.muOnAfterIndex.length; i < l; i++)
+for (let i = 0, l = this.muOnAfterIndex.length; i < l; i++)
 {
 this.muOnAfterIndex[i](this);
 }
@@ -1508,6 +1577,20 @@ uniqueClasses.add(className);
 return Array.from(uniqueClasses);
 }
 
+public muReplaceContent(element: AnyElement|string, newContent: string): void
+{
+let currentElement = (typeof element === "string")
+? this.ui[element]
+: element;
+if (!currentElement) throw new Error((typeof element === "string")
+? "Element with mu-id='" + element + "' not exists."
+: 'Argument element is empty'
+);
+
+currentElement.innerHTML = newContent;
+this.muIndexTree(currentElement, true, null, false);
+}
+
 // statics
 public static widgetClasses : Record<string, new(container : AnyElement/*, opts : MuOpts*/) => MuWidget> = {};
 
@@ -1545,12 +1628,12 @@ public static registerAs(c : new() => any, n : string)
 MuWidget.widgetClasses[n] = c;
 }
 
-public static startup(startElement: AnyElement|null = null, onSucces: OptionalCallback1<MuWidget> = null, onBefore: OptionalCallback = null) {
-var fn = window.addEventListener || (window as any).attachEvent || function(type: string, listener: (evt:any)=>void)
+public static startup(startElement: AnyElement|null = null, onSucces: OptionalCallback1<MuWidget> = null, onBefore: OptionalCallback = null, onEvent: "DOMContentLoaded"|"load" = "load") {
+const fn = window.addEventListener || (window as any).attachEvent || function(type: string, listener: (evt:any)=>void)
 {
 if (window.onload) {
-var curronload = window.onload as (evt:any)=>void;
-var newonload = function(evt : any) {
+const curronload = window.onload as (evt:any)=>void;
+const newonload = function(evt : any) {
 curronload(evt);
 listener(evt);
 };
@@ -1559,14 +1642,22 @@ window.onload = newonload;
 window.onload = listener;
 }
 };
-fn('load', function() {
+const onStart = function() {
 if (onBefore) onBefore();
 var element = (startElement || document.documentElement) as AnyElement;
 var muRoot = new MuWidget(element);
 muRoot.muInit(element);
 MuWidget.root = muRoot;
 if (onSucces) onSucces(muRoot);
-});
+}
+if (onEvent === "DOMContentLoaded" && ['interactive', 'complete'].includes(document.readyState)
+|| onEvent === "load" && 'complete' == document.readyState)
+{
+onStart();
+
+} else {
+fn(onEvent, onStart);
+}
 }
 
 public static getWidget(el: AnyElement): MuWidget|null
