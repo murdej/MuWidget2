@@ -1,5 +1,10 @@
 # Change log
 
+## 2.18.0
+
+ - Component `SideModal`
+ - Triggers
+
 ## 2.17.0
 
  - utils functions
