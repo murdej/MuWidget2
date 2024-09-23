@@ -26,10 +26,18 @@ export class Table extends MuWidget
 			for(const columnInfo of this.columns) {
 				const ev: CellValueTranformerEvent = { isInteractive: isInteractive, row: row };
 				if (!isInteractive && columnInfo.interactiveOnly) continue;
-				const cell = wRow.muWidgetFromTemplate(
-					columnInfo.template || 'tableCell', wRow.container,
-					{ columnInfo: columnInfo, ...columnInfo.widgetParams }
-				) as unknown as TableCell;
+				const cell = (columnInfo.widgetName
+					? wRow.muCreateWidget(
+						columnInfo.widgetName,
+						wRow.container,
+						{ columnInfo, ...columnInfo.widgetParams },
+						'td'
+					)
+					: wRow.muWidgetFromTemplate(
+						columnInfo.template || 'tableCell',
+						wRow.container,
+						{ columnInfo, ...columnInfo.widgetParams }
+					)) as unknown as TableCell;
 				let val = columnInfo.transformContent
 					? columnInfo.transformContent(row[columnInfo.field], columnInfo, cell, ev)
 					: row[columnInfo.field];
@@ -128,6 +136,7 @@ export class ColumnInfo
 	template: string|null = null;
 	isFiltered: boolean = false;
 	isOrdered: "asc"|"desc"|null = null;
+	widgetName: string|null = null;
 	widgetParams: {[key: string]: any} = {};
 	cssClass: string|null = null;
 	cellCssClass: string|null = null;

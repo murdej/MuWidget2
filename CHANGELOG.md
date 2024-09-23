@@ -1,6 +1,11 @@
 # Change log
 
-## TODO: 2.16.0
+## Current
+
+ - 
+ - `MuWidget`.`muCreateWidget`
+
+## 2.16.0
  - `MuWidget`.`muReplaceContent`
  - `MuWidget`.`startup` can start on `DOMContentLoaded` event
  - `MuRouter`: `lastParameters` is now public

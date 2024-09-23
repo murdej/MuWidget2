@@ -35,20 +35,14 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	
 	public muWidgetFromTemplate(
 		templateName : string|{html:string,classType?:any,classInstance?:any}, 
-		container : string|AnyElement|null, 
+		container : string|AnyElement|null,
 		params : Record<string, any>|((widget : MuWidget)=>Record<string, any>)|null = null, 
 		position : "first"|"before"|"after"|"last" = "last",
 		ref : AnyElement|null = null) : MuWidget
 
-	{ 
-		let finalContainer : AnyElement;
-		if (typeof container == 'string')
-		{
-			var containerName = container;
-			finalContainer = this.ui[container];
-			if (!finalContainer) throw new Error("Container with mu-id='" + containerName + "' not exists.");
-		} else finalContainer = container as AnyElement;
-		
+	{
+		const finalContainer = this.muGetContainer(container);
+
 		var tmpElemementType = "div";
 		let templateContent: string;
 		if (typeof templateName === "string") {
@@ -67,33 +61,13 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		element = element.firstElementChild as AnyElement;
 		// const element = this.createElementFromHTML(templateContent, container || this.container);
 		// if (params) element.setAttribute('mu-params', JSON.stringify(params));
-		
-		if (finalContainer)
-		{
-			switch(position) {
-				case 'first':
-					if (finalContainer.firstElementChild) {
-						finalContainer.insertBefore(element, finalContainer.firstElementChild);
-					} else {
-						finalContainer.appendChild(element);
-					}
-					break;
-				case 'before':
-					finalContainer.insertBefore(element, ref);
-					break;
-				case 'after':
-					if (ref.nextElementSibling) {
-						finalContainer.insertBefore(element, ref.nextElementSibling);
-					} else {
-						finalContainer.appendChild(element);
-					}
-					break;
-				case 'last':
-					finalContainer.appendChild(element);
-					break;
-			}
-		}
 
+		this.muPlaceElement(
+			element,
+			finalContainer,
+			position,
+			ref,
+		);
 
 		let widget = this.muActivateWidget(element, null, params || {}, typeof templateName === "string" ? null : templateName);
 		let opts = this.muGetElementOpts(element);
@@ -103,14 +77,87 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		return widget;
 	}
 
-	muAppendContent(html: string): void {
-		this.container.innerHTML += html;
+	protected muGetContainer(
+		container : string|AnyElement|null,
+	): AnyElement|null {
+		let finalContainer : AnyElement = null;
+		if (typeof container == 'string')
+		{
+			var containerName = container;
+			finalContainer = this.ui[container];
+			if (!finalContainer) throw new Error("Container with mu-id='" + containerName + "' not exists.");
+		} else finalContainer = container as AnyElement;
+
+		return finalContainer;
 	}
 
-	public createElementFromHTML(
+	protected muPlaceElement(
+		element: AnyElement,
+		finalContainer : AnyElement,
+		position : "first"|"before"|"after"|"last" = "last",
+		ref : AnyElement|null = null,
+	) {
+		switch(position) {
+			case 'first':
+				if (finalContainer.firstElementChild) {
+					finalContainer.insertBefore(element, finalContainer.firstElementChild);
+				} else {
+					finalContainer.appendChild(element);
+				}
+				break;
+			case 'before':
+				finalContainer.insertBefore(element, ref);
+				break;
+			case 'after':
+				if (ref.nextElementSibling) {
+					finalContainer.insertBefore(element, ref.nextElementSibling);
+				} else {
+					finalContainer.appendChild(element);
+				}
+				break;
+			case 'last':
+				finalContainer.appendChild(element);
+				break;
+		}
+	}
+
+	public muCreateWidget<T=MuWidget>(
+		widgetName : string,
+		container : string|AnyElement|null,
+		params : Record<string, any>|((widget : MuWidget)=>Record<string, any>)|null = null,
+		elementName = 'div',
+		position : "first"|"before"|"after"|"last" = "last",
+		ref : AnyElement|null = null,
+	) : T {
+		const finalContainer = this.muGetContainer(container);
+		const element = document.createElementNS(finalContainer.namespaceURI, elementName) as AnyElement;
+		element.setAttribute("mu-widget", widgetName);
+		this.muPlaceElement(element, finalContainer, position, ref)
+		// @ts-ignore
+		const cWidget = new MuWidget(finalContainer);
+		const widget = cWidget.muActivateWidget(
+			// @ts-ignore
+			element,
+			{
+				widget: widgetName,
+			},
+			{ muParent: this, ...params }
+		) as unknown as T;
+
+		return widget;
+	}
+
+	muAppendContent(html: string): void {
+		for (const node of this.createNodeArrayFromHTML(html, this.container)) {
+			this.container.appendChild(node);
+		}
+		// this.container.innerHTML += html;
+	}
+
+	public createNodeArrayFromHTML(
 		src: string, 
 		container: AnyElement
-	): AnyElement 
+	): AnyElement[]
 	{
 		let lSrc = src.toLowerCase();
 		let tmpElemementType = "div";
@@ -119,9 +166,16 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		if (lSrc.startsWith('<tbody') || lSrc.startsWith('<thead') || lSrc.startsWith('<tfoot')) tmpElemementType = "table";
 		let element = document.createElementNS(container.namespaceURI, tmpElemementType);
 		element.innerHTML = src;
-		element = element.firstElementChild;
 
-		return element as AnyElement;
+		return Array.from(element.childNodes) as AnyElement[];
+	}
+
+	public createElementFromHTML(
+		src: string,
+		container: AnyElement
+	): AnyElement
+	{
+		return this.createNodeArrayFromHTML(src, container).find(item => item instanceof Element);
 	}
 
 	public muRemoveSelf() : void {
