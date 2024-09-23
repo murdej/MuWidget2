@@ -1,5 +1,4 @@
-import {MuWidget} from "./MuWidget";
-import {playAnimation} from "./utils/utils";
+import {MuWidget} from "../MuWidget";
 
 export class UiFlashContainer extends MuWidget {
 
