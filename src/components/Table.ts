@@ -12,7 +12,7 @@ export class Table extends MuWidget
 		this.ui.body.innerHTML = "";
 
 		for(const columnInfo of this.columns) {
-			if (!isInteractive && columnInfo.interactiveOnly) continue;
+			if ((!isInteractive && columnInfo.interactiveOnly) || columnInfo.hidden) continue;
 			const wth = this.muWidgetFromTemplate('tableHeadCell', 'head', { columnInfo: columnInfo, isInteractive: isInteractive });
 			if (columnInfo.cssClass) wth.container.classList.add(...columnInfo.cssClass.split(' '));
 			if (columnInfo.headCssClass) wth.container.classList.add(...columnInfo.headCssClass.split(' '));
@@ -25,7 +25,7 @@ export class Table extends MuWidget
 
 			for(const columnInfo of this.columns) {
 				const ev: CellValueTranformerEvent = { isInteractive: isInteractive, row: row };
-				if (!isInteractive && columnInfo.interactiveOnly) continue;
+				if ((!isInteractive && columnInfo.interactiveOnly) || columnInfo.hidden) continue;
 				const cell = (columnInfo.widgetName
 					? wRow.muCreateWidget(
 						columnInfo.widgetName,
@@ -143,6 +143,7 @@ export class ColumnInfo
 	headCssClass: string|null = null;
 	transformContent: CellValueTranformer|null = null;
 	interactiveOnly: boolean = false;
+	hidden: boolean = false;
 
 	constructor(initData: Partial<ColumnInfo> = {}) {
 		Object.assign(this, initData);

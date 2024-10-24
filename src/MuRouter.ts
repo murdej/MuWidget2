@@ -54,24 +54,46 @@ export class MuRouter
 			lastP = p + 1;
 			p = rete.indexOf(">", lastP);
 			if (p < 0) {
-				throw new Error("Missing parametr end");
+				throw new Error("Missing ending '>'");
 			}
 			let chunk = rete.substring(lastP, p);
 			const p1 = chunk.indexOf(" ");
-			let reChunk;
+			const p2 = chunk.indexOf("=");
+			let reChunk = defaultReChunk;
 			let name;
-			if (p1 >= 0)
-			{
-				reChunk = chunk.substr(p1 + 1);
-				name = chunk.substr(0, p1);
-			}
-			else
-			{
-				reChunk = defaultReChunk;
+			let defaultValue = undefined;
+			let prefix = '';
+			if (p1 < 0 && p2 < 0) {
 				name = chunk;
+			} else if (p1 >= 0 && p2 >= 0 && p1 > p2) {
+				// name=foo bar
+				// p1=8 p2=4
+				name = chunk.substring(0, p2);
+				defaultValue = chunk.substring(p2 + 1);
+			} else if (p1 >= 0 && p2 >= 0 && p1 < p2) {
+				// name re=foo bar
+				// p1=4 p2=8
+				name = chunk.substring(0, p1);
+				reChunk = chunk.substring(p1 + 1, p2);
+				defaultValue = chunk.substring(p2 + 1);
+			} else if (p1 >= 0) {
+				// name re
+				reChunk = chunk.substring(p1 + 1);
+				name = chunk.substring(0, p1);
+			} else {
+				// name=foo
+				name = chunk.substring(0, p2);
+				defaultValue = chunk.substring(p2 + 1);
 			}
-			route.chunks.push({name: name});
-			re += "(" + reChunk + ")";
+
+			const pp = name.indexOf('+');
+			if (pp >= 0) {
+				prefix = name.substring(0, pp);
+				name = name.substring(pp + 1);
+			}
+
+			route.chunks.push({name, prefix, defaultValue});
+			re += "(" + prefix + reChunk + ")" + (defaultValue !== undefined ? '?' : '');
 			route.paramNames.push(name);
 
 			lastP = p + 1;
@@ -100,6 +122,7 @@ export class MuRouter
 
 	public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
 	{
+		//@ts-ignore
 		if (!location) location = window.location;
 		if (this.pathPrefix)
 		{
@@ -124,15 +147,26 @@ export class MuRouter
 			const m = route.re.exec(location.pathname);
 			if (!m) continue;
 			const res = this.parseQueryString(location.search);
+			const dynamicChunks = route.chunks.filter(ch => typeof ch !== 'string');
 			for(let i = 0; i < m.length; i++)
 			{
 				if (i > 0) {
-					res[route.paramNames[i - 1]] = decodeURIComponent(m[i]);
+					//@ts-ignore
+					const chunk: {prefix: string, defaultValue: undefined|string} = dynamicChunks[i - 1];
+					let value = m[i];
+					if (m[i] === undefined) value = chunk.defaultValue;
+					else {
+						value = decodeURIComponent(value);
+						if (chunk.prefix) {
+							value = value.substring(chunk.prefix.length);
+						}
+					}
+					res[route.paramNames[i - 1]] = value;
 				}
 			}
 			this.updatePersistent(res);
 			this.lastName = route.name;
-			this.lastParameters
+			this.lastParameters = res;
 			route.callback({
 				parameters: res,
 				routeName,
@@ -160,7 +194,11 @@ export class MuRouter
 			if (typeof chunk == "string") {
 				url += chunk;
 			} else {
-				url += chunk.name in params ? encodeURIComponent(params[chunk.name]) : "";
+				const value = params[chunk.name] ?? chunk.defaultValue;
+				if (value != chunk.defaultValue) {
+					url += chunk.prefix;
+					url += chunk.name in params ? encodeURIComponent(value) : "";
+				}
 				used.push(chunk.name);
 			}
 		}
@@ -238,7 +276,8 @@ export class MuRouter
 	}
 
 	constructor() {
-		window.onpopstate = ev => this.route(document.location)
+		if (typeof window !== 'undefined')
+			window.onpopstate = ev => this.route(document.location)
 	}
 
 	public updatePersistent(res: MuParameters, patch : boolean = false)
@@ -297,7 +336,7 @@ type Route = {
 	re : RegExp,
 	name : string,
 	callback : RouteCallback,
-	chunks : (string|{name : string})[]
+	chunks : (string|{name : string, prefix: string, defaultValue: string|undefined})[]
 }
 
 export type MuParameters = Record<string,string|true|null>;

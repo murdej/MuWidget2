@@ -21,6 +21,7 @@ export class TreeView extends MuWidget {
 		indentField: "indent",
 		templateName: "item",
 		plungeField: "plunge",
+		//todo: widgetParentField: "parentNode",
 		prepareItem: null,
 	}
 
@@ -92,4 +93,5 @@ export type TreeViewOpts = {
 	plungeField: string;
 	templateName: ((item: any) => string)|string;
 	prepareItem: ((item: any) => any)|null;
+	//todo widgetParentField: string|null;
 }

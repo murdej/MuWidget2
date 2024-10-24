@@ -469,22 +469,46 @@ class MuRouter {
             lastP = p + 1;
             p = rete.indexOf(">", lastP);
             if (p < 0) {
-                throw new Error("Missing parametr end");
+                throw new Error("Missing ending '>'");
             }
             let chunk = rete.substring(lastP, p);
             const p1 = chunk.indexOf(" ");
-            let reChunk;
+            const p2 = chunk.indexOf("=");
+            let reChunk = defaultReChunk;
             let name;
-            if (p1 >= 0) {
-                reChunk = chunk.substr(p1 + 1);
-                name = chunk.substr(0, p1);
-            }
-            else {
-                reChunk = defaultReChunk;
+            let defaultValue = undefined;
+            let prefix = '';
+            if (p1 < 0 && p2 < 0) {
                 name = chunk;
             }
-            route.chunks.push({ name: name });
-            re += "(" + reChunk + ")";
+            else if (p1 >= 0 && p2 >= 0 && p1 > p2) {
+                // name=foo bar
+                // p1=8 p2=4
+                name = chunk.substring(0, p2);
+                defaultValue = chunk.substring(p2 + 1);
+            }
+            else if (p1 >= 0 && p2 >= 0 && p1 < p2) {
+                // name re=foo bar
+                // p1=4 p2=8
+                name = chunk.substring(0, p1);
+                reChunk = chunk.substring(p1 + 1, p2);
+                defaultValue = chunk.substring(p2 + 1);
+            }
+            else if (p1 >= 0) {
+                // name re
+                reChunk = chunk.substring(p1 + 1);
+                name = chunk.substring(0, p1);
+            }
+            else {
+                // name=foo
+                name = chunk.substring(0, p2);
+                defaultValue = chunk.substring(p2 + 1);
+            }
+            if (name[0] === '/') {
+                prefix = '/';
+            }
+            route.chunks.push({ name, prefix });
+            re += "(" + prefix + reChunk + ")" + (defaultValue !== undefined ? '+' : '');
             route.paramNames.push(name);
             lastP = p + 1;
         }
@@ -508,6 +532,7 @@ class MuRouter {
         route.re = new RegExp(re);
     }
     route(location = null, origin = 'route') {
+        //@ts-ignore
         if (!location)
             location = window.location;
         if (this.pathPrefix) {
@@ -631,7 +656,8 @@ class MuRouter {
         this.pathPrefix = "";
         this.lastParameters = {};
         this.lastName = "";
-        window.onpopstate = ev => this.route(document.location);
+        if (typeof window !== 'undefined')
+            window.onpopstate = ev => this.route(document.location);
     }
     updatePersistent(res, patch = false) {
         for (let k of this.persistentKeys) {

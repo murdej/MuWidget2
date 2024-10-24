@@ -1,5 +1,9 @@
 # Change log
 
+## 2.19.0
+
+ - `MuRouter` can define optional parts of the url pattern 
+
 ## 2.18.0
 
  - Component `SideModal`
