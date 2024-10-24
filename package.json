@@ -1,6 +1,6 @@
 {
   "name": "mu-widget",
-  "version": "2.18.1",
+  "version": "2.19.0",
   "description": "Simple javascript widget creation",
   "_Smain": "index.js",
   "directories": {
