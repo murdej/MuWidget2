@@ -520,12 +520,14 @@ name = chunk.substring(0, p2);
 defaultValue = chunk.substring(p2 + 1);
 }
 
-if (name[0] === '/') {
-prefix = '/';
+const pp = name.indexOf('+');
+if (pp >= 0) {
+prefix = name.substring(0, pp);
+name = name.substring(pp + 1);
 }
 
-route.chunks.push({name, prefix});
-re += "(" + prefix + reChunk + ")" + (defaultValue !== undefined ? '+' : '');
+route.chunks.push({name, prefix, defaultValue});
+re += "(" + prefix + reChunk + ")" + (defaultValue !== undefined ? '?' : '');
 route.paramNames.push(name);
 
 lastP = p + 1;
@@ -579,15 +581,26 @@ const route = this.routes[routeName];
 const m = route.re.exec(location.pathname);
 if (!m) continue;
 const res = this.parseQueryString(location.search);
+const dynamicChunks = route.chunks.filter(ch => typeof ch !== 'string');
 for(let i = 0; i < m.length; i++)
 {
 if (i > 0) {
-res[route.paramNames[i - 1]] = decodeURIComponent(m[i]);
+//@ts-ignore
+const chunk: {prefix: string, defaultValue: undefined|string} = dynamicChunks[i - 1];
+let value = m[i];
+if (m[i] === undefined) value = chunk.defaultValue;
+else {
+value = decodeURIComponent(value);
+if (chunk.prefix) {
+value = value.substring(chunk.prefix.length);
+}
+}
+res[route.paramNames[i - 1]] = value;
 }
 }
 this.updatePersistent(res);
 this.lastName = route.name;
-this.lastParameters
+this.lastParameters = res;
 route.callback({
 parameters: res,
 routeName,
@@ -615,7 +628,11 @@ for(const chunk of route.chunks)
 if (typeof chunk == "string") {
 url += chunk;
 } else {
-url += chunk.name in params ? encodeURIComponent(params[chunk.name]) : "";
+const value = params[chunk.name] ?? chunk.defaultValue;
+if (value != chunk.defaultValue) {
+url += chunk.prefix;
+url += chunk.name in params ? encodeURIComponent(value) : "";
+}
 used.push(chunk.name);
 }
 }
@@ -753,7 +770,7 @@ reText : string
 re : RegExp,
 name : string,
 callback : RouteCallback,
-chunks : (string|{name : string, prefix: string})[]
+chunks : (string|{name : string, prefix: string, defaultValue: string|undefined})[]
 }
 
 type MuParameters = Record<string,string|true|null>;

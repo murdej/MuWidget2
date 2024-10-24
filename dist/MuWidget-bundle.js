@@ -504,11 +504,13 @@ class MuRouter {
                 name = chunk.substring(0, p2);
                 defaultValue = chunk.substring(p2 + 1);
             }
-            if (name[0] === '/') {
-                prefix = '/';
+            const pp = name.indexOf('+');
+            if (pp >= 0) {
+                prefix = name.substring(0, pp);
+                name = name.substring(pp + 1);
             }
-            route.chunks.push({ name, prefix });
-            re += "(" + prefix + reChunk + ")" + (defaultValue !== undefined ? '+' : '');
+            route.chunks.push({ name, prefix, defaultValue });
+            re += "(" + prefix + reChunk + ")" + (defaultValue !== undefined ? '?' : '');
             route.paramNames.push(name);
             lastP = p + 1;
         }
@@ -555,14 +557,26 @@ class MuRouter {
             if (!m)
                 continue;
             const res = this.parseQueryString(location.search);
+            const dynamicChunks = route.chunks.filter(ch => typeof ch !== 'string');
             for (let i = 0; i < m.length; i++) {
                 if (i > 0) {
-                    res[route.paramNames[i - 1]] = decodeURIComponent(m[i]);
+                    //@ts-ignore
+                    const chunk = dynamicChunks[i - 1];
+                    let value = m[i];
+                    if (m[i] === undefined)
+                        value = chunk.defaultValue;
+                    else {
+                        value = decodeURIComponent(value);
+                        if (chunk.prefix) {
+                            value = value.substring(chunk.prefix.length);
+                        }
+                    }
+                    res[route.paramNames[i - 1]] = value;
                 }
             }
             this.updatePersistent(res);
             this.lastName = route.name;
-            this.lastParameters;
+            this.lastParameters = res;
             route.callback({
                 parameters: res,
                 routeName,
@@ -574,6 +588,7 @@ class MuRouter {
         return null;
     }
     makeUrl(name, currParams) {
+        var _a;
         let url = "";
         let used = [];
         const params = Object.assign({}, this.persistentValues);
@@ -588,7 +603,11 @@ class MuRouter {
                 url += chunk;
             }
             else {
-                url += chunk.name in params ? encodeURIComponent(params[chunk.name]) : "";
+                const value = (_a = params[chunk.name]) !== null && _a !== void 0 ? _a : chunk.defaultValue;
+                if (value != chunk.defaultValue) {
+                    url += chunk.prefix;
+                    url += chunk.name in params ? encodeURIComponent(value) : "";
+                }
                 used.push(chunk.name);
             }
         }
