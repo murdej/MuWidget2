@@ -197,7 +197,7 @@ export class JSONS {
                     }
                     // optional comma
                     ct = this.nextToken();
-                    if (ct.type === "comma")
+                    if (ct && ct.type === "comma")
                         this.nextToken();
                 } else throw new JSONSError("Expected property name ", ct);
             }

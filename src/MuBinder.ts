@@ -409,6 +409,8 @@ export class MuBinder {
 		map: (val, ev, map) => map[val],
 		// toggleClass: (val, ev, trueClass : string, falseClass : string) =>
 		getField: (val, ev, field) => (val ?? {})[field],
+		ifEmpty: (val, ev, newValue: any) => val || newValue,
+		ifNull: (val, ev, newValue: any) => val ?? newValue,
 	}
 }
 

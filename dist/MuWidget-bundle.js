@@ -428,6 +428,8 @@ MuBinder.filters = {
     map: (val, ev, map) => map[val],
     // toggleClass: (val, ev, trueClass : string, falseClass : string) =>
     getField: (val, ev, field) => (val !== null && val !== void 0 ? val : {})[field],
+    ifEmpty: (val, ev, newValue) => val || newValue,
+    ifNull: (val, ev, newValue) => val !== null && val !== void 0 ? val : newValue,
 };
 class MuRouter {
     addRoute(name, re, callback) {
@@ -1848,7 +1850,7 @@ class JSONS {
                     }
                     // optional comma
                     ct = this.nextToken();
-                    if (ct.type === "comma")
+                    if (ct && ct.type === "comma")
                         this.nextToken();
                 }
                 else

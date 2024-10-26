@@ -1,5 +1,10 @@
 # Change log
 
+## 2.20.0
+
+ - `MuBinder` filters `ifEmpty` and `ifNull`
+ - `JSONS` parse format `foo:bar`
+ 
 ## 2.19.0
 
  - `MuRouter` can define optional parts of the url pattern 
