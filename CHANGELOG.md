@@ -1,5 +1,9 @@
 # Change log
 
+## 2.21.0
+
+ - `ErrorList` class
+
 ## 2.20.0
 
  - `MuBinder` filters `ifEmpty` and `ifNull`
