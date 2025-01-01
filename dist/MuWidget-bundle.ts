@@ -868,7 +868,7 @@ element = element.firstElementChild as AnyElement;
 // const element = this.createElementFromHTML(templateContent, container || this.container);
 // if (params) element.setAttribute('mu-params', JSON.stringify(params));
 
-this.muPlaceElement(
+if (finalContainer) this.muPlaceElement(
 element,
 finalContainer,
 position,

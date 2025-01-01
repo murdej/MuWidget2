@@ -1,8 +1,7 @@
 # Change log
 
-## 2.21.0
-
- - `ErrorList` class
+ - class `ErrorList`
+ - `MuWidget`.`muWidgetFromTemplate` can create widget without place into page.
 
 ## 2.20.0
 

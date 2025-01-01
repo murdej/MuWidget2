@@ -11,7 +11,7 @@ export class ErrorMarker
         itemClassName: 'form-error'
     };
 
-    constructor(rootWidget: MuWidget<any,any,any>, pathSeparator: string = "/") {
+    constructor(rootWidget: MuWidget<any,any,any>|MuWidget, pathSeparator: string = "/") {
         this.rootWidget = rootWidget;
         this.pathSeparator = pathSeparator;
     }

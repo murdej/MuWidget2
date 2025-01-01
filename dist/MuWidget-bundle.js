@@ -777,7 +777,8 @@ class MuWidget {
         element = element.firstElementChild;
         // const element = this.createElementFromHTML(templateContent, container || this.container);
         // if (params) element.setAttribute('mu-params', JSON.stringify(params));
-        this.muPlaceElement(element, finalContainer, position, ref);
+        if (finalContainer)
+            this.muPlaceElement(element, finalContainer, position, ref);
         let widget = this.muActivateWidget(element, null, params || {}, typeof templateName === "string" ? null : templateName);
         let opts = this.muGetElementOpts(element);
         if (!opts.id)
