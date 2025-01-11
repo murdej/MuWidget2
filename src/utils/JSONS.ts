@@ -1,5 +1,4 @@
-import {StrParser} from "../StrParser";
-import {Exception} from "sass";
+import {StrParser} from "mu-js-utils/lib/StrParser";
 
 export class JSONS {
     public static parse(src: string): any {

@@ -3,33 +3,67 @@ import {playAnimation} from "../utils/utils";
 
 export class UiFlashContainer extends MuWidget {
 
+    public static cssClasses = {
+        container: ['toast-container', 'p-3', 'flash-container'],
+    };
+    getCssClassesFor(component: string, asArray: boolean = true): string[]|string {
+        return asArray
+            ? UiFlashContainer.cssClasses[component]
+            : UiFlashContainer.cssClasses[component].join(' ');
+    }
+
     // @ts-ignore
     public static instance: UiFlashContainer;
     beforeIndex() {
-        this.container.classList.add('toast-container', 'p-3', 'flash-container');
+        this.container.classList.add(...this.getCssClassesFor('container'));
         this.muAppendContent(`<div mu=":UiFlashItem@item"></div>`);
         UiFlashContainer.instance = this;
     }
 
-    public static add(message: string, style: 'error'|'ok'): UiFlashItem {
-        return UiFlashContainer.instance.add(message);
+    public static add(message: string, theme: 'error'|'ok'|string = ''): UiFlashItem {
+        return UiFlashContainer.instance.add(message, theme);
     }
 
-    private add(message: string): UiFlashItem {
-        const item = this.muWidgetFromTemplate('item', this.container) as unknown as UiFlashItem;
+    private add(message: string, theme: string): UiFlashItem {
+        const item = this.muWidgetFromTemplate(
+            'item',
+            this.container,
+            {
+                theme
+            }
+        ) as unknown as UiFlashItem;
         item.setMessage(message);
         return item;
     }
 }
 
 export class UiFlashItem extends MuWidget {
+    public static cssClasses = {
+        container: ['toast', 'align-items-center', 'text-bg-primary', 'border-0', 'show'],
+        content: ["d-flex"],
+        message: ['toast-body'],
+        closeButton: ['btn-close', 'btn-close-white', 'me-2', 'm-auto'],
+        closeAnimation: null,
+        openAnimation: null,
+        themePrefix: 'flash-item-theme--',
+    };
+    public ttl: number = null;
+    public static ttlDefault: number = null;
+
+    public theme: string = '';
+    getCssClassesFor(component: string, asArray: boolean = true): string[]|string {
+        return asArray
+            ? UiFlashItem.cssClasses[component]
+            : UiFlashItem.cssClasses[component].join(' ');
+    }
+
     public static animationClass: string;
     beforeIndex() {
-        this.container.classList.add('toast', 'align-items-center', 'text-bg-primary', 'border-0', 'show');
+        this.container.classList.add(...this.getCssClassesFor('container'));
         this.muAppendContent(`
-            <div class="d-flex">
-                <div class="toast-body" mu="message"></div>
-                <button type="button" mu="close" class="btn-close btn-close-white me-2 m-auto" aria-label="Close"></button>
+            <div class="${this.getCssClassesFor('content', false)}">
+                <div class="${this.getCssClassesFor('message', false)}" mu="message"></div>
+                <button type="button" mu="close" class="${this.getCssClassesFor('closeButton', false)}" aria-label="Close"></button>
             </div>
         `);
     }
@@ -39,9 +73,23 @@ export class UiFlashItem extends MuWidget {
     }
 
     async close_click() {
-        if (UiFlashItem.animationClass)
+        if (UiFlashItem.animationClass || UiFlashItem.cssClasses.closeAnimation) {
             // @ts-ignore
-            await playAnimation(this.container, UiFlashItem.animationClass);
+            await playAnimation(this.container, UiFlashItem.animationClass || UiFlashItem.cssClasses.closeAnimation);
+        }
         this.muRemoveSelf();
+    }
+
+    afterIndex() {
+        if (UiFlashItem.cssClasses.openAnimation) { // @ts-ignore
+            playAnimation(this.container, UiFlashItem.cssClasses.openAnimation)
+        }
+        if (UiFlashItem.cssClasses.themePrefix && this.theme) { // @ts-ignore
+            this.container.classList.add(UiFlashItem.cssClasses.themePrefix + this.theme);
+        }
+        const ttl = this.ttl ?? UiFlashItem.ttlDefault;
+        if (ttl) {
+            setTimeout(() => this.close_click(), ttl * 1000);
+        }
     }
 }

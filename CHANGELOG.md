@@ -1,5 +1,13 @@
 # Change log
 
+## 2.23.0
+
+ - Moving auxiliary utilities to the mu-js-utils package
+ - Extension of FlashMessage functionalities
+   - Autoclose
+   - Themes
+   - Visual types (succes, error, ...)
+
 ## 2.22.0
 
  - class `ErrorList`

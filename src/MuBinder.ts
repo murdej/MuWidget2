@@ -1,5 +1,5 @@
 import { AnyElement, MuWidget } from "./MuWidget";
-import { StrParser, StrParserMark } from "./StrParser";
+import { StrParser, StrParserMark } from "mu-js-utils/lib/StrParser";
 import {JSONS} from "./utils/JSONS";
 
 export class MuBinder {
