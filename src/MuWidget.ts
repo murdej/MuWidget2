@@ -180,6 +180,10 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 	public muRemoveSelf() : void {
 		if (this.container.parentNode) this.container.parentNode.removeChild(this.container);
+		for(const element of this.muExposedElements) {
+			if (element.parentNode)
+				element.parentNode.removeChild(element);
+		}
 	}
 
 	public container : AnyElement;
@@ -824,6 +828,19 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 
 		currentElement.innerHTML = newContent;
 		this.muIndexTree(currentElement, true, null, false);
+	}
+
+	protected muExposedElements: AnyElement[] = [];
+	public muExposeElement(element : AnyElement|string, targetElement: AnyElement): void
+	{
+		if (typeof element === "string")
+			element = this.ui[element];
+
+		// @ts-ignore
+		this.muExposedElements.push(element);
+
+		// @ts-ignore
+		targetElement.appendChild(element);
 	}
 
 	// statics
