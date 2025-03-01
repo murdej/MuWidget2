@@ -174,6 +174,9 @@ class MuBinder {
                 defaults.forFetch = true;
                 if (mbo.element.type === "checkbox")
                     defaults.target = "checked";
+                else if (['datetime-local', 'datetime'].includes(mbo.element.type) && this.useDateObject) {
+                    defaults.target = '@date';
+                }
                 else
                     defaults.target = "value";
             }
@@ -359,6 +362,10 @@ class MuBinder {
                 }
             }
         }
+        else if (target == '@date') {
+            //@ts-ignore
+            element.value = DateTime.dateToInput(val, element);
+        }
         else
             this.setDeep(val, element, target); // element[target] = val;
     }
@@ -401,8 +408,11 @@ class MuBinder {
                     return this.getDeep(element["widget"], target.substr(1));
                 else if (target.startsWith("@attr."))
                     return element.getAttribute(target.substr(6));
-                else if (target == "@visible")
+                else if (target === '@visible')
                     return element.style.display != "none";
+                else if (target === '@date') { // @ts-ignore
+                    return DateTime.dateFromInput(element.value);
+                }
                 else
                     return this.getDeep(element, target); // element[target] = val;
                 break;
@@ -411,6 +421,7 @@ class MuBinder {
     }
 }
 MuBinder.useJsonS = true;
+MuBinder.useDateObject = true;
 MuBinder.filters = {
     toLower: val => {
         return val === null || val === void 0 ? void 0 : val.toString().toLocaleLowerCase();
@@ -752,6 +763,19 @@ You should have received a copy of the GNU General Public License
 along with MuWidget.  If not, see <https://www.gnu.org/licenses/>. */
 // export class MuWidget<TP extends MuWidget = MuWidget<any,{},{}>, TU extends Record<string, any&AnyElement> = {}, TW extends Record<string, any&AnyElement> = {}> {
 class MuWidget {
+    /**
+    * Creates a new widget from a template in the current widget and adds it to the target container.
+    *
+    * @param templateName Name of template
+    * @param container The element to add the widget to. It can be HTMLElement or its mu-id.
+    * @param params Parameters for new widgets
+    * @param position Where to place the new widget
+    *  - `first` - begin of container
+    *  - `before` - before `ref` element
+    *  - `after` - after `ref` element
+    *  - `last` - end of container
+    * @param ref - reference element for `before` or `after`
+    */
     muWidgetFromTemplate(templateName, container, params = null, position = "last", ref = null) {
         const finalContainer = this.muGetContainer(container);
         var tmpElemementType = "div";
@@ -824,6 +848,19 @@ class MuWidget {
                 break;
         }
     }
+    /**
+    * Creates a new widget and adds it to the target container.
+    * @param widgetName Widget name. (The widget name must be registered using {@link registerAll} or {@link registerAs})
+    * @param container The element to add the widget to. It can be HTMLElement or its mu-id.
+    * @param params Parameters for new widgets
+    * @param position Where to place the new widget
+    *  - `first` - begin of container
+    *  - `before` - before `ref` element
+    *  - `after` - after `ref` element
+    *  - `last` - end of container
+    * @param ref - reference element for `before` or `after`
+    * @param elementName - container tag of new widget
+    */
     muCreateWidget(widgetName, container, params = null, elementName = 'div', position = "last", ref = null) {
         const finalContainer = this.muGetContainer(container);
         const element = document.createElementNS(finalContainer.namespaceURI, elementName);
@@ -844,6 +881,11 @@ class MuWidget {
         }
         // this.container.innerHTML += html;
     }
+    /**
+    * @ignore
+    * @param src
+    * @param container
+    */
     createNodeArrayFromHTML(src, container) {
         let lSrc = src.toLowerCase();
         let tmpElemementType = "div";
@@ -857,12 +899,24 @@ class MuWidget {
         element.innerHTML = src;
         return Array.from(element.childNodes);
     }
+    /**
+    * @ignore
+    * @param src
+    * @param container
+    */
     createElementFromHTML(src, container) {
         return this.createNodeArrayFromHTML(src, container).find(item => item instanceof Element);
     }
+    /**
+    * Removes the current widget, its contents and all parts exposed by the {@link muExposeElement} method
+    */
     muRemoveSelf() {
         if (this.container.parentNode)
             this.container.parentNode.removeChild(this.container);
+        for (const element of this.muExposedElements) {
+            if (element.parentNode)
+                element.parentNode.removeChild(element);
+        }
     }
     muGetChildWidgets(container) {
         return MuWidget.getChildWidgets((typeof container === "string")
@@ -880,10 +934,19 @@ class MuWidget {
         }
         return res;
     }
-    muVisible(state, control) {
+    /**
+    * Toggle element visibility
+    * @param state - `true` - visibile, `false` - hidden, `"toggle"` - switching visibility
+    * @param control - element, `mu-id` element or array of element or `mu-id` element
+    * @param type a way to hide the element:
+    * - `display` - use css property `display: none`
+    * - `hidden` - use css property `visibility: hidden`
+    * - `collapse` - use css property `visibility: collapse`
+    */
+    muVisible(state, control, type = 'display') {
         if (Array.isArray(control)) {
             for (const controlItem of control)
-                this.muVisible(state, controlItem);
+                this.muVisible(state, controlItem, type);
         }
         else {
             let neg = false;
@@ -899,11 +962,20 @@ class MuWidget {
                 else
                     control = this.ui[control];
             }
-            //@ts-ignore
-            if (state === "toggle")
-                state = control.style.display === "none";
-            //@ts-ignore
-            control.style.display = state !== neg ? null : "none";
+            if (type === 'display') {
+                //@ts-ignore
+                if (state === "toggle")
+                    state = control.style.display === "none";
+                //@ts-ignore
+                control.style.display = state !== neg ? null : "none";
+            }
+            else {
+                //@ts-ignore
+                if (state === "toggle")
+                    state = ['hidden', 'collapse'].includes(control.style.visibility);
+                //@ts-ignore
+                control.style.visibility = state !== neg ? null : type;
+            }
         }
     }
     muBindData(srcData) {
@@ -932,9 +1004,14 @@ class MuWidget {
         this.muTemplateParents = {};
         this.muOnAfterIndex = [];
         this.muBindOpts = {};
+        this.muExposedElements = [];
         this.container = container;
     }
     // public constructor(container : AnyElement)
+    /**
+    * @ignore
+    * @param container
+    */
     muInit(container) {
         this.muOnAfterIndex = [];
         this.ui = {};
@@ -996,9 +1073,15 @@ class MuWidget {
             throw new Error("Unknown event '" + name + "' on class '" + this.constructor.name + "'.");
         this.muWidgetEventHandlers[name].push(handler);
     }
+    /**
+    * @ignore
+    **/
     muEventNames() {
         return Object.keys(this.muWidgetEventHandlers);
     }
+    /**
+    * @ignore
+    **/
     muActivateWidget(element, opts, extraParams = {}, widgetDef = null) {
         if (!opts)
             opts = this.muGetElementOpts(element);
@@ -1084,6 +1167,9 @@ class MuWidget {
         widget.muInit(element);
         return widget;
     }
+    /**
+    * @ignore
+    **/
     muGetElementOpts(element) {
         var res = {};
         // Convert simplified syntax id:widget@template
@@ -1114,6 +1200,9 @@ class MuWidget {
         }
         return res;
     }
+    /**
+    * @ignore
+    **/
     muFindTemplate(templateName) {
         let tmpTemplate = null;
         if (templateName.startsWith("shared:")) {
@@ -1137,6 +1226,9 @@ class MuWidget {
         }
         return tmpTemplate;
     }
+    /**
+    * @ignore
+    **/
     muIndexTree(element, indexWidget, useName = null, addToUi = true) {
         var _a;
         //@ts-ignore
@@ -1232,6 +1324,9 @@ class MuWidget {
         }
         this.muCallPlugin("afterIndexElement", ev);
     }
+    /**
+    * @ignore
+    **/
     muAddUi(id, element) {
         if (id in this.ui)
             console.error("The widget '" + /*this.muGetIdentification()*/ this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.");
@@ -1241,6 +1336,9 @@ class MuWidget {
     /* muGetIdentification() {
     return this.muIndexOpts.widget + (this.muIndexOpts.id ? "#" + this.muIndexOpts.id : "");
     } */
+    /**
+    * @ignore
+    **/
     muCallPlugin(eventName, eventArgs) {
         for (var plugin of MuWidget.plugIns) {
             if (plugin[eventName])
@@ -1248,13 +1346,16 @@ class MuWidget {
         }
     }
     afterIndex() { }
+    /**
+    * @ignore
+    **/
     preproc(element, preproc) {
-        var p = preproc.indexOf(" ");
-        var name = preproc;
-        var paramsStr = "";
+        let p = preproc.indexOf(" ");
+        let name = preproc;
+        let paramsStr = "";
         if (p >= 0) {
-            var name = preproc.substr(0, p);
-            var paramsStr = preproc.substr(p);
+            name = preproc.substr(0, p);
+            paramsStr = preproc.substr(p);
         }
         if (!(name in MuWidget.preproc))
             throw new Error("Preproc '" + name + '" not defined.');
@@ -1285,6 +1386,9 @@ class MuWidget {
             inst.preproc(element);
         }
     }
+    /**
+    * @ignore
+    **/
     muAddEvents(opts, element, widget = null) {
         var autoMethodName;
         var eventNames = [...this.muOpts.bindEvents];
@@ -1328,6 +1432,9 @@ class MuWidget {
             }
         }
     }
+    /**
+    * @ignore
+    **/
     muFindMethod(name, context) {
         var obj = context || this;
         //todo: blbne
@@ -1355,6 +1462,9 @@ class MuWidget {
             context: obj
         };
     }
+    /**
+    * @ignore
+    **/
     muGetMethodCallback(name, context = null) {
         const methodInfo = this.muFindMethod(name, context);
         return (ev /* , event : Event */) => {
@@ -1362,6 +1472,9 @@ class MuWidget {
             return methodInfo.method.apply(methodInfo.context, callparams);
         };
     }
+    /**
+    * @ignore
+    **/
     muAddEvent(eventName, element, callback) {
         element.addEventListener(eventName, callback);
         /* (element as any).addEventListener(eventName, (/*ev : Event* /) => {
@@ -1395,6 +1508,20 @@ class MuWidget {
                 : 'Argument element is empty');
         currentElement.innerHTML = newContent;
         this.muIndexTree(currentElement, true, null, false);
+    }
+    /**
+    * Exposes the element outside the current widget. The element still remains part of the current widget.
+    *
+    * @param element - Element to be moved
+    * @param targetElement - Target element to move
+    */
+    muExposeElement(element, targetElement) {
+        if (typeof element === "string")
+            element = this.ui[element];
+        // @ts-ignore
+        this.muExposedElements.push(element);
+        // @ts-ignore
+        targetElement.appendChild(element);
     }
     static getChildWidgets(container) {
         const ls = [];
@@ -1465,6 +1592,9 @@ class MuWidget {
 MuWidget.fixOldWidgets = false;
 MuWidget.sharedTemplates = {};
 MuWidget.paramJsonS = true;
+/**
+* @ignore
+**/
 MuWidget.identifierRe = '[a-zA-Z_.][0-9a-zA-Z_.]*';
 // statics
 MuWidget.widgetClasses = {};
