@@ -7,7 +7,6 @@
     "./src/MuUIDs.ts",
     "./src/MuWidget.ts",
     "./src/PPFormGroup.ts",
-    "./src/StrParser.ts",
     "./src/UiFlashMessage.ts",
     "./src/UiSelector.ts",
     "./src/UiTabs.ts"

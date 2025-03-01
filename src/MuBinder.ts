@@ -1,6 +1,7 @@
 import { AnyElement, MuWidget } from "./MuWidget";
 import { StrParser, StrParserMark } from "mu-js-utils/lib/StrParser";
 import {JSONS} from "./utils/JSONS";
+import {DateTime} from "mu-js-utils/lib/DateTime";
 
 export class MuBinder {
 	public static parse(src: string, element: AnyElement): MuBindOpts[] {
@@ -163,6 +164,9 @@ export class MuBinder {
 				defaults.forFetch = true;
 				if (mbo.element.type === "checkbox")
 					defaults.target = "checked";
+				else if (['datetime-local', 'datetime'].includes(mbo.element.type) && this.useDateObject) {
+					defaults.target = '@date';
+				}
 				else
 					defaults.target = "value";
 			}
@@ -200,6 +204,8 @@ export class MuBinder {
 	}
 
 	public static useJsonS: boolean = true;
+
+	public static useDateObject = true;
 
 	public static register(muWidget: any) {
 		// @ts-ignore
@@ -341,6 +347,10 @@ export class MuBinder {
 				}
 			}
 		}
+		else if (target == '@date') {
+			//@ts-ignore
+			element.value = DateTime.dateToInput(val, element);
+		}
 		else
 			this.setDeep(val, element, target); // element[target] = val;
 	}
@@ -382,8 +392,12 @@ export class MuBinder {
 					return this.getDeep(element["widget"], target.substr(1));
 				else if (target.startsWith("@attr."))
 					return element.getAttribute(target.substr(6));
-				else if (target == "@visible")
+				else if (target === '@visible')
 					return element.style.display != "none";
+				else if (target === '@date')
+					{ // @ts-ignore
+						return DateTime.dateFromInput(element.value);
+					}
 				else
 					return this.getDeep(element, target); // element[target] = val;
 				break;

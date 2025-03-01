@@ -1,5 +1,13 @@
 # Change log
 
+## 2.24.0
+
+ - `MuBinder`
+   - When muBindData and muFetchData apply the Date type to the intput type date(time).
+ - `MuWidget`
+   - `muVisible` allows to hide element in `display`, `hidden`, `collapse` modes
+   - `muExposeElement` allows to expose an element outside the widget.
+
 ## 2.23.0
 
  - Moving auxiliary utilities to the mu-js-utils package

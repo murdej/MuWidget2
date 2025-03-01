@@ -13,3 +13,5 @@ node_modules
 .htmlnanorc.js
 trim-eximport.js
 tests
+typedoc.json
+update-my-libs.sh
