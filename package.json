@@ -15,6 +15,9 @@
     "build:bundle-nomodule": "cd src ; (for f in MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts MuLabelFor.ts utils/JSONS.ts; do echo ''; cat $f ; done ) | node ../trim-eximport.js > ../dist/MuWidget-bundle.ts ; tsc --target ES2015 ../dist/MuWidget-bundle.ts #; rm ../dist/MuWidget-bundle.ts ",
     "build:bundle-module": "cd src ; tsc --target ES2016 --outFile ../dist/MuWidget-bundle-module.js MuBinder.ts MuRouter.ts MuUIDs.ts MuWidget.ts MuLabelFor.ts "
   },
+  "bin": {
+    "muwi": "./lib/scripts/muwi.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/murdej/MuWidget2.git"

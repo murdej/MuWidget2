@@ -425,6 +425,9 @@ export class MuBinder {
 		getField: (val, ev, field) => (val ?? {})[field],
 		ifEmpty: (val, ev, newValue: any) => val || newValue,
 		ifNull: (val, ev, newValue: any) => val ?? newValue,
+		jsonStringify: (val, ev) => JSON.stringify(val, null, 4),
+		jsonsParse: (val, ev) => JSONS.parse(val),
+		jsonParse: (val, ev) => JSON.parse(val),
 	}
 }
 

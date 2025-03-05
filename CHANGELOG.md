@@ -1,5 +1,12 @@
 # Change log
 
+## 2.25.0
+
+- `MuBinder`
+  - New filters `jsonStringify`, `jsonsParse` and `jsonParse`
+- Component `Table`
+  - transformContent can returns `HTMLElement`
+
 ## 2.24.0
 
  - `MuBinder`

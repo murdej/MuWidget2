@@ -141,7 +141,7 @@ export class ColumnInfo
 	cssClass: string|null = null;
 	cellCssClass: string|null = null;
 	headCssClass: string|null = null;
-	transformContent: CellValueTranformer|null = null;
+	transformContent: CellValueTransformer|null = null;
 	interactiveOnly: boolean = false;
 	hidden: boolean = false;
 
@@ -152,7 +152,10 @@ export class ColumnInfo
 
 export class TableCell extends MuWidget {
 	render(value: any, row: any, ev: CellValueTranformerEvent) {
-		(this.container as unknown as HTMLTableCellElement).innerText = value || "";
+		if (value instanceof HTMLElement)
+			(this.container as unknown as HTMLTableCellElement).appendChild(value);
+		else
+			(this.container as unknown as HTMLTableCellElement).innerText = value || "";
 	}
 }
 
@@ -177,7 +180,7 @@ export class TableCommandCell extends TableCell
 	}
 }
 
-export type CellValueTranformer = (value: any, columnInf: ColumnInfo, cell: MuWidget, ev: CellValueTranformerEvent) => string|null;
+export type CellValueTransformer = (value: any, columnInf: ColumnInfo, cell: MuWidget, ev: CellValueTranformerEvent) => string|null|HTMLElement;
 
 export type CellValueTranformerEvent = {
 	isInteractive: boolean;
