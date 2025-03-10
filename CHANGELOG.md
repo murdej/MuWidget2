@@ -1,6 +1,6 @@
 # Change log
 
-## 
+## 2.26.0 
 
  - Component `Table` 
    - It is possible to define defaultOrderable and defaultFilterable which are used for columns that do not have orderable and sortable set.
