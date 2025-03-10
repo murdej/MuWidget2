@@ -6,8 +6,13 @@ export class Table extends MuWidget
 
 	public data: any[] = [];
 
+	protected isInteractive: boolean = true;
+	public defaultOrderable: boolean = true;
+	public defaultFilterable: boolean = true;
+
 	public render(isInteractive: boolean = true)
 	{
+		this.isInteractive = isInteractive;
 		this.ui.head.innerHTML = "";
 		this.ui.body.innerHTML = "";
 
@@ -19,36 +24,40 @@ export class Table extends MuWidget
 		}
 
 		for(const row of this.data) {
-			const wRow = this.muWidgetFromTemplate('row', 'body', { data: row });
-			wRow.container.addEventListener('click', (ev) => this.muDispatchEvent('rowClick', wRow));
-			wRow.muTemplates = { ...wRow.muTemplates, ...this.muTemplates };
-
-			for(const columnInfo of this.columns) {
-				const ev: CellValueTranformerEvent = { isInteractive: isInteractive, row: row };
-				if ((!isInteractive && columnInfo.interactiveOnly) || columnInfo.hidden) continue;
-				const cell = (columnInfo.widgetName
-					? wRow.muCreateWidget(
-						columnInfo.widgetName,
-						wRow.container,
-						{ columnInfo, ...columnInfo.widgetParams },
-						'td'
-					)
-					: wRow.muWidgetFromTemplate(
-						columnInfo.template || 'tableCell',
-						wRow.container,
-						{ columnInfo, ...columnInfo.widgetParams }
-					)) as unknown as TableCell;
-				let val = columnInfo.transformContent
-					? columnInfo.transformContent(row[columnInfo.field], columnInfo, cell, ev)
-					: row[columnInfo.field];
-				/* if (val !== null && val !== undefined) */
-				if (columnInfo.cssClass) cell.container.classList.add(...columnInfo.cssClass.split(' '));
-				if (columnInfo.cellCssClass) cell.container.classList.add(...columnInfo.cellCssClass.split(' '));
-				cell.render(val, row, ev);
-			}
-
-			this.muDispatchEvent('rowRendered', wRow);
+			this.addRow(row);
 		}
+	}
+
+	addRow(row: any) {
+		const wRow = this.muWidgetFromTemplate('row', 'body', { data: row });
+		wRow.container.addEventListener('click', (ev) => this.muDispatchEvent('rowClick', wRow));
+		wRow.muTemplates = { ...wRow.muTemplates, ...this.muTemplates };
+
+		for(const columnInfo of this.columns) {
+			const ev: CellValueTransformerEvent = { isInteractive: this.isInteractive, row: row };
+			if ((!this.isInteractive && columnInfo.interactiveOnly) || columnInfo.hidden) continue;
+			const cell = (columnInfo.widgetName
+				? wRow.muCreateWidget(
+					columnInfo.widgetName,
+					wRow.container,
+					{ columnInfo, ...columnInfo.widgetParams },
+					'td'
+				)
+				: wRow.muWidgetFromTemplate(
+					columnInfo.template || 'tableCell',
+					wRow.container,
+					{ columnInfo, ...columnInfo.widgetParams }
+				)) as unknown as TableCell;
+			let val = columnInfo.transformContent
+				? columnInfo.transformContent(row[columnInfo.field], columnInfo, cell, ev)
+				: row[columnInfo.field];
+			/* if (val !== null && val !== undefined) */
+			if (columnInfo.cssClass) cell.container.classList.add(...columnInfo.cssClass.split(' '));
+			if (columnInfo.cellCssClass) cell.container.classList.add(...columnInfo.cellCssClass.split(' '));
+			cell.render(val, row, ev);
+		}
+
+		this.muDispatchEvent('rowRendered', wRow);
 	}
 
 	afterIndex() {
@@ -98,10 +107,11 @@ export class TableHeadCell extends MuWidget {
 			  </div>`
 			: `<strong class="mtable-head-cell__label-label" mu-id="label"></strong>`;
 	}
+
 	public afterIndex() {
 		if (this.isInteractive) {
-			this.muVisible(this.columnInfo.filterable, "bFilter");
-			this.muVisible(this.columnInfo.orderable, ["bOrderAsc", "bOrderDesc"]);
+			this.muVisible(this.columnInfo.filterable ?? this.muParent.defaultFilterable, "bFilter");
+			this.muVisible(this.columnInfo.orderable ?? this.muParent.defaultOrderable, ["bOrderAsc", "bOrderDesc"]);
 			this.muVisible(this.columnInfo.isFiltered, "indicatorFilter");
 			this.muVisible(this.columnInfo.isOrdered === "asc", "indicatorOrderAsc");
 			this.muVisible(this.columnInfo.isOrdered === "desc", "indicatorOrderDesc");
@@ -131,8 +141,8 @@ export class ColumnInfo
 	name: string = "";
 	field: string = "";
 	position: number = 0;
-	orderable: boolean = true;
-	filterable: boolean = true;
+	orderable: boolean|null = null;
+	filterable: boolean|null = null;
 	template: string|null = null;
 	isFiltered: boolean = false;
 	isOrdered: "asc"|"desc"|null = null;
@@ -151,7 +161,8 @@ export class ColumnInfo
 }
 
 export class TableCell extends MuWidget {
-	render(value: any, row: any, ev: CellValueTranformerEvent) {
+	public columnInfo: ColumnInfo;
+	render(value: any, row: any, ev: CellValueTransformerEvent) {
 		if (value instanceof HTMLElement)
 			(this.container as unknown as HTMLTableCellElement).appendChild(value);
 		else
@@ -159,9 +170,41 @@ export class TableCell extends MuWidget {
 	}
 }
 
+export class TableCellStatic extends TableCell {
+
+	public content: string = '';
+
+	render(value: any, row: any, ev: CellValueTransformerEvent) {
+	}
+
+	beforeIndex() {
+		this.muAppendContent(this.content);
+	}
+}
+
+export class TableCellComplex extends TableCell {
+
+	public content: string = '';
+
+	render(value: any, row: any, ev: CellValueTransformerEvent) {
+		this.muBindData(
+			{
+				value,
+				...row
+			}
+		);
+	}
+
+	beforeIndex() {
+		this.muAppendContent(this.content);
+	}
+}
+
 export class TableCommandCell extends TableCell
 {
-	render(value: any, row: any, ev: CellValueTranformerEvent) {
+	public content: string = '';
+
+	render(value: any, row: any, ev: CellValueTransformerEvent) {
 	}
 
 	public command(ev: Event, cmd: string, ...args: any[])
@@ -178,11 +221,15 @@ export class TableCommandCell extends TableCell
 			...args
 		);
 	}
+
+	beforeIndex() {
+		this.muAppendContent(this.content);
+	}
 }
 
-export type CellValueTransformer = (value: any, columnInf: ColumnInfo, cell: MuWidget, ev: CellValueTranformerEvent) => string|null|HTMLElement;
+export type CellValueTransformer = (value: any, columnInf: ColumnInfo, cell: MuWidget, ev: CellValueTransformerEvent) => string|null|HTMLElement;
 
-export type CellValueTranformerEvent = {
+export type CellValueTransformerEvent = {
 	isInteractive: boolean;
 	row: any;
 }
@@ -190,7 +237,7 @@ export type CellValueTranformerEvent = {
 type TableCellCommandEvent = {
 	row: any;
 	event: Event;
-	rowWidged: MuWidget;
+	rowWidged: MuWidget | { data: any };
 	cellWidget: MuWidget;
 	command: string;
 };

@@ -1,5 +1,14 @@
 # Change log
 
+## 
+
+ - Component `Table` 
+   - It is possible to define defaultOrderable and defaultFilterable which are used for columns that do not have orderable and sortable set.
+   - Method `addRow` for add one row to table
+   - Correction of typo
+   - For the widget of the `TableCommandCell` cell it is possible to pass the content by the `content` parameter.
+   - New cell widget `TableCellComplex` and `TableCellStatic` 
+
 ## 2.25.0
 
 - `MuBinder`

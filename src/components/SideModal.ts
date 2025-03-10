@@ -27,7 +27,7 @@ export class SideModal extends MuWidget {
     public static open<T extends MuWidget = SideModal>(
         widgetName: string,
         label: string,
-        params = {},
+        params: Partial<T> = {},
     ): T {
         const container = document.createElement('div') as AnyElement;
         container.setAttribute("mu-widget", widgetName);
@@ -56,8 +56,7 @@ export class SideModal extends MuWidget {
             {
                 ...params,
                 contentContainer: content,
-            },
-            params
+            }
         ) as unknown as T;
         widget.muRegisterEvent('close');
 
