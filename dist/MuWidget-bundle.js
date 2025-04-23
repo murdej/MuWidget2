@@ -293,6 +293,7 @@ class MuBinder {
         return val;
     }
     static setValue(val, target, element, widget) {
+        var _a, _b;
         if (target === "@widget") {
             element["widget"].muBindData(val);
         }
@@ -334,20 +335,37 @@ class MuBinder {
         else if (target == "@visible")
             element.style.display = val ? "" : "none";
         else if (target == "@options") {
-            const addOpt = function (val, text) {
-                const opt = document.createElement("option");
-                opt.text = text;
-                opt.value = val;
-                if (element instanceof HTMLSelectElement)
+            let addOpt;
+            let widgetOptions = null;
+            if (element instanceof HTMLSelectElement) {
+                element.innerHTML = "";
+                addOpt = function (val, text) {
+                    const opt = document.createElement("option");
+                    opt.text = text;
+                    opt.value = val;
                     element.add(opt);
-                else {
-                    const optEl = document.createElement('option');
-                    optEl.value = opt.value;
-                    optEl.innerText = opt.text;
-                    element.append(optEl);
-                }
-            };
-            element.innerHTML = "";
+                };
+            }
+            else if ((_a = element.widget) === null || _a === void 0 ? void 0 : _a.setOptions) {
+                widgetOptions = [];
+                addOpt = (val, text) => widgetOptions.push({ value: val, text: text });
+            }
+            else {
+                element.innerHTML = "";
+                addOpt = function (val, text) {
+                    const opt = document.createElement("option");
+                    opt.text = text;
+                    opt.value = val;
+                    if (element instanceof HTMLSelectElement)
+                        element.add(opt);
+                    else {
+                        const optEl = document.createElement('option');
+                        optEl.value = opt.value;
+                        optEl.innerText = opt.text;
+                        element.append(optEl);
+                    }
+                };
+            }
             if (Array.isArray(val)) {
                 for (const item of val) {
                     if (typeof item === "string")
@@ -360,6 +378,9 @@ class MuBinder {
                 for (const v in val) {
                     addOpt(v, val[v]);
                 }
+            }
+            if (widgetOptions !== null) {
+                (_b = element.widget) === null || _b === void 0 ? void 0 : _b.setOptions(widgetOptions);
             }
         }
         else if (target == '@date') {
@@ -441,6 +462,9 @@ MuBinder.filters = {
     getField: (val, ev, field) => (val !== null && val !== void 0 ? val : {})[field],
     ifEmpty: (val, ev, newValue) => val || newValue,
     ifNull: (val, ev, newValue) => val !== null && val !== void 0 ? val : newValue,
+    jsonStringify: (val, ev) => JSON.stringify(val, null, 4),
+    jsonsParse: (val, ev) => JSONS.parse(val),
+    jsonParse: (val, ev) => JSON.parse(val),
 };
 class MuRouter {
     addRoute(name, re, callback) {
@@ -875,11 +899,17 @@ class MuWidget {
         }, Object.assign({ muParent: this }, params));
         return widget;
     }
-    muAppendContent(html) {
-        for (const node of this.createNodeArrayFromHTML(html, this.container)) {
-            this.container.appendChild(node);
+    muAppendContent(...contents) {
+        for (const content of contents) {
+            if (typeof content === 'string') {
+                for (const node of this.createNodeArrayFromHTML(content, this.container)) {
+                    this.container.appendChild(node);
+                }
+            }
+            else {
+                this.container.append(content);
+            }
         }
-        // this.container.innerHTML += html;
     }
     /**
     * @ignore
@@ -1059,7 +1089,7 @@ class MuWidget {
             handler.apply(this, args); */
             for (let i = 0, l = this.muWidgetEventHandlers[name].length; i < l; i++) {
                 const handler = this.muWidgetEventHandlers[name][i];
-                handler.call(this, ev);
+                handler.call(this, ev, ...args);
             }
         }
     }
@@ -1329,7 +1359,7 @@ class MuWidget {
     **/
     muAddUi(id, element) {
         if (id in this.ui)
-            console.error("The widget '" + /*this.muGetIdentification()*/ this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.");
+            console.error("The widget '" + this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.", this.container);
         //@ts-ignore
         this.ui[id] = element;
     }

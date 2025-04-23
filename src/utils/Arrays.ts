@@ -16,7 +16,6 @@ export class Arrays {
 		return arr1.filter(value => arr2.includes(value));
 	}
 
-
 	static groupBy<T,TI extends string|number|symbol>(all: T[], getByField: (item:T) => TI): Record<TI, T[]> {
 		//@ts-ignore
 		const res: Record<TI, T[]> = {};
@@ -49,6 +48,21 @@ export class Arrays {
 
 	static unique<T>(items: T[]): T[] {
 		return Array.from(new Set(items));
+	}
+
+	static * rangeGen(start: number, stop: number, step: number = 1): Generator<number> {
+		for (let i = start; i < stop; i += step) {
+			yield i;
+		}
+	}
+
+	static range(start: number, stop: number, step: number = 1): number {
+		const result = [];
+		for (let i = start; i < stop; i += step) {
+			result.push(i);
+		}
+
+		return result;
 	}
 }
 

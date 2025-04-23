@@ -1,4 +1,5 @@
 import {AnyElement} from "../MuWidget";
+import {addCssClass} from "mu-js-utils/lib/cssClass";
 
 /**
  * Add class with animation and returns the promise that is resolved after the animation ends
@@ -32,12 +33,14 @@ export function playAnimation(el: HTMLElement, name: string, opts: Record<string
  */
 export function makeHtmlElement<K extends keyof HTMLElementTagNameMap>(
     tagName: K,
-    attributes: { [key: string]: string|null } = {},
+    attributes: { class?:string|null|string[] } & { [key: string]: string|null } = {},
     content: null|string|HTMLElement|(string|HTMLElement)[] = null,
 ): HTMLElementTagNameMap[K] {
     const element = document.createElement(tagName);
     for (const key in attributes) {
-        if (attributes[key] !== null)
+        if (key === 'class')
+            addCssClass(element, attributes[key]);
+        else if (attributes[key] !== null)
             element.setAttribute(key, attributes[key]);
     }
     if (content) {

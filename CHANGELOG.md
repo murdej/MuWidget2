@@ -2,6 +2,8 @@
 
 ## 2.26.0 
 
+ - `MuWidget.muAppendContent` now accepts multiple arguments, it is possible to pass a string or HTMLElement.
+ - Component `ChoiceDialog`
  - Component `Table` 
    - It is possible to define defaultOrderable and defaultFilterable which are used for columns that do not have orderable and sortable set.
    - Method `addRow` for add one row to table

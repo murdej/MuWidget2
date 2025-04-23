@@ -318,7 +318,22 @@ element.setAttribute(target.substr(6), val);
 else if (target == "@visible")
 element.style.display = val ? "" : "none"
 else if (target == "@options") {
-const addOpt = function (val, text) {
+let addOpt: (val:string, text:string)=>void;
+let widgetOptions: ListItem[]|null = null;
+if (element instanceof  HTMLSelectElement) {
+element.innerHTML = "";
+addOpt = function (val, text) {
+const opt = document.createElement("option");
+opt.text = text;
+opt.value = val;
+(element as any as HTMLSelectElement).add(opt);
+};
+} else if ((element.widget as any)?.setOptions) {
+widgetOptions = [];
+addOpt = (val, text) => widgetOptions.push({ value: val, text: text });
+} else {
+element.innerHTML = "";
+addOpt = function (val, text) {
 const opt = document.createElement("option");
 opt.text = text;
 opt.value = val;
@@ -331,7 +346,7 @@ optEl.innerText = opt.text;
 element.append(optEl);
 }
 };
-element.innerHTML = "";
+}
 if (Array.isArray(val)) {
 for (const item of val) {
 if (typeof item === "string") addOpt(item, item);
@@ -342,6 +357,9 @@ else if (typeof val === "object") {
 for (const v in val) {
 addOpt(v, val[v]);
 }
+}
+if (widgetOptions !== null) {
+(element.widget as any)?.setOptions(widgetOptions);
 }
 }
 else if (target == '@date') {
@@ -422,6 +440,9 @@ map: (val, ev, map) => map[val],
 getField: (val, ev, field) => (val ?? {})[field],
 ifEmpty: (val, ev, newValue: any) => val || newValue,
 ifNull: (val, ev, newValue: any) => val ?? newValue,
+jsonStringify: (val, ev) => JSON.stringify(val, null, 4),
+jsonsParse: (val, ev) => JSONS.parse(val),
+jsonParse: (val, ev) => JSON.parse(val),
 }
 }
 
@@ -992,11 +1013,16 @@ widget: widgetName,
 return widget;
 }
 
-muAppendContent(html: string): void {
-for (const node of this.createNodeArrayFromHTML(html, this.container)) {
+muAppendContent(...contents: (string|HTMLElement)[]): void {
+for (const content of contents) {
+if (typeof content === 'string') {
+for (const node of this.createNodeArrayFromHTML(content, this.container)) {
 this.container.appendChild(node);
 }
-// this.container.innerHTML += html;
+} else {
+this.container.append(content);
+}
+}
 }
 
 /**
@@ -1221,7 +1247,7 @@ handler.apply(this, args); */
 for(let i = 0, l = this.muWidgetEventHandlers[name].length; i < l; i++)
 {
 const handler = this.muWidgetEventHandlers[name][i];
-handler.call(this, ev);
+handler.call(this, ev, ...args);
 }
 }
 }
@@ -1524,7 +1550,10 @@ this.muCallPlugin("afterIndexElement", ev);
 * @ignore
 **/
 muAddUi(id: string, element: AnyElement) {
-if (id in this.ui) console.error("The widget '" + /*this.muGetIdentification()*/ this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.");
+if (id in this.ui) console.error(
+"The widget '" + this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.",
+this.container
+);
 //@ts-ignore
 this.ui[id] = element as AnyElementA;
 }

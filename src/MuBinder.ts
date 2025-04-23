@@ -2,6 +2,7 @@ import { AnyElement, MuWidget } from "./MuWidget";
 import { StrParser, StrParserMark } from "mu-js-utils/lib/StrParser";
 import {JSONS} from "./utils/JSONS";
 import {DateTime} from "mu-js-utils/lib/DateTime";
+import {ListItem} from "./components/InputList";
 
 export class MuBinder {
 	public static parse(src: string, element: AnyElement): MuBindOpts[] {
@@ -321,20 +322,35 @@ export class MuBinder {
 		else if (target == "@visible")
 			element.style.display = val ? "" : "none"
 		else if (target == "@options") {
-			const addOpt = function (val, text) {
-				const opt = document.createElement("option");
-				opt.text = text;
-				opt.value = val;
-				if (element instanceof  HTMLSelectElement)
+			let addOpt: (val:string, text:string)=>void;
+			let widgetOptions: ListItem[]|null = null;
+			if (element instanceof  HTMLSelectElement) {
+				element.innerHTML = "";
+				addOpt = function (val, text) {
+					const opt = document.createElement("option");
+					opt.text = text;
+					opt.value = val;
 					(element as any as HTMLSelectElement).add(opt);
-				else {
-					const optEl = document.createElement('option');
-					optEl.value = opt.value;
-					optEl.innerText = opt.text;
-					element.append(optEl);
-				}
-			};
-			element.innerHTML = "";
+				};
+			} else if ((element.widget as any)?.setOptions) {
+				widgetOptions = [];
+				addOpt = (val, text) => widgetOptions.push({ value: val, text: text });
+			} else {
+				element.innerHTML = "";
+				addOpt = function (val, text) {
+					const opt = document.createElement("option");
+					opt.text = text;
+					opt.value = val;
+					if (element instanceof  HTMLSelectElement)
+						(element as any as HTMLSelectElement).add(opt);
+					else {
+						const optEl = document.createElement('option');
+						optEl.value = opt.value;
+						optEl.innerText = opt.text;
+						element.append(optEl);
+					}
+				};
+			}
 			if (Array.isArray(val)) {
 				for (const item of val) {
 					if (typeof item === "string") addOpt(item, item);
@@ -345,6 +361,9 @@ export class MuBinder {
 				for (const v in val) {
 					addOpt(v, val[v]);
 				}
+			}
+			if (widgetOptions !== null) {
+				(element.widget as any)?.setOptions(widgetOptions);
 			}
 		}
 		else if (target == '@date') {

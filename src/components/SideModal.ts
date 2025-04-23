@@ -8,8 +8,8 @@ export class SideModal extends MuWidget {
         this.contentContainer.innerHTML += html;
     }
 
-    close_click() {
-        if (this.beforeClose()) {
+    async close_click() {
+        if (await this.beforeClose()) {
             this.muDispatchEvent('close');
             this.muRemoveSelf();
             SideModal.updateMainScroolbars();
@@ -36,6 +36,7 @@ export class SideModal extends MuWidget {
             <div class="side-modal__container">
                 <div class="side-modal__head">
                     <h2 mu-id="modalLabel" class="flex-grow-1"></h2>
+                    <div mu="topCommands"></div>
                     <span class="flex-grow-0 close" mu="close">&times;</span>
                 </div>
                 <div class="side-modal__content" mu-id="content"></div>
@@ -66,7 +67,7 @@ export class SideModal extends MuWidget {
         return widget;
     }
 
-    protected beforeClose() {
+    protected beforeClose(): boolean|Promise<boolean> {
         return true;
     }
 }

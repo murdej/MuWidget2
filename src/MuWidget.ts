@@ -173,11 +173,16 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		return widget;
 	}
 
-	muAppendContent(html: string): void {
-		for (const node of this.createNodeArrayFromHTML(html, this.container)) {
-			this.container.appendChild(node);
+	muAppendContent(...contents: (string|HTMLElement)[]): void {
+		for (const content of contents) {
+			if (typeof content === 'string') {
+				for (const node of this.createNodeArrayFromHTML(content, this.container)) {
+					this.container.appendChild(node);
+				}
+			} else {
+				this.container.append(content);
+			}
 		}
-		// this.container.innerHTML += html;
 	}
 
 	/**
@@ -402,7 +407,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			for(let i = 0, l = this.muWidgetEventHandlers[name].length; i < l; i++)
 			{
 				const handler = this.muWidgetEventHandlers[name][i];
-				handler.call(this, ev);
+				handler.call(this, ev, ...args);
 			} 
 		}
 	}
@@ -705,7 +710,10 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	 * @ignore
 	 **/
 	muAddUi(id: string, element: AnyElement) {
-		if (id in this.ui) console.error("The widget '" + /*this.muGetIdentification()*/ this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.");
+		if (id in this.ui) console.error(
+			"The widget '" + this.muIndexOpts.widget + "#" + this.muIndexOpts.id + "' already contains an element with mu-id '" + id + "'.",
+			this.container
+		);
 		//@ts-ignore
 		this.ui[id] = element as AnyElementA;
 	}
