@@ -16,7 +16,7 @@ export class ErrorMarker
         this.pathSeparator = pathSeparator;
     }
 
-    private pathControl: Record<string, AnyElement> = {};
+    public pathControl: Record<string, AnyElement> = {};
 
     findControl(path: string): AnyElement|null {
         if (!this.pathControl[path])
@@ -43,9 +43,11 @@ export class ErrorMarker
         const notShowed = [];
         for(const k in this.pathControl)
         {
-            const el = (this.pathControl[k] as any).errorLabel;
-            if (el) el.innerHTML = "";
-            el.style.display = 'none';
+            const el = (this.pathControl[k] as any)?.errorLabel;
+            if (el) {
+                el.innerHTML = "";
+                el.style.display = 'none';
+            }
         }
         for(const message of messages) {
             const el = this.findControl(message.field);

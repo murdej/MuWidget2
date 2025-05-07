@@ -94,7 +94,10 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		container : string|AnyElement|null,
 	): AnyElement|null {
 		let finalContainer : AnyElement = null;
-		if (typeof container == 'string')
+		if (container === '.') {
+			finalContainer = this.container;
+		}
+		else if (typeof container == 'string')
 		{
 			var containerName = container;
 			finalContainer = this.ui[container];

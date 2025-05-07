@@ -1,5 +1,6 @@
 import {MuWidget} from "../MuWidget";
 import {playAnimation} from "../utils/utils";
+import {Timer} from "mu-js-utils/lib/Timer";
 
 export class UiFlashContainer extends MuWidget {
 
@@ -38,6 +39,9 @@ export class UiFlashContainer extends MuWidget {
 }
 
 export class UiFlashItem extends MuWidget {
+
+    public closeTimer: Timer;
+
     public static cssClasses = {
         container: ['toast', 'align-items-center', 'text-bg-primary', 'border-0', 'show'],
         content: ["d-flex"],
@@ -48,9 +52,13 @@ export class UiFlashItem extends MuWidget {
         themePrefix: 'flash-item-theme--',
     };
     public ttl: number = null;
+
     public static ttlDefault: number = null;
 
     public theme: string = '';
+
+    protected tickOpen = (new Date()).getTime();
+
     getCssClassesFor(component: string, asArray: boolean = true): string[]|string {
         return asArray
             ? UiFlashItem.cssClasses[component]
@@ -88,8 +96,9 @@ export class UiFlashItem extends MuWidget {
             this.container.classList.add(UiFlashItem.cssClasses.themePrefix + this.theme);
         }
         const ttl = this.ttl ?? UiFlashItem.ttlDefault;
-        if (ttl) {
-            setTimeout(() => this.close_click(), ttl * 1000);
-        }
+
+        this.closeTimer = new Timer(ttl * 1000, !!ttl);
+        this.closeTimer.wait().then(() => this.close_click());
+        // setTimeout(() => this.close_click(), ttl * 1000);
     }
 }

@@ -7,8 +7,9 @@
  * file that was distributed with this source code.
  */
 
-import { MuWidget } from "../MuWidget";
+import {AnyElement, MuWidget} from "../MuWidget";
 import { Arrays } from "../utils/Arrays";
+import {it} from "node:test";
 
 export class TreeView extends MuWidget {
 	public opts: TreeViewOpts = {
@@ -78,7 +79,21 @@ export class TreeView extends MuWidget {
 					: container;
 				this.renderList(childrens, getChilds, childContainer, plunge + 1);
 			}
+			this.muDispatchEvent('itemRedered', itemWidget);
 		}
+	}
+
+	public getItemTree<TW=MuWidget,TR=any>(itemCallback: (item: TW)=>TR, container: AnyElement = null): TreeViewItemNode[]
+	{
+		return this.container.widget.muGetChildWidgets<TW>(container ?? this.container)
+			.map(widget => ({
+				item: itemCallback ? itemCallback(widget): widget,
+				children: this.getItemTree(itemCallback, widget.ui[this.opts.childContainer])
+			}));
+	}
+
+	beforeIndex() {
+		this.muRegisterEvent('itemRedered');
 	}
 }
 
@@ -94,4 +109,9 @@ export type TreeViewOpts = {
 	templateName: ((item: any) => string)|string;
 	prepareItem: ((item: any) => any)|null;
 	//todo widgetParentField: string|null;
+}
+
+export type TreeViewItemNode<T=any> = {
+	item: T;
+	children: TreeViewItemNode<T>[];
 }

@@ -1,5 +1,13 @@
 # Change log
 
+## 2.27.0
+
+ - `MuWidget.muWidgetFromTemplate`: argument container can contain `'.'`. In this case, the new widget is inserted into the main widget container.
+ - `InputList`: new events  `click`, `renderItem`.
+ - `TreeView`: new event `itemRedered`.
+ - `UiFlashItem`: smart close timer
+
+
 ## 2.26.0 
 
  - `MuWidget.muAppendContent` now accepts multiple arguments, it is possible to pass a string or HTMLElement.

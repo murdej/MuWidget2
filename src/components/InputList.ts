@@ -50,8 +50,8 @@ abstract class InputList<TV> extends MuWidget {
         this.container.innerHTML = '';
         this.controls = {};
         const vis = this.visual.getAll();
-
         for (const item of this.currentItems) {
+            let clickEl = null;
             const controlId = vis.labelTag
                 ? MuUIDs.next('id')
                 : null;
@@ -61,6 +61,7 @@ abstract class InputList<TV> extends MuWidget {
                 itemContainer = document.createElement(vis.itemTag);
                 addCssClass(itemContainer, vis.itemClass);
                 this.container.appendChild(itemContainer);
+                clickEl = itemContainer;
             }
             // @ts-ignore
             const control: HTMLInputElement&{item:ListItem} = document.createElement(vis.controlTag) as HTMLInputElement;
@@ -75,17 +76,29 @@ abstract class InputList<TV> extends MuWidget {
                 : vis.controlName as string;
             itemContainer.append(control);
             this.controls[item.value] = control;
-
+            let label = null;
             if (vis.labelTag) {
-                const label = document.createElement(vis.labelTag);
+                label = document.createElement(vis.labelTag);
                 addCssClass(label, vis.labelClass);
                 label.setAttribute('for', controlId);
                 label.textContent = item.text;
                 itemContainer.append(label);
+                if (!clickEl)
+                    label.addEventListener('change', (ev) => this.muDispatchEvent('click'));
             } else {
                 itemContainer.append(item.text);
             }
             this.container.append(' ');
+            if (clickEl) {
+                clickEl.addEventListener('change', (ev) => this.muDispatchEvent('click'));
+            } else {
+                control.addEventListener('change', (ev) => this.muDispatchEvent('click'));
+            }
+            this.muDispatchEvent('renderItem', {
+                control,
+                item: clickEl,
+                label,
+            });
         }
     }
 
@@ -94,7 +107,7 @@ abstract class InputList<TV> extends MuWidget {
     abstract getValue(): TV;
 
     beforeIndex() {
-        this.muRegisterEvent('change');
+        this.muRegisterEvent('change', 'click', 'renderItem');
     }
 
     private widgetUniqueName: string|null = null;
