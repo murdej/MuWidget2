@@ -836,7 +836,10 @@ class MuWidget {
     }
     muGetContainer(container) {
         let finalContainer = null;
-        if (typeof container == 'string') {
+        if (container === '.') {
+            finalContainer = this.container;
+        }
+        else if (typeof container == 'string') {
             var containerName = container;
             finalContainer = this.ui[container];
             if (!finalContainer)
