@@ -214,13 +214,30 @@ export class MuRouter
 		return this.lastName;
 	}
 
-	public push(name : string|null, params : MuParameters = {})
+	/**
+	 * @deprecated use pushSet
+	 */
+	public push(name : string|null, params : MuParameters = {}) {
+		this.pushSet(name, params);
+	}
+
+	/**
+	 * Set parameters and push url into history.
+	 * @param name Route name
+	 * @param params Updated parameters
+	 */
+	public pushSet(name : string|null, params : MuParameters = {})
 	{
 		name = this.getName(name);
 		this.updatePersistent(params);
 		history.pushState({}, null, this.makeUrl(name, params));
 	}
 
+	/**
+	 * Updates parameters and push url into history.
+	 * @param name Route name
+	 * @param params Updated parameters
+	 */
 	public pushUpdate(name : string|null, params : MuParameters = {})
 	{
 		name = this.getName(name);
@@ -228,20 +245,96 @@ export class MuRouter
 		history.pushState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
 	}
 
+	/** @deprecated use replaceSet **/
 	public replace(name : string|null, params : MuParameters = {})
+	{
+		this.replaceSet(name, params);
+	}
+
+	/**
+	 * Set parameters and replace url in history.
+	 * @param name Route name
+	 * @param params New parameters
+	 */
+	public replaceSet(name : string|null, params : MuParameters = {})
 	{
 		name = this.getName(name);
 		this.updatePersistent(params);
 		history.replaceState({}, null, this.makeUrl(name, params));
 	}
 
-	public update(name : string|null, params : MuParameters = {})
+	/**
+	 * Update parameters and replace url in history.
+	 * @param name Route name
+	 * @param params Updated parameters
+	 */
+	public replaceUpdate(name : string|null, params : MuParameters = {})
 	{
 		name = this.getName(name);
 		this.updatePersistent(params, true);
 		history.replaceState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
 	}
 
+	/**
+	 * @deprecated use replaceUpdate
+	 */
+	public update(name : string|null, params : MuParameters = {})
+	{
+		this.replaceUpdate(name, params);
+	}
+
+
+	/**
+	 * Set parameters, push url into history and call route action.
+	 * @param name Route name
+	 * @param params New params
+	 * @param origin Origin
+	 */
+	public navPushSet(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+		name = this.getName(name);
+		this.pushSet(name, params);
+		this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+	}
+
+	/**
+	 * Updates parameters, push url into history and call route action.
+	 * @param name Route name
+	 * @param params Changed params
+	 * @param origin Origin
+	 */
+	public navPushUpdate(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+		name = this.getName(name);
+		this.pushUpdate(name, params);
+		this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+	}
+
+	/**
+	 * Set parameters, replace url in history and call route action.
+	 * @param name Route name
+	 * @param params New params
+	 * @param origin Origin
+	 */
+	public navReplaceSet(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+		name = this.getName(name);
+		this.replaceSet(name, params);
+		this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+	}
+
+	/**
+	 * Update parameters, replace url in history and call route action.
+	 * @param name Route name
+	 * @param params Changed params
+	 * @param origin Origin
+	 */
+	public navReplaceUpdate(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+		name = this.getName(name);
+		this.replaceUpdate(name, params);
+		this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+	}
+
+	/**
+	 * @deprecated use navPushSet
+	 */
 	public navigate(name : string|null, params : MuParameters = {}, origin: MuRouterOrigin = 'other')
 	{
 		name = this.getName(name);
@@ -277,7 +370,9 @@ export class MuRouter
 
 	constructor() {
 		if (typeof window !== 'undefined')
-			window.onpopstate = ev => this.route(document.location)
+			window.addEventListener('popstate', ev => {
+				this.route(document.location)
+			});
 	}
 
 	public updatePersistent(res: MuParameters, patch : boolean = false)

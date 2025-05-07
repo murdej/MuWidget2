@@ -1,12 +1,15 @@
 # Change log
 
+## 2.28.0
+
+ - `MuRouter` handle popstate event
+
 ## 2.27.0
 
  - `MuWidget.muWidgetFromTemplate`: argument container can contain `'.'`. In this case, the new widget is inserted into the main widget container.
  - `InputList`: new events  `click`, `renderItem`.
  - `TreeView`: new event `itemRedered`.
  - `UiFlashItem`: smart close timer
-
 
 ## 2.26.0 
 

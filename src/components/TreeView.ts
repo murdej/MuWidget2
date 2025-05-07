@@ -86,8 +86,9 @@ export class TreeView extends MuWidget {
 	public getItemTree<TW=MuWidget,TR=any>(itemCallback: (item: TW)=>TR, container: AnyElement = null): TreeViewItemNode[]
 	{
 		return this.container.widget.muGetChildWidgets<TW>(container ?? this.container)
-			.map(widget => ({
+			.map((widget: TW) => ({
 				item: itemCallback ? itemCallback(widget): widget,
+				/* @ts-ignore */
 				children: this.getItemTree(itemCallback, widget.ui[this.opts.childContainer])
 			}));
 	}

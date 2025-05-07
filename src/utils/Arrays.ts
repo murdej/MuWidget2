@@ -56,8 +56,8 @@ export class Arrays {
 		}
 	}
 
-	static range(start: number, stop: number, step: number = 1): number {
-		const result = [];
+	static range(start: number, stop: number, step: number = 1): number[] {
+		const result: number[] = [];
 		for (let i = start; i < stop; i += step) {
 			result.push(i);
 		}
