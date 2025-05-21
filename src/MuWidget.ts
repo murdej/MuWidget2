@@ -31,6 +31,15 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	
 	protected muIndexOpts: MuWidgetOpts|null = null;
 
+	/**
+	 * This property contains a Promise that is successfully resolved (resolve) after the afterIndex method has finished.
+	 * - If the afterIndex method returns a Promise, this property is resolved after the Promise returned from afterIndex is also resolved.
+	 * - If the afterIndex method is asynchronous (marked as async), this property is resolved after the afterIndex function has finished running.
+	 */
+	public muInitialized: Promise<void> = new Promise(resolve => this.muInitializedResolver = resolve);
+
+	protected muInitializedResolver: ()=>void;
+
 	public static paramJsonS: boolean = true;
 
 	/**
@@ -700,11 +709,16 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		this.muAddEvents(opts, element, widget);
 		if (indexWidget)
 		{
-			this.afterIndex();
-			for (let i = 0, l = this.muOnAfterIndex.length; i < l; i++)
-			{
-				this.muOnAfterIndex[i](this);
-			}
+			const afterIndexResponse = this.afterIndex();
+			(async () => {
+				await afterIndexResponse;
+				this.muInitializedResolver();
+				for (let i = 0, l = this.muOnAfterIndex.length; i < l; i++)
+				{
+					this.muOnAfterIndex[i](this);
+				}
+			})();
+
 		}
 		this.muCallPlugin("afterIndexElement", ev);
 	}
@@ -736,7 +750,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		}
 	}
 
-	afterIndex() { }
+	afterIndex(): void|Promise<any> { }
 
 	/**
 	 * @ignore

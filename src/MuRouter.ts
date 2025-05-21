@@ -120,7 +120,8 @@ export class MuRouter
 
 	public lastParameters : MuParameters = {};
 
-	public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
+	public findRoute(location : Location|{pathname : string, search : string, hash: string}|string = null)
+		: { route: Route|null, parameters: MuParameters, routeName: string|null }
 	{
 		//@ts-ignore
 		if (!location) location = window.location;
@@ -141,12 +142,12 @@ export class MuRouter
 				hash: ""
 			}
 		}
+		const parameters = this.parseQueryString(location.search);
 		for(let routeName in this.routes)
 		{
 			const route = this.routes[routeName];
 			const m = route.re.exec(location.pathname);
 			if (!m) continue;
-			const res = this.parseQueryString(location.search);
 			const dynamicChunks = route.chunks.filter(ch => typeof ch !== 'string');
 			for(let i = 0; i < m.length; i++)
 			{
@@ -161,23 +162,42 @@ export class MuRouter
 							value = value.substring(chunk.prefix.length);
 						}
 					}
-					res[route.paramNames[i - 1]] = value;
+					parameters[route.paramNames[i - 1]] = value;
 				}
 			}
-			this.updatePersistent(res);
-			this.lastName = route.name;
-			this.lastParameters = res;
+
+
+			return {
+				parameters,
+				route,
+				routeName,
+			};
+		}
+
+		return {
+			parameters,
+			route: null,
+			routeName: null,
+		};
+	}
+
+	public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
+	{
+		const { route, parameters, routeName } = this.findRoute(location);
+		this.updatePersistent(parameters);
+		this.lastName = route.name;
+		this.lastParameters = parameters;
+		if (route) {
 			route.callback({
-				parameters: res,
+				parameters,
 				routeName,
 				origin
 			});
-			return route;
-			// console.log(m);
 		}
 
-		return null;
+		return route;
 	}
+
 
 	public makeUrl(name : string, currParams : any) : string
 	{
@@ -411,7 +431,7 @@ export class MuRouter
 		a.addEventListener("click", (ev) => {
 			ev.preventDefault();
 			if (cancelBubble) ev.stopPropagation();
-			this.navigate(name, fullParams, 'link');
+			this.navPushSet(name, fullParams, 'link');
 		});
 	}
 

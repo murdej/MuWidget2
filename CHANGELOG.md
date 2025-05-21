@@ -2,7 +2,9 @@
 
 ## 2.28.0
 
- - `MuRouter` handle popstate event
+ - `MuRouter` 
+   - handle popstate event
+   - clearer method names
 
 ## 2.27.0
 
