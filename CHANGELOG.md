@@ -1,5 +1,11 @@
 # Change log
 
+## 2.29.0
+
+ - `MuRouter`
+    - fix navigate non exists route
+    - cleanup npm packages   
+
 ## 2.28.0
 
  - `MuRouter` 

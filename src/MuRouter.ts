@@ -185,9 +185,10 @@ export class MuRouter
 	{
 		const { route, parameters, routeName } = this.findRoute(location);
 		this.updatePersistent(parameters);
-		this.lastName = route.name;
+        this.lastName = null;
 		this.lastParameters = parameters;
 		if (route) {
+		    this.lastName = route.name;
 			route.callback({
 				parameters,
 				routeName,
@@ -228,7 +229,7 @@ export class MuRouter
 		return this.pathPrefix + url;
 	}
 
-	public lastName = "";
+	public lastName: string|null = "";
 	public getName(name: string|null): string {
 		if (name) this.lastName = name;
 		return this.lastName;
@@ -391,7 +392,7 @@ export class MuRouter
 	constructor() {
 		if (typeof window !== 'undefined')
 			window.addEventListener('popstate', ev => {
-				this.route(document.location)
+				this.route(document.location);
 			});
 	}
 

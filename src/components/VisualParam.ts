@@ -33,7 +33,7 @@ export type VisualParamDefAll<T extends string> = Partial<{
     [K in T]: StringsOrTag<K>;
 }>;
 
-export type VisualParamDef<T extends string> = Partial<VisualParamDefAll<T>>;
+export type VisualParamDef<T extends string> = VisualParamDefAll<T>;
 
 type StringsOrTag<K extends string> = K extends `${infer Prefix}Tag` ? keyof HTMLElementTagNameMap : string | string[];
 

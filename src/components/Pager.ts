@@ -113,9 +113,13 @@ export class Pager extends MuWidget {
 	}
 
 	public set currentPageNum(p: number) {
+        this.setCurrentPageNum(p, true);
+    }
+
+    public setCurrentPageNum(p: number, fireEvent = true) {
 		p = Math.min(this.currentPageCount - 1, Math.max(0, p));
 		this.ui.pageNumber.valueAsNumber = p + 1;
-		this.update(true);
+		this.update(fireEvent);
 	}
 
 	public get currentItemFrom() {

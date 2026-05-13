@@ -8,7 +8,7 @@ abstract class InputList<TV> extends MuWidget {
 
     public controls: Record<string, HTMLInputElement&{item:ListItem}> = {};
 
-    private visualParams: VisualParamDef<InputListVisualParamName> = {};
+    public readonly visualParams: VisualParamDef<InputListVisualParamName> = {};
 
     public visual = new VisualParam<InputListVisualParamName>(this.visualParams);
 
@@ -50,6 +50,8 @@ abstract class InputList<TV> extends MuWidget {
         this.container.innerHTML = '';
         this.controls = {};
         const vis = this.visual.getAll();
+        // @ts-ignore
+        addCssClass(this.container, vis.containerClass);
         for (const item of this.currentItems) {
             let clickEl = null;
             const controlId = vis.labelTag

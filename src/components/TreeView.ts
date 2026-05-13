@@ -24,6 +24,8 @@ export class TreeView extends MuWidget {
 		plungeField: "plunge",
 		//todo: widgetParentField: "parentNode",
 		prepareItem: null,
+		itemWidgetParams: null,
+		afterCreateItemWidget: null,
 	}
 
 	public render(data: any, opts: Partial<TreeViewOpts> = {}) {
@@ -68,8 +70,13 @@ export class TreeView extends MuWidget {
 				? this.opts.templateName
 				: this.opts.templateName(item);
 
-			// @ts-ignore
-			const itemWidget = this.muWidgetFromTemplate(templateName, container);
+			const itemWidget = this.muWidgetFromTemplate(
+				templateName,
+				// @ts-ignore
+				container,
+				this.opts.itemWidgetParams || {}
+			);
+			if (this.opts.afterCreateItemWidget) this.opts.afterCreateItemWidget(itemWidget);
 			itemWidget.muBindData({...item, [this.opts.plungeField]: plunge});
 
 			const childrens = getChilds(item);
@@ -109,6 +116,8 @@ export type TreeViewOpts = {
 	plungeField: string;
 	templateName: ((item: any) => string)|string;
 	prepareItem: ((item: any) => any)|null;
+	itemWidgetParams: any|null;
+	afterCreateItemWidget: ((widget: MuWidget) => void)|null;
 	//todo widgetParentField: string|null;
 }
 

@@ -8,7 +8,8 @@ export class ChoiceDialog<T=any> extends Dialog {
     options: ChoiceDialogOption<T>[];
     title: string;
     message: string;
-    promise = new Promise<T>(resolve => this.promiseResolve = resolve)
+    promise = new Promise<T>(resolve => this.promiseResolve = resolve);
+    customVisual: VisualParamDef<ChoiceDialogVisualParamName> = {};
 
     private visualParams: VisualParamDef<ChoiceDialogVisualParamName> = {};
     public visual = new VisualParam<ChoiceDialogVisualParamName>(this.visualParams);
@@ -16,6 +17,7 @@ export class ChoiceDialog<T=any> extends Dialog {
 
     beforeIndex() {
         this.visual.addParamDef(ChoiceDialog.visualDefaults);
+        this.visual.addParamDef(this.customVisual);
         const vis = this.visual.getAll();
         this.muAppendContent(
             makeHtmlElement(
@@ -63,7 +65,7 @@ export class ChoiceDialog<T=any> extends Dialog {
                 'buttons',
                 {
                     container_click: () => this.selectOption(option.value)
-                }
+                },
             );
             addCssClass(widget.container as HTMLElement, option.cssClass);
             widget.container.textContent = option.title;
@@ -75,23 +77,34 @@ export class ChoiceDialog<T=any> extends Dialog {
         this.muRemoveSelf();
     }
 
-    static openChoice<T=any>(options: ChoiceDialogOption<T>[], title: string, message: string): ChoiceDialog<T>
+    static openChoice<T=any>(
+        options: ChoiceDialogOption<T>[],
+        title: string,
+        message: string,
+        customVisual: VisualParamDef<ChoiceDialogVisualParamName> = {},
+    ): ChoiceDialog<T>
     {
         const widget = Dialog.open<ChoiceDialog>(
             'ChoiceDialog',
             {
                 title,
                 message,
-                options
+                options,
+                customVisual,
             }
         );
 
         return widget;
     }
 
-    static openChoicePromise<T=any>(options: ChoiceDialogOption<T>[], title: string, message: string): Promise<T>
+    static openChoicePromise<T=any>(
+        options: ChoiceDialogOption<T>[],
+        title: string,
+        message: string,
+        customVisual: VisualParamDef<ChoiceDialogVisualParamName> = {},
+    ): Promise<T>
     {
-        return this.openChoice<T>(options, title, message).promise;
+        return this.openChoice<T>(options, title, message, customVisual).promise;
     }
 }
 
