@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/murdej/MuWidget2#readme",
   "devDependencies": {
+    "@parcel/transformer-sass": "^2.13.3",
     "@types/node": "^20.12.10",
     "parcel": "^2.5.0",
     "readline-promise": "^1.0.5",

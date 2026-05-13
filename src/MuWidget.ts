@@ -1045,6 +1045,43 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		}
 	}
 
+	public static revive(element: AnyElement = null): void {
+		const targetElement = element || (document.documentElement as AnyElement);
+
+		const findParentWidget = (el: AnyElement): MuWidget => {
+			let current = el.parentElement as AnyElement | null;
+			while (current) {
+				if ((current as any).widget instanceof MuWidget) {
+					return (current as any).widget as MuWidget;
+				}
+				current = current.parentElement as AnyElement | null;
+			}
+			return MuWidget.root;
+		};
+
+		const reviveTree = (el: AnyElement, parentWidget: MuWidget): void => {
+			const existingWidget = (el as any).widget as MuWidget | undefined;
+			const opts = parentWidget.muGetElementOpts(el);
+
+			if (existingWidget && opts.widget) {
+				// Already alive – skip subtree
+				return;
+			}
+
+			if (!existingWidget && opts.widget) {
+				// Widget defined but not yet initialized
+				parentWidget.muActivateWidget(el, opts);
+			} else {
+				const childParent = existingWidget || parentWidget;
+				for (const child of Array.from(el.children)) {
+					reviveTree(child as AnyElement, childParent);
+				}
+			}
+		};
+
+		reviveTree(targetElement, findParentWidget(targetElement));
+	}
+
 	public static getWidget(el: AnyElement): MuWidget|null
 	{
 		while(el) {

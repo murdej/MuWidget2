@@ -2,6 +2,7 @@
 
 ## 2.29.0
 
+ - `MuWidget`.`revive` 
  - `MuRouter`
     - fix navigate non exists route
     - cleanup npm packages   
