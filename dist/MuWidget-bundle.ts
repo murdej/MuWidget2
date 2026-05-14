@@ -590,7 +590,8 @@ route.re = new RegExp(re);
 
 public lastParameters : MuParameters = {};
 
-public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
+public findRoute(location : Location|{pathname : string, search : string, hash: string}|string = null)
+: { route: Route|null, parameters: MuParameters, routeName: string|null }
 {
 //@ts-ignore
 if (!location) location = window.location;
@@ -611,12 +612,12 @@ search:  p >= 0 ? location.substr(p) : "",
 hash: ""
 }
 }
+const parameters = this.parseQueryString(location.search);
 for(let routeName in this.routes)
 {
 const route = this.routes[routeName];
 const m = route.re.exec(location.pathname);
 if (!m) continue;
-const res = this.parseQueryString(location.search);
 const dynamicChunks = route.chunks.filter(ch => typeof ch !== 'string');
 for(let i = 0; i < m.length; i++)
 {
@@ -631,23 +632,43 @@ if (chunk.prefix) {
 value = value.substring(chunk.prefix.length);
 }
 }
-res[route.paramNames[i - 1]] = value;
+parameters[route.paramNames[i - 1]] = value;
 }
 }
-this.updatePersistent(res);
+
+
+return {
+parameters,
+route,
+routeName,
+};
+}
+
+return {
+parameters,
+route: null,
+routeName: null,
+};
+}
+
+public route(location : Location|{pathname : string, search : string, hash: string}|string = null, origin: MuRouterOrigin = 'route'): Route|null
+{
+const { route, parameters, routeName } = this.findRoute(location);
+this.updatePersistent(parameters);
+this.lastName = null;
+this.lastParameters = parameters;
+if (route) {
 this.lastName = route.name;
-this.lastParameters = res;
 route.callback({
-parameters: res,
+parameters,
 routeName,
 origin
 });
-return route;
-// console.log(m);
 }
 
-return null;
+return route;
 }
+
 
 public makeUrl(name : string, currParams : any) : string
 {
@@ -678,19 +699,36 @@ if (q) url += "?" + q;
 return this.pathPrefix + url;
 }
 
-public lastName = "";
+public lastName: string|null = "";
 public getName(name: string|null): string {
 if (name) this.lastName = name;
 return this.lastName;
 }
 
-public push(name : string|null, params : MuParameters = {})
+/**
+* @deprecated use pushSet
+*/
+public push(name : string|null, params : MuParameters = {}) {
+this.pushSet(name, params);
+}
+
+/**
+* Set parameters and push url into history.
+* @param name Route name
+* @param params Updated parameters
+*/
+public pushSet(name : string|null, params : MuParameters = {})
 {
 name = this.getName(name);
 this.updatePersistent(params);
 history.pushState({}, null, this.makeUrl(name, params));
 }
 
+/**
+* Updates parameters and push url into history.
+* @param name Route name
+* @param params Updated parameters
+*/
 public pushUpdate(name : string|null, params : MuParameters = {})
 {
 name = this.getName(name);
@@ -698,20 +736,96 @@ this.updatePersistent(params, true);
 history.pushState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
 }
 
+/** @deprecated use replaceSet **/
 public replace(name : string|null, params : MuParameters = {})
+{
+this.replaceSet(name, params);
+}
+
+/**
+* Set parameters and replace url in history.
+* @param name Route name
+* @param params New parameters
+*/
+public replaceSet(name : string|null, params : MuParameters = {})
 {
 name = this.getName(name);
 this.updatePersistent(params);
 history.replaceState({}, null, this.makeUrl(name, params));
 }
 
-public update(name : string|null, params : MuParameters = {})
+/**
+* Update parameters and replace url in history.
+* @param name Route name
+* @param params Updated parameters
+*/
+public replaceUpdate(name : string|null, params : MuParameters = {})
 {
 name = this.getName(name);
 this.updatePersistent(params, true);
 history.replaceState({}, null, this.makeUrl(name, { ...this.lastParameters, ...params }));
 }
 
+/**
+* @deprecated use replaceUpdate
+*/
+public update(name : string|null, params : MuParameters = {})
+{
+this.replaceUpdate(name, params);
+}
+
+
+/**
+* Set parameters, push url into history and call route action.
+* @param name Route name
+* @param params New params
+* @param origin Origin
+*/
+public navPushSet(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+name = this.getName(name);
+this.pushSet(name, params);
+this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+}
+
+/**
+* Updates parameters, push url into history and call route action.
+* @param name Route name
+* @param params Changed params
+* @param origin Origin
+*/
+public navPushUpdate(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+name = this.getName(name);
+this.pushUpdate(name, params);
+this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+}
+
+/**
+* Set parameters, replace url in history and call route action.
+* @param name Route name
+* @param params New params
+* @param origin Origin
+*/
+public navReplaceSet(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+name = this.getName(name);
+this.replaceSet(name, params);
+this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+}
+
+/**
+* Update parameters, replace url in history and call route action.
+* @param name Route name
+* @param params Changed params
+* @param origin Origin
+*/
+public navReplaceUpdate(name: string|null, params: MuParameters = {}, origin: MuRouterOrigin = 'other') {
+name = this.getName(name);
+this.replaceUpdate(name, params);
+this.routes[name].callback({ parameters: this.lastParameters, routeName: name, origin });
+}
+
+/**
+* @deprecated use navPushSet
+*/
 public navigate(name : string|null, params : MuParameters = {}, origin: MuRouterOrigin = 'other')
 {
 name = this.getName(name);
@@ -747,7 +861,9 @@ return res;
 
 constructor() {
 if (typeof window !== 'undefined')
-window.onpopstate = ev => this.route(document.location)
+window.addEventListener('popstate', ev => {
+this.route(document.location);
+});
 }
 
 public updatePersistent(res: MuParameters, patch : boolean = false)
@@ -786,7 +902,7 @@ a.href = this.makeUrl(name, params);
 a.addEventListener("click", (ev) => {
 ev.preventDefault();
 if (cancelBubble) ev.stopPropagation();
-this.navigate(name, fullParams, 'link');
+this.navPushSet(name, fullParams, 'link');
 });
 }
 
@@ -870,6 +986,15 @@ public muOpts: MuOpts = {} as MuOpts;
 protected muWidgetEventHandlers : Record<string, MuHandler[]> = {};
 
 protected muIndexOpts: MuWidgetOpts|null = null;
+
+/**
+* This property contains a Promise that is successfully resolved (resolve) after the afterIndex method has finished.
+* - If the afterIndex method returns a Promise, this property is resolved after the Promise returned from afterIndex is also resolved.
+* - If the afterIndex method is asynchronous (marked as async), this property is resolved after the afterIndex function has finished running.
+*/
+public muInitialized: Promise<void> = new Promise(resolve => this.muInitializedResolver = resolve);
+
+protected muInitializedResolver: ()=>void;
 
 public static paramJsonS: boolean = true;
 
@@ -1540,11 +1665,16 @@ widget = this.muActivateWidget(element, opts);
 this.muAddEvents(opts, element, widget);
 if (indexWidget)
 {
-this.afterIndex();
+const afterIndexResponse = this.afterIndex();
+(async () => {
+await afterIndexResponse;
+this.muInitializedResolver();
 for (let i = 0, l = this.muOnAfterIndex.length; i < l; i++)
 {
 this.muOnAfterIndex[i](this);
 }
+})();
+
 }
 this.muCallPlugin("afterIndexElement", ev);
 }
@@ -1576,7 +1706,7 @@ if (plugin[eventName]) plugin[eventName](eventArgs);
 }
 }
 
-afterIndex() { }
+afterIndex(): void|Promise<any> { }
 
 /**
 * @ignore
@@ -1869,6 +1999,43 @@ onStart();
 } else {
 fn(onEvent, onStart);
 }
+}
+
+public static revive(element: AnyElement = null): void {
+const targetElement = element || (document.documentElement as AnyElement);
+
+const findParentWidget = (el: AnyElement): MuWidget => {
+let current = el.parentElement as AnyElement | null;
+while (current) {
+if ((current as any).widget instanceof MuWidget) {
+return (current as any).widget as MuWidget;
+}
+current = current.parentElement as AnyElement | null;
+}
+return MuWidget.root;
+};
+
+const reviveTree = (el: AnyElement, parentWidget: MuWidget): void => {
+const existingWidget = (el as any).widget as MuWidget | undefined;
+const opts = parentWidget.muGetElementOpts(el);
+
+if (existingWidget && opts.widget) {
+// Already alive – skip subtree
+return;
+}
+
+if (!existingWidget && opts.widget) {
+// Widget defined but not yet initialized
+parentWidget.muActivateWidget(el, opts);
+} else {
+const childParent = existingWidget || parentWidget;
+for (const child of Array.from(el.children)) {
+reviveTree(child as AnyElement, childParent);
+}
+}
+};
+
+reviveTree(targetElement, findParentWidget(targetElement));
 }
 
 public static getWidget(el: AnyElement): MuWidget|null

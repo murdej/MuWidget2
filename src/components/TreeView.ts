@@ -100,6 +100,20 @@ export class TreeView extends MuWidget {
 			}));
 	}
 
+	public getAllItems<TW=MuWidget,TR=any>(itemCallback: (item: TW)=>TR, container: AnyElement = null): TR[]
+	{
+		const result: TR[] = [];
+		const collect = (cont: AnyElement) => {
+			for (const widget of this.container.widget.muGetChildWidgets<TW>(cont)) {
+				result.push(itemCallback ? itemCallback(widget) : widget as unknown as TR);
+				/* @ts-ignore */
+				collect(widget.ui[this.opts.childContainer]);
+			}
+		};
+		collect(container ?? this.container);
+		return result;
+	}
+
 	beforeIndex() {
 		this.muRegisterEvent('itemRedered');
 	}

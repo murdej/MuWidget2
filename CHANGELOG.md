@@ -1,5 +1,9 @@
 # Change log
 
+## 2.30.0
+
+ - `TreeView`.`getAllItems`
+
 ## 2.29.0
 
  - `MuWidget`.`revive` 
