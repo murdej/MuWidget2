@@ -90,7 +90,7 @@ export class TreeView extends MuWidget {
 		}
 	}
 
-	public getItemTree<TW=MuWidget,TR=any>(itemCallback: (item: TW)=>TR, container: AnyElement = null): TreeViewItemNode[]
+	public getItemTree<TW=MuWidget,TR=any>(itemCallback: ((item: TW)=>TR)|null = null, container: AnyElement = null): TreeViewItemNode[]
 	{
 		return this.container.widget.muGetChildWidgets<TW>(container ?? this.container)
 			.map((widget: TW) => ({
@@ -100,7 +100,7 @@ export class TreeView extends MuWidget {
 			}));
 	}
 
-	public getAllItems<TW=MuWidget,TR=any>(itemCallback: (item: TW)=>TR, container: AnyElement = null): TR[]
+	public getAllItems<TW=MuWidget,TR=any>(itemCallback: ((item: TW)=>TR)|null = null, container: AnyElement = null): TR[]
 	{
 		const result: TR[] = [];
 		const collect = (cont: AnyElement) => {

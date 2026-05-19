@@ -1012,7 +1012,10 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 	{
 		MuWidget.widgetClasses[n] = c;
 	}
-	
+
+    public static isStarted = new Promise(resolve => MuWidget.isStartedResolve = resolve);
+    protected static isStartedResolve: (_: any) => void;
+
 	public static startup(startElement: AnyElement|null = null, onSucces: OptionalCallback1<MuWidget> = null, onBefore: OptionalCallback = null, onEvent: "DOMContentLoaded"|"load" = "load") {
 		const fn = window.addEventListener || (window as any).attachEvent || function(type: string, listener: (evt:any)=>void)
 		{
@@ -1034,6 +1037,7 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 			muRoot.muInit(element);
 			MuWidget.root = muRoot;
 			if (onSucces) onSucces(muRoot);
+            MuWidget.isStartedResolve(null);
 		}
 		if (onEvent === "DOMContentLoaded" && ['interactive', 'complete'].includes(document.readyState)
 			|| onEvent === "load" && 'complete' == document.readyState)
@@ -1045,7 +1049,8 @@ export class MuWidget<TP = MuWidget<any, any, any>, TU extends Record<string, an
 		}
 	}
 
-	public static revive(element: AnyElement = null): void {
+	public static async revive(element: AnyElement = null): Promise<void> {
+        await MuWidget.isStarted;
 		const targetElement = element || (document.documentElement as AnyElement);
 
 		const findParentWidget = (el: AnyElement): MuWidget => {

@@ -1,5 +1,9 @@
 # Change log
 
+## 2.30.1
+
+ - `MuWidget`.`revive` checks whether MuWidget has been fully initialized; if not, it defers execution until initialization is complete.
+
 ## 2.30.0
 
  - `TreeView`.`getAllItems`
